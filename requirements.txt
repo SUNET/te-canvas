@@ -1,3 +1,10 @@
 Flask
 flask-cors
 flask-restx
+canvasapi
+zeep
+psycopg2-binary
+sqlalchemy-stubs
+PyYAML
+SQLAlchemy
+SQLAlchemy-Utils
