@@ -20,6 +20,6 @@ jobs.add(test_job, 10, {'string': 'test'})
 jobs.start()
 
 if __name__ == '__main__':
-    get_app().run(debug=True, host='0.0.0.0', port=5000)
+    get_app().run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
 else:
     te_canvas_app = get_app()
