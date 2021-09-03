@@ -4,6 +4,7 @@ from te_canvas import app
 from te_canvas.log import get_logger
 from te_canvas.job import JobScheduler
 from te_canvas.job import test_job
+from te_canvas.sync import sync_job
 
 os.environ['PYTHONPATH'] = os.getcwd()
 logger = get_logger()
@@ -17,6 +18,7 @@ logger.debug('TE - Canvas sync API is starting...')
 
 jobs = JobScheduler(nr_threads=10)
 jobs.add(test_job, 10, {'string': 'test'})
+jobs.add(sync_job, 10, {})
 jobs.start()
 
 if __name__ == '__main__':
