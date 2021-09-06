@@ -44,7 +44,7 @@ td:first-child {
                 <div class="canvas">
                     <b>Canvas</b>
                     <table>
-                        {{ range .Canvas_groups }}
+                        {{- range .Canvas_groups }}
                         <tr>
                             <td><input type="checkbox" name="ca_{{ . }}"></input></td>
                             <td>
