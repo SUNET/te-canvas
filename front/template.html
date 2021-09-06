@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>te-canvas</title>
+        <style>
+body {
+    font-family: monospace;
+}
+#add-connection {
+    display: flex;
+}
+#add-connection > div {
+    margin-right: 1em;
+}
+#add-connection table {
+    width: 30em;
+}
+td {
+    border: 1px solid black;
+}
+td:first-child {
+    width: 1em;
+}
+        </style>
+    </head>
+    <body>
+        <h2>Add connection</h2>
+        <form action="/add" method="POST">
+            <div id="add-connection">
+                <div class="te">
+                    <b>TimeEdit</b>
+                    <table>
+                        {{- range .TE_groups }}
+                        <tr>
+                            <td><input type="checkbox" name="te_{{ . }}"></input></td>
+                            <td>
+                                {{ . }}
+                            </td>
+                        </tr>
+                        {{ end -}}
+                    </table>
+                </div>
+                <div class="canvas">
+                    <b>Canvas</b>
+                    <table>
+                        {{ range .Canvas_groups }}
+                        <tr>
+                            <td><input type="checkbox" name="ca_{{ . }}"></input></td>
+                            <td>
+                                {{ . }}
+                            </td>
+                        </tr>
+                        {{ end -}}
+                    </table>
+                </div>
+            </div>
+            <input type="submit" value="Add">
+        </form>
+        <h2>Existing connections</h2>
+        <form action="/delete" method="POST">
+            <div id="delete-connection">
+                <table>
+                    {{- range .Connections }}
+                    <tr>
+                        <td><input type="checkbox" name="{{ .String }}"></input></td>
+                        <td>
+                            {{ . }}
+                        </td>
+                    </tr>
+                    {{ end -}}
+                </table>
+            </div>
+            <input type="submit" value="Delete">
+        </form>
+    </body>
+</html>
