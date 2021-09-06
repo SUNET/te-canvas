@@ -30,7 +30,7 @@ def sync_job():
             ).delete()
 
             # Push to Canvas and add to database
-            for r in te.reservations(te_group):
+            for r in te.get_reservations_all(te_group):
                 # TODO: Use configured values to create description.
                 canvas_event = canvas.create_event(
                     {

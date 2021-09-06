@@ -17,7 +17,7 @@ except Exception as e:
 canvas = Canvas(url, key)
 
 
-def get_all_courses():
+def get_courses_all():
     root_user = canvas.get_account(1)
     return list(root_user.get_courses())
 

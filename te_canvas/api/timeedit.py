@@ -2,7 +2,7 @@ from flask import request
 from flask_restx import Resource, Namespace, fields, reqparse
 from sqlalchemy.exc import DBAPIError
 
-from te_canvas.te import course_instances, course_instances_all
+from te_canvas.te import get_course_instances, get_course_instances_all
 import te_canvas.log as log
 
 logger = log.get_logger()
@@ -30,8 +30,8 @@ class TimeEditApi(Resource):
         n = args['number_of_objects']
         i = args['begin_index']
         if n or i:
-            return course_instances(n or 1000, i or 0)
-        return course_instances_all()
+            return get_course_instances(n or 1000, i or 0)
+        return get_course_instances_all()
 
 
 timeedit_api.add_resource(TimeEditApi, '')
