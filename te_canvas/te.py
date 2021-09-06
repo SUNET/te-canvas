@@ -22,7 +22,22 @@ client = zeep.Client(wsdl)
 key = client.service.register(cert).applicationkey
 
 
-def course_instances():
+def course_instances(number_of_objects, begin_index):
+    """Get max 1000 course instances."""
+    res = client.service.findObjects(
+        login={
+            'username': username,
+            'password': password,
+            'applicationkey': key,
+        },
+        type='courseevt',
+        numberofobjects=number_of_objects,
+        beginindex=begin_index,
+    )['objects']['object']
+    return list(map(unpack_course_instance, res))
+
+
+def course_instances_all():
     """Get all course instances."""
     n = client.service.findObjects(
         login={
@@ -38,18 +53,13 @@ def course_instances():
 
     res = []
     for i in range(num_pages):
-        page = client.service.findObjects(
-            login={
-                'username': username,
-                'password': password,
-                'applicationkey': key,
-            },
-            type='courseevt',
-            numberofobjects=1000,
-            beginindex=i * 1000,
-        )['objects']['object']
+        page = course_instances(1000, i * 1000)
         res += page
     return res
+
+
+def unpack_course_instance(i):
+    return i['extid']
 
 
 def reservations(instance_id):

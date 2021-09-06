@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_restx import Api
 
 from te_canvas.api.connection import connection_api
+from te_canvas.api.timeedit import timeedit_api
 from te_canvas.api.version import version_api
 from te_canvas.log import get_logger
 
@@ -19,6 +20,7 @@ cors = CORS(app,
 api = Api(app, prefix='/api')
 api.add_namespace(version_api)
 api.add_namespace(connection_api)
+api.add_namespace(timeedit_api)
 
 
 @app.after_request
