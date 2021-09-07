@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 
-from te_canvas.db.session import Base, sqla_session
+from te_canvas.db.session import Base, sqla_session, engine
 
 
 class Connection(Base):
@@ -42,3 +42,6 @@ def get_connections() -> [(str, str)]:
 
 class DeleteEmpty(Exception):
     pass
+
+
+Base.metadata.create_all(engine)

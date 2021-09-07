@@ -27,7 +27,6 @@ conn_str = (
 
 Base = declarative_base()
 engine = create_engine(conn_str, pool_size=50, max_overflow=0)
-Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
 # TODO: Is this correct?
