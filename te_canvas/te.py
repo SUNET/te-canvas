@@ -113,7 +113,7 @@ def get_reservations_all(instance_id):
             },
             numberofreservations=1000,
             beginindex=i * 1000,
-        )['get_reservations_all']['reservation']
+        )['reservations']['reservation']
         res += page
     return list(map(unpack_reservation, res))
 
