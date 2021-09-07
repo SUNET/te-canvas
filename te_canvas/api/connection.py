@@ -1,6 +1,6 @@
 from flask import request
 from flask_restx import Resource, Namespace, fields, reqparse
-from sqlalchemy.exc import DBAPIError
+from sqlalchemy.exc import SQLAlchemyError, NoResultFound
 
 import te_canvas.db.model as db
 import te_canvas.log as log
@@ -27,7 +27,7 @@ class ConnectionApi(Resource):
         args = self.id_parser.parse_args(strict=True)
         try:
             db.add_connection(args.te_group, args.canvas_group)
-        except DBAPIError as e:
+        except SQLAlchemyError as e:
             logger.error(e)
             return {'status': 'failure'}, 500
         return {'status': 'success'}
@@ -38,10 +38,12 @@ class ConnectionApi(Resource):
         args = self.id_parser.parse_args(strict=True)
         try:
             db.delete_connection(args.te_group, args.canvas_group)
-        except db.DeleteEmpty:
+        except NoResultFound:
             return {'status': 'unchanged', 'message': 'Connection not found.'}
             # (?): Also return a different status code than 200?
-        except DBAPIError as e:
+        except SQLAlchemyError as e:
+            # Includes if multiple connections were found with the same ID pair,
+            # in which case one() raises MultipleResultsFound.
             logger.error(e)
             return {'status': 'failure'}, 500
         return {'status': 'success'}
@@ -52,7 +54,7 @@ class ConnectionApi(Resource):
                 {'te_group': x, 'canvas_group': y}
                 for (x, y) in db.get_connections()
             ]
-        except DBAPIError as e:
+        except SQLAlchemyError as e:
             logger.error(e)
             return {'status': 'failure'}, 500
 

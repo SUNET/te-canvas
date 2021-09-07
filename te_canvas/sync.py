@@ -9,32 +9,35 @@ logger = log.get_logger()
 
 def sync_job():
     with sqla_session() as session:
-        for (te_group, canvas_group) in session.query(
-            Connection.te_group, Connection.canvas_group
-        ):
+        for c in session.query(Connection):
             logger.info(
-                f'Syncing from TimeEdit: {te_group} to Canvas: {canvas_group}'
+                f'Syncing from TimeEdit: {c.te_group} to Canvas: {c.canvas_group}'
             )
 
             # Remove all events previously added by us
             for row in session.query(Event).filter(
-                Event.te_group == te_group
-                and Event.canvas_group == canvas_group
+                Event.te_group == c.te_group
+                and Event.canvas_group == c.canvas_group
             ):
                 canvas.delete_event(row.canvas_id)
 
             # Clear database
             session.query(Event).filter(
-                Event.te_group == te_group
-                and Event.canvas_group == canvas_group
+                Event.te_group == c.te_group
+                and Event.canvas_group == c.canvas_group
             ).delete()
 
+            # If the connection has been flagged for deletion
+            if c.delete_flag:
+                session.delete(c)
+                continue
+
             # Push to Canvas and add to database
-            for r in te.get_reservations_all(te_group):
+            for r in te.get_reservations_all(c.te_group):
                 # TODO: Use configured values to create description.
                 canvas_event = canvas.create_event(
                     {
-                        'context_code': f'course_{canvas_group}',
+                        'context_code': f'course_{c.canvas_group}',
                         'title': r['activity']['activity.id'],
                         'location_name': r['room']['room.name'],
                         'description': '<br>'.join(
@@ -52,7 +55,7 @@ def sync_job():
                     Event(
                         te_id=r['id'],
                         canvas_id=canvas_event.id,
-                        te_group=te_group,
-                        canvas_group=canvas_group,
+                        te_group=c.te_group,
+                        canvas_group=c.canvas_group,
                     )
                 )

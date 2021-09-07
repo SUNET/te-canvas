@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 
 from te_canvas.db.session import Base, sqla_session, engine
 
@@ -7,6 +7,7 @@ class Connection(Base):
     __tablename__ = 'connections'
     te_group = Column(String, primary_key=True)
     canvas_group = Column(String, primary_key=True)
+    delete_flag = Column(Boolean, default=False)
 
 
 class Event(Base):
@@ -24,13 +25,10 @@ def add_connection(te_group, canvas_group):
 
 def delete_connection(te_group, canvas_group):
     with sqla_session() as session:
-        q = session.query(Connection).filter(
+        session.query(Connection).filter(
             Connection.te_group == te_group
             and Connection.canvas_group == canvas_group
-        )
-        if q.count() == 0:
-            raise DeleteEmpty()
-        q.delete()
+        ).one().delete_flag = True
 
 
 def get_connections() -> [(str, str)]:
@@ -38,10 +36,6 @@ def get_connections() -> [(str, str)]:
         # NOTE: We cannot return a list of Connection here, since the Session
         # they are connected to is closed at end of this block.
         return [(c.te_group, c.canvas_group) for c in session.query(Connection)]
-
-
-class DeleteEmpty(Exception):
-    pass
 
 
 Base.metadata.create_all(engine)
