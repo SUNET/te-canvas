@@ -16,7 +16,11 @@ canvas_api = Namespace(
 
 class CanvasApi(Resource):
     def get(self):
-        return [c.id for c in get_courses_all()]
+        data = [c.id for c in get_courses_all()]
+        return {
+            'status': 'success',
+            'data': data
+        }
 
 
 canvas_api.add_resource(CanvasApi, '')

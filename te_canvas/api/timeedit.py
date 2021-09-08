@@ -31,7 +31,14 @@ class TimeEditApi(Resource):
         i = args['begin_index']
         if n or i:
             return get_course_instances(n or 1000, i or 0)
-        return get_course_instances_all()
+        data = get_course_instances_all()
+
+        return {
+            'status': 'success',
+            'data': data
+        }
+
+        return data
 
 
 timeedit_api.add_resource(TimeEditApi, '')
