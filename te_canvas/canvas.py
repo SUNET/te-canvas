@@ -18,14 +18,31 @@ canvas = Canvas(url, key)
 
 
 def get_courses_all():
-    root_user = canvas.get_account(1)
+    try:
+        root_user = canvas.get_account(1)
+    except Exception:
+        logger.error('Failed to get account 1 from Canvas.')
+        return None
+
     return list(root_user.get_courses())
 
 
 def create_event(event):
-    return canvas.create_calendar_event(event)
+    try:
+        calendar_event = canvas.create_calendar_event(event)
+    except Exception:
+        logger.error('Failed to get calendar event from Canvas.')
+        return None
+
+    return calendar_event
 
 
 def delete_event(id):
     # TODO: Do this using one request
-    return canvas.get_calendar_event(id).delete()
+    try:
+        calendar_event = canvas.get_calendar_event(id).delete()
+    except Exception:
+        logger.error('Failed to remove calendar event from Canvas.')
+        return None
+
+    return calendar_event

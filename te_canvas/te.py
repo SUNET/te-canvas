@@ -5,6 +5,7 @@ import sys
 import zeep
 
 from te_canvas.log import get_logger
+from requests.exceptions import ConnectionError
 
 logger = get_logger()
 
@@ -18,8 +19,12 @@ except Exception as e:
     sys.exit(-1)
 
 
-client = zeep.Client(wsdl)
-key = client.service.register(cert).applicationkey
+try:
+    client = zeep.Client(wsdl)
+    key = client.service.register(cert).applicationkey
+except ConnectionError:
+    logger.error(f'TimeEdit connection to "{wsdl}" failed, exiting.')
+    sys.exit(-1)
 
 
 def get_course_instances(number_of_objects, begin_index):
@@ -70,7 +75,8 @@ def get_reservations_all(instance_id):
             'password': password,
             'applicationkey': key,
         },
-        searchobjects={'object': [{'type': 'courseevt', 'extid': instance_id}]},
+        searchobjects={'object': [
+            {'type': 'courseevt', 'extid': instance_id}]},
         numberofreservations=1,
     ).totalnumberofreservations
 

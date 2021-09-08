@@ -19,7 +19,8 @@ def sync_job():
                 Event.te_group == c.te_group
                 and Event.canvas_group == c.canvas_group
             ):
-                canvas.delete_event(row.canvas_id)
+                if not canvas.delete_event(row.canvas_id):
+                    break
 
             # Clear database
             session.query(Event).filter(
@@ -50,6 +51,10 @@ def sync_job():
                         'end_at': r['end_at'],
                     }
                 )
+
+                if not canvas_event:
+                    break
+
                 print(canvas_event.description)
                 session.add(
                     Event(
