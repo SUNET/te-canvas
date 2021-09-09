@@ -33,7 +33,3 @@ class JobScheduler(object):
             f'[JobScheduler] Adding job to scheduler: interval={seconds}')
         return self._scheduler.add_job(func, 'interval', seconds=seconds,
                                        kwargs=kwargs)
-
-
-def test_job(string):
-    print(f'Job says: {string}')
