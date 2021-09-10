@@ -39,7 +39,5 @@ class TimeEditApi(Resource):
             'data': data
         }
 
-        return data
-
 
 timeedit_api.add_resource(TimeEditApi, '')
