@@ -59,9 +59,15 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		var data Data
-		get(os.Getenv("TE_CANVAS_URL")+"/api/timeedit?number_of_objects=100", &data.TE_groups)
-		get(os.Getenv("TE_CANVAS_URL")+"/api/canvas", &data.Canvas_groups)
-		get(os.Getenv("TE_CANVAS_URL")+"/api/connection", &data.Connections)
+		get(os.Getenv("TE_CANVAS_URL")+"/api/timeedit?number_of_objects=100", &struct {
+			Data *[]string `json:"data"`
+		}{&data.TE_groups})
+		get(os.Getenv("TE_CANVAS_URL")+"/api/canvas", &struct {
+			Data *[]int `json:"data"`
+		}{&data.Canvas_groups})
+		get(os.Getenv("TE_CANVAS_URL")+"/api/connection", &struct {
+			Data *[]Connection `json:"data"`
+		}{&data.Connections})
 		tmpl.Execute(w, data)
 	})
 
