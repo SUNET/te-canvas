@@ -27,30 +27,30 @@ except ConnectionError:
     sys.exit(-1)
 
 
-def get_course_instances(number_of_objects, begin_index):
-    """Get max 1000 course instances."""
+def get_objects(type, number_of_objects, begin_index):
+    """Get max 1000 objects of a given type."""
     res = client.service.findObjects(
         login={
             'username': username,
             'password': password,
             'applicationkey': key,
         },
-        type='courseevt',
+        type=type,
         numberofobjects=number_of_objects,
         beginindex=begin_index,
     )['objects']['object']
-    return list(map(unpack_course_instance, res))
+    return list(map(unpack_object, res))
 
 
-def get_course_instances_all():
-    """Get all course instances."""
+def get_objects_all(type):
+    """Get all objects of a given type."""
     n = client.service.findObjects(
         login={
             'username': username,
             'password': password,
             'applicationkey': key,
         },
-        type='courseevt',
+        type=type,
         numberofobjects=1,
     ).totalnumberofobjects
 
@@ -58,13 +58,16 @@ def get_course_instances_all():
 
     res = []
     for i in range(num_pages):
-        page = get_course_instances(1000, i * 1000)
+        page = get_objects(type, 1000, i * 1000)
         res += page
     return res
 
 
-def unpack_course_instance(i):
-    return i['extid']
+def unpack_object(o):
+    res = {'id': o['extid']}
+    for f in o['fields']['field']:
+        res[f['extid']] = f['value'][0]
+    return res
 
 
 def get_reservations_all(instance_id):
