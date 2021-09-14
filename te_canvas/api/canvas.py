@@ -16,10 +16,12 @@ canvas_api = Namespace(
 
 class CanvasApi(Resource):
     def get(self):
-        data = [c.id for c in get_courses_all()]
+        data = get_courses_all()
+        if data is None:
+            return { 'status': 'failure' }, 500
         return {
             'status': 'success',
-            'data': data
+            'data': [c.id for c in get_courses_all()]
         }
 
 
