@@ -27,6 +27,7 @@ except ConnectionError:
     sys.exit(-1)
 
 
+# TODO: Add returnFields parameter, populate from getAlFields?
 def get_objects(type, number_of_objects, begin_index):
     """Get max 1000 objects of a given type."""
     res = client.service.findObjects(
