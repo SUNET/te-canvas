@@ -55,7 +55,6 @@ def sync_job():
                 if not canvas_event:
                     break
 
-                print(canvas_event.description)
                 session.add(
                     Event(
                         te_id=r['id'],
