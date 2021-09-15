@@ -27,6 +27,22 @@ except ConnectionError:
     sys.exit(-1)
 
 
+def get_types_all():
+    res = client.service.findTypes(
+        login={
+            'username': username,
+            'password': password,
+            'applicationkey': key,
+        },
+        ignorealias=False,
+    )
+    return list(map(unpack_type, res))
+
+
+def unpack_type(t):
+    return {'id': t['extid'], 'name': t['name']}
+
+
 # TODO: Add returnFields parameter, populate from getAlFields?
 def get_objects(type, number_of_objects, begin_index):
     """Get max 1000 objects of a given type."""
