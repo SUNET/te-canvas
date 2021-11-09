@@ -22,6 +22,7 @@ var template_source string
 type Connection struct {
 	TE_group     string `json:"te_group"`
 	Canvas_group string `json:"canvas_group"`
+	Delete_flag  bool   `json:"delete_flag"`
 }
 
 func (c Connection) String() string {

@@ -76,7 +76,11 @@ td:first-child {
                     <tr>
                         <td><input type="checkbox" name="{{ .String }}"></input></td>
                         <td>
+                            {{ if .Delete_flag }}
+                            <span style="color: gray">{{ . }}</span>
+                            {{ else }}
                             {{ . }}
+                            {{ end }}
                         </td>
                     </tr>
                     {{ end -}}
