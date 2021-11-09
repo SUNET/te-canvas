@@ -53,8 +53,8 @@ class ConnectionApi(Resource):
     def get(self):
         try:
             data = {'status': 'success', 'data': [
-                {'te_group': x, 'canvas_group': y}
-                for (x, y) in db.get_connections()
+                {'te_group': x, 'canvas_group': y, 'delete_flag': z}
+                for (x, y, z) in db.get_connections()
             ]}
         except SQLAlchemyError as e:
             logger.error(e)
