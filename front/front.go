@@ -14,6 +14,8 @@ import (
 
 const SEPARATOR = " ::: "
 
+var selected_type string
+
 //go:embed template.html
 var template_source string
 
@@ -26,16 +28,19 @@ func (c Connection) String() string {
 	return strings.Join([]string{c.TE_group, c.Canvas_group}, SEPARATOR)
 }
 
-type Courseevt struct {
+type IdOnly struct {
 	Id string `json:"id"`
 }
 
-func (c Courseevt) String() string {
-	return c.Id
+func (i IdOnly) String() string {
+	return i.Id
 }
 
+type AnyJson map[string]interface{}
+
 type Data struct {
-	TE_groups     []Courseevt
+	TE_types      []IdOnly
+	TE_groups     []IdOnly
 	Canvas_groups []int
 	Connections   []Connection
 }
@@ -68,8 +73,12 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		var data Data
 
-		get(os.Getenv("TE_CANVAS_URL")+"/api/timeedit/objects?type=courseevt&number_of_objects=100", &struct {
-			Data *[]Courseevt `json:"data"`
+		get(os.Getenv("TE_CANVAS_URL")+"/api/timeedit/types", &struct {
+			Data *[]IdOnly `json:"data"`
+		}{&data.TE_types})
+
+		get(os.Getenv("TE_CANVAS_URL")+"/api/timeedit/objects?type="+selected_type+"&number_of_objects=100", &struct {
+			Data *[]IdOnly `json:"data"`
 		}{&data.TE_groups})
 
 		get(os.Getenv("TE_CANVAS_URL")+"/api/canvas/courses", &struct {
@@ -81,6 +90,12 @@ func main() {
 		}{&data.Connections})
 
 		tmpl.Execute(w, data)
+	})
+
+	http.HandleFunc("/type", func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		selected_type = r.Form["type"][0]
+		http.Redirect(w, r, "/", http.StatusFound)
 	})
 
 	http.HandleFunc("/add", func(w http.ResponseWriter, r *http.Request) {
