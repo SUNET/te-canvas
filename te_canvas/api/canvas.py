@@ -14,7 +14,7 @@ canvas_api = Namespace(
 )
 
 
-class CanvasApi(Resource):
+class Courses(Resource):
     def get(self):
         data = get_courses_all()
         if data is None:
@@ -25,4 +25,4 @@ class CanvasApi(Resource):
         }
 
 
-canvas_api.add_resource(CanvasApi, '')
+canvas_api.add_resource(Courses, '/courses')
