@@ -26,8 +26,16 @@ func (c Connection) String() string {
 	return strings.Join([]string{c.TE_group, c.Canvas_group}, SEPARATOR)
 }
 
+type Courseevt struct {
+	Id string `json:"id"`
+}
+
+func (c Courseevt) String() string {
+	return c.Id
+}
+
 type Data struct {
-	TE_groups     []string
+	TE_groups     []Courseevt
 	Canvas_groups []int
 	Connections   []Connection
 }
@@ -59,15 +67,19 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		var data Data
-		get(os.Getenv("TE_CANVAS_URL")+"/api/timeedit?number_of_objects=100", &struct {
-			Data *[]string `json:"data"`
+
+		get(os.Getenv("TE_CANVAS_URL")+"/api/timeedit/objects?type=courseevt&number_of_objects=100", &struct {
+			Data *[]Courseevt `json:"data"`
 		}{&data.TE_groups})
-		get(os.Getenv("TE_CANVAS_URL")+"/api/canvas", &struct {
+
+		get(os.Getenv("TE_CANVAS_URL")+"/api/canvas/courses", &struct {
 			Data *[]int `json:"data"`
 		}{&data.Canvas_groups})
+
 		get(os.Getenv("TE_CANVAS_URL")+"/api/connection", &struct {
 			Data *[]Connection `json:"data"`
 		}{&data.Connections})
+
 		tmpl.Execute(w, data)
 	})
 
