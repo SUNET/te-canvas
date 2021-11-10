@@ -28,6 +28,15 @@ td:first-child {
     </head>
     <body>
         <h2>Add connection</h2>
+        <form action="/type" method="POST">
+            <label for="type">Object type:</label>
+            <select name="type" id="type">
+                {{- range .TE_types }}
+                <option value="{{ . }}">{{ . }}</option>
+                {{ end -}}
+            </select>
+            <input type="submit" value="Submit">
+        </form>
         <form action="/add" method="POST">
             <div id="add-connection">
                 <div class="te">
@@ -67,7 +76,11 @@ td:first-child {
                     <tr>
                         <td><input type="checkbox" name="{{ .String }}"></input></td>
                         <td>
+                            {{ if .Delete_flag }}
+                            <span style="color: gray">{{ . }}</span>
+                            {{ else }}
                             {{ . }}
+                            {{ end }}
                         </td>
                     </tr>
                     {{ end -}}

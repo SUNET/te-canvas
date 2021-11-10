@@ -35,7 +35,7 @@ def get_connections() -> [(str, str)]:
     with sqla_session() as session:
         # NOTE: We cannot return a list of Connection here, since the Session
         # they are connected to is closed at end of this block.
-        return [(c.te_group, c.canvas_group) for c in session.query(Connection)]
+        return [(c.te_group, c.canvas_group, c.delete_flag) for c in session.query(Connection)]
 
 
 Base.metadata.create_all(engine)

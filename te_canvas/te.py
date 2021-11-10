@@ -27,30 +27,48 @@ except ConnectionError:
     sys.exit(-1)
 
 
-def get_course_instances(number_of_objects, begin_index):
-    """Get max 1000 course instances."""
-    res = client.service.findObjects(
+def get_types_all():
+    res = client.service.findTypes(
         login={
             'username': username,
             'password': password,
             'applicationkey': key,
         },
-        type='courseevt',
+        ignorealias=False,
+    )
+    return list(map(unpack_type, res))
+
+
+def unpack_type(t):
+    return {'id': t['extid'], 'name': t['name']}
+
+
+# TODO: Add returnFields parameter, populate from getAlFields?
+def get_objects(type, number_of_objects, begin_index):
+    """Get max 1000 objects of a given type."""
+    resp = client.service.findObjects(
+        login={
+            'username': username,
+            'password': password,
+            'applicationkey': key,
+        },
+        type=type,
         numberofobjects=number_of_objects,
         beginindex=begin_index,
-    )['objects']['object']
-    return list(map(unpack_course_instance, res))
+    )
+    if resp.objects is None:
+        return []
+    return list(map(unpack_object, resp['objects']['object']))
 
-
-def get_course_instances_all():
-    """Get all course instances."""
+def get_objects_all(type):
+    """Get all objects of a given type."""
     n = client.service.findObjects(
         login={
             'username': username,
             'password': password,
             'applicationkey': key,
         },
-        type='courseevt',
+        type=type,
         numberofobjects=1,
     ).totalnumberofobjects
 
@@ -58,25 +76,27 @@ def get_course_instances_all():
 
     res = []
     for i in range(num_pages):
-        page = get_course_instances(1000, i * 1000)
+        page = get_objects(type, 1000, i * 1000)
         res += page
     return res
 
 
-def unpack_course_instance(i):
-    return i['extid']
+def unpack_object(o):
+    res = {'id': o['extid']}
+    for f in o['fields']['field']:
+        res[f['extid']] = f['value'][0]
+    return res
 
 
-def get_reservations_all(instance_id):
-    """Get all reservations for a given course instance."""
+def get_reservations_all(type, id):
+    """Get all reservations for a given object."""
     n = client.service.findReservations(
         login={
             'username': username,
             'password': password,
             'applicationkey': key,
         },
-        searchobjects={'object': [
-            {'type': 'courseevt', 'extid': instance_id}]},
+        searchobjects={'object': [{'type': type, 'extid': id}]},
         numberofreservations=1,
     ).totalnumberofreservations
 
@@ -90,9 +110,7 @@ def get_reservations_all(instance_id):
                 'password': password,
                 'applicationkey': key,
             },
-            searchobjects={
-                'object': [{'type': 'courseevt', 'extid': instance_id}]
-            },
+            searchobjects={'object': [{'type': type, 'extid': id}]},
             # TODO: Returntypes should be configurable. Some base values should
             # be used for title and location, configurable values should be
             # concatenated to form event description. Configure this from web
