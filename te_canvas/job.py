@@ -11,25 +11,23 @@ logger = get_logger()
 class JobScheduler(object):
     def __init__(self, nr_threads=10):
         self._scheduler = BackgroundScheduler(
-            executors={'default': ThreadPoolExecutor(nr_threads)},
-            jobstores={'default': MemoryJobStore()},
+            executors={"default": ThreadPoolExecutor(nr_threads)},
+            jobstores={"default": MemoryJobStore()},
             job_defaults={},
-            timezone=utc
+            timezone=utc,
         )
 
     def get(self):
         return self._scheduler
 
     def start(self):
-        logger.debug('[JobScheduler] Starting scheduler.')
+        logger.debug("[JobScheduler] Starting scheduler.")
         return self._scheduler.start()
 
     def stop(self):
-        logger.debug('[JobScheduler] Stopping scheduler.')
+        logger.debug("[JobScheduler] Stopping scheduler.")
         return self._scheduler.shutdown()
 
     def add(self, func, seconds, kwargs):
-        logger.debug(
-            f'[JobScheduler] Adding job to scheduler: interval={seconds}')
-        return self._scheduler.add_job(func, 'interval', seconds=seconds,
-                                       kwargs=kwargs)
+        logger.debug(f"[JobScheduler] Adding job to scheduler: interval={seconds}")
+        return self._scheduler.add_job(func, "interval", seconds=seconds, kwargs=kwargs)

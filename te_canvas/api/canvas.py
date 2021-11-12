@@ -8,9 +8,9 @@ import te_canvas.log as log
 logger = log.get_logger()
 
 canvas_api = Namespace(
-    'canvas',
-    description='API for getting data from Canvas',
-    prefix='/api',
+    "canvas",
+    description="API for getting data from Canvas",
+    prefix="/api",
 )
 
 
@@ -18,11 +18,8 @@ class Courses(Resource):
     def get(self):
         data = get_courses_all()
         if data is None:
-            return { 'status': 'failure' }, 500
-        return {
-            'status': 'success',
-            'data': [c.id for c in get_courses_all()]
-        }
+            return {"status": "failure"}, 500
+        return {"status": "success", "data": [c.id for c in get_courses_all()]}
 
 
-canvas_api.add_resource(Courses, '/courses')
+canvas_api.add_resource(Courses, "/courses")

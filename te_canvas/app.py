@@ -13,12 +13,11 @@ from te_canvas.log import get_logger
 logger = get_logger()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(128)
+app.config["SECRET_KEY"] = os.urandom(128)
 
-cors = CORS(app,
-            resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-api = Api(app, prefix='/api')
+api = Api(app, prefix="/api")
 api.add_namespace(version_api)
 api.add_namespace(connection_api)
 api.add_namespace(timeedit_api)
@@ -27,6 +26,9 @@ api.add_namespace(canvas_api)
 
 @app.after_request
 def log_request(response):
-    logger.info('[API] Method: {}, Status: {}, URL: {}, JSON: {}'.format(
-        request.method, response.status_code, request.url, request.json))
+    logger.info(
+        "[API] Method: {}, Status: {}, URL: {}, JSON: {}".format(
+            request.method, response.status_code, request.url, request.json
+        )
+    )
     return response

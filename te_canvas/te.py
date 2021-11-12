@@ -10,12 +10,12 @@ from requests.exceptions import ConnectionError
 logger = get_logger()
 
 try:
-    wsdl = os.environ['TE_WSDL_URL']
-    cert = os.environ['TE_CERT']
-    username = os.environ['TE_USERNAME']
-    password = os.environ['TE_PASSWORD']
+    wsdl = os.environ["TE_WSDL_URL"]
+    cert = os.environ["TE_CERT"]
+    username = os.environ["TE_USERNAME"]
+    password = os.environ["TE_PASSWORD"]
 except Exception as e:
-    logger.debug(f'Failed to load configuration: {e}')
+    logger.debug(f"Failed to load configuration: {e}")
     sys.exit(-1)
 
 
@@ -30,9 +30,9 @@ except ConnectionError:
 def get_types_all():
     res = client.service.findTypes(
         login={
-            'username': username,
-            'password': password,
-            'applicationkey': key,
+            "username": username,
+            "password": password,
+            "applicationkey": key,
         },
         ignorealias=False,
     )
@@ -40,7 +40,7 @@ def get_types_all():
 
 
 def unpack_type(t):
-    return {'id': t['extid'], 'name': t['name']}
+    return {"id": t["extid"], "name": t["name"]}
 
 
 # TODO: Add returnFields parameter, populate from getAlFields?
@@ -48,9 +48,9 @@ def get_objects(type, number_of_objects, begin_index):
     """Get max 1000 objects of a given type."""
     resp = client.service.findObjects(
         login={
-            'username': username,
-            'password': password,
-            'applicationkey': key,
+            "username": username,
+            "password": password,
+            "applicationkey": key,
         },
         type=type,
         numberofobjects=number_of_objects,
@@ -58,15 +58,16 @@ def get_objects(type, number_of_objects, begin_index):
     )
     if resp.objects is None:
         return []
-    return list(map(unpack_object, resp['objects']['object']))
+    return list(map(unpack_object, resp["objects"]["object"]))
+
 
 def get_objects_all(type):
     """Get all objects of a given type."""
     n = client.service.findObjects(
         login={
-            'username': username,
-            'password': password,
-            'applicationkey': key,
+            "username": username,
+            "password": password,
+            "applicationkey": key,
         },
         type=type,
         numberofobjects=1,
@@ -82,9 +83,9 @@ def get_objects_all(type):
 
 
 def unpack_object(o):
-    res = {'id': o['extid']}
-    for f in o['fields']['field']:
-        res[f['extid']] = f['value'][0]
+    res = {"id": o["extid"]}
+    for f in o["fields"]["field"]:
+        res[f["extid"]] = f["value"][0]
     return res
 
 
@@ -92,11 +93,11 @@ def get_reservations_all(type, id):
     """Get all reservations for a given object."""
     n = client.service.findReservations(
         login={
-            'username': username,
-            'password': password,
-            'applicationkey': key,
+            "username": username,
+            "password": password,
+            "applicationkey": key,
         },
-        searchobjects={'object': [{'type': type, 'extid': id}]},
+        searchobjects={"object": [{"type": type, "extid": id}]},
         numberofreservations=1,
     ).totalnumberofreservations
 
@@ -106,11 +107,11 @@ def get_reservations_all(type, id):
     for i in range(num_pages):
         page = client.service.findReservations(
             login={
-                'username': username,
-                'password': password,
-                'applicationkey': key,
+                "username": username,
+                "password": password,
+                "applicationkey": key,
             },
-            searchobjects={'object': [{'type': type, 'extid': id}]},
+            searchobjects={"object": [{"type": type, "extid": id}]},
             # TODO: Returntypes should be configurable. Some base values should
             # be used for title and location, configurable values should be
             # concatenated to form event description. Configure this from web
@@ -118,40 +119,40 @@ def get_reservations_all(type, id):
             # TODO: Use English (e.g. `courseevt.coursename_eng`) for some
             # users? Or configurable for entire course instance.
             returntypes={
-                'typefield': [
+                "typefield": [
                     {
-                        'type': 'person_staff',
-                        'field': ['person.id', 'person.fullname'],
+                        "type": "person_staff",
+                        "field": ["person.id", "person.fullname"],
                     },
                     {
-                        'type': 'courseevt',
-                        'field': [
-                            'courseevt.uniqueid',
-                            'courseevt.coursename',
-                            'courseevt.coursename_eng',
+                        "type": "courseevt",
+                        "field": [
+                            "courseevt.uniqueid",
+                            "courseevt.coursename",
+                            "courseevt.coursename_eng",
                         ],
                     },
-                    {'type': 'activity', 'field': ['activity.id']},
-                    {'type': 'room', 'field': ['room.name']},
+                    {"type": "activity", "field": ["activity.id"]},
+                    {"type": "room", "field": ["room.name"]},
                 ]
             },
             numberofreservations=1000,
             beginindex=i * 1000,
-        )['reservations']['reservation']
+        )["reservations"]["reservation"]
         res += page
     return list(map(unpack_reservation, res))
 
 
 def unpack_reservation(r):
-    date_format = '%Y%m%dT%H%M%S'
+    date_format = "%Y%m%dT%H%M%S"
     res = {
-        'id': r['id'],
-        'start_at': datetime.strptime(r['begin'], date_format),
-        'end_at': datetime.strptime(r['end'], date_format),
-        'length': r['length'],
-        'modified': r['modified'],
+        "id": r["id"],
+        "start_at": datetime.strptime(r["begin"], date_format),
+        "end_at": datetime.strptime(r["end"], date_format),
+        "length": r["length"],
+        "modified": r["modified"],
     }
-    for o in r['objects']['object']:
+    for o in r["objects"]["object"]:
         type, fields = unpack_fields(o)
         res[type] = fields
     return res
@@ -160,8 +161,8 @@ def unpack_reservation(r):
 def unpack_fields(object: dict) -> (str, dict[str, str]):
     """Takes a TimeEdit `object`. Return the object `type` and all its fields packed in a dict."""
     res = {}
-    res['id'] = object['extid']
-    for f in object['fields']['field']:
+    res["id"] = object["extid"]
+    for f in object["fields"]["field"]:
         # NOTE: Assumption that there is only one value per field
-        res[f['extid']] = f['value'][0]
-    return object['type'], res
+        res[f["extid"]] = f["value"][0]
+    return object["type"], res
