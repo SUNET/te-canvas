@@ -89,7 +89,7 @@ def unpack_object(o):
     return res
 
 
-def get_reservations_all(type, id):
+def get_reservations_all(id):
     """Get all reservations for a given object."""
     n = client.service.findReservations(
         login={
@@ -97,7 +97,7 @@ def get_reservations_all(type, id):
             "password": password,
             "applicationkey": key,
         },
-        searchobjects={"object": [{"type": type, "extid": id}]},
+        searchobjects={"object": [{"extid": id}]},
         numberofreservations=1,
     ).totalnumberofreservations
 
@@ -111,7 +111,7 @@ def get_reservations_all(type, id):
                 "password": password,
                 "applicationkey": key,
             },
-            searchobjects={"object": [{"type": type, "extid": id}]},
+            searchobjects={"object": [{"extid": id}]},
             # TODO: Returntypes should be configurable. Some base values should
             # be used for title and location, configurable values should be
             # concatenated to form event description. Configure this from web
