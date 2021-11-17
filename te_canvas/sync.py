@@ -11,19 +11,19 @@ def sync_job():
     with sqla_session() as session:
         for c in session.query(Connection):
             logger.info(
-                f"Syncing from TimeEdit: {c.te_group} to Canvas: {c.canvas_group}"
+                f"Syncing from TimeEdit: {c.te_groups} to Canvas: {c.canvas_group}"
             )
 
             # Remove all events previously added by us
             for row in session.query(Event).filter(
-                Event.te_group == c.te_group and Event.canvas_group == c.canvas_group
+                Event.canvas_group == c.canvas_group
             ):
                 if not canvas.delete_event(row.canvas_id):
                     break
 
             # Clear database
             session.query(Event).filter(
-                Event.te_group == c.te_group and Event.canvas_group == c.canvas_group
+                Event.canvas_group == c.canvas_group
             ).delete()
 
             # If the connection has been flagged for deletion
@@ -32,7 +32,7 @@ def sync_job():
                 continue
 
             # Push to Canvas and add to database
-            for r in te.get_reservations_all(c.te_group):
+            for r in te.get_reservations_all(c.te_groups):
                 # TODO: Use configured values to create description.
                 canvas_event = canvas.create_event(
                     {
@@ -57,7 +57,6 @@ def sync_job():
                     Event(
                         te_id=r["id"],
                         canvas_id=canvas_event.id,
-                        te_group=c.te_group,
                         canvas_group=c.canvas_group,
                     )
                 )

@@ -1,6 +1,7 @@
 from flask import request
 from flask_restx import Resource, Namespace, fields, reqparse
-from sqlalchemy.exc import SQLAlchemyError, NoResultFound
+from sqlalchemy.exc import SQLAlchemyError, NoResultFound, IntegrityError
+from psycopg2.errors import UniqueViolation
 
 import te_canvas.db.model as db
 import te_canvas.log as log
@@ -19,27 +20,47 @@ connection_api = Namespace(
 class ConnectionApi(Resource):
 
     # NOTE: Will be deprecated in flask-restx 2.0
-    id_parser = reqparse.RequestParser()
-    id_parser.add_argument("te_group", type=str, required=True)
-    id_parser.add_argument("canvas_group", type=str, required=True)
 
-    @connection_api.param("te_group", "TimeEdit group ID")
+    # --- POST ----
+    #
+    # If a Connection exists for canvas_group this is a NO-OP.
+    #
+
+    post_parser = reqparse.RequestParser()
+    post_parser.add_argument("canvas_group", type=str, required=True)
+    post_parser.add_argument("te_groups", type=str, required=True)
+
     @connection_api.param("canvas_group", "Canvas group ID")
+    @connection_api.param("te_groups", "TimeEdit group IDs (comma separated)")
     def post(self):
-        args = self.id_parser.parse_args(strict=True)
+        args = self.post_parser.parse_args(strict=True)
         try:
-            db.add_connection(args.te_group, args.canvas_group)
+            db.add_connection(args.canvas_group, args.te_groups.split(","))
+        except IntegrityError as e:
+            if not isinstance(e.orig, UniqueViolation):
+                logger.error(e)
+                return {"status": "failure"}, 500
+
+            return {
+                "status": "unchanged",
+                "message": f"Connection for {args.canvas_group} already exists.",
+            }
         except SQLAlchemyError as e:
             logger.error(e)
             return {"status": "failure"}, 500
         return {"status": "success"}
 
-    @connection_api.param("te_group", "TimeEdit group ID")
+    # --- DELETE ----
+    #
+
+    delete_parser = reqparse.RequestParser()
+    delete_parser.add_argument("canvas_group", type=str, required=True)
+
     @connection_api.param("canvas_group", "Canvas group ID")
     def delete(self):
-        args = self.id_parser.parse_args(strict=True)
+        args = self.delete_parser.parse_args(strict=True)
         try:
-            db.delete_connection(args.te_group, args.canvas_group)
+            db.delete_connection(args.canvas_group)
         except NoResultFound:
             return {"status": "unchanged", "message": "Connection not found."}
             # (?): Also return a different status code than 200?
@@ -50,12 +71,15 @@ class ConnectionApi(Resource):
             return {"status": "failure"}, 500
         return {"status": "success"}
 
+    # --- GET ----
+    #
+
     def get(self):
         try:
             data = {
                 "status": "success",
                 "data": [
-                    {"te_group": x, "canvas_group": y, "delete_flag": z}
+                    {"canvas_group": x, "te_groups": y, "delete_flag": z}
                     for (x, y, z) in db.get_connections()
                 ],
             }
