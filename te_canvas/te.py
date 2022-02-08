@@ -44,7 +44,7 @@ def unpack_type(t):
 
 
 # TODO: Add returnFields parameter, populate from getAlFields?
-def get_objects(type, number_of_objects, begin_index):
+def get_objects(type, number_of_objects, begin_index, search_string):
     """Get max 1000 objects of a given type."""
     resp = client.service.findObjects(
         login={
@@ -55,13 +55,15 @@ def get_objects(type, number_of_objects, begin_index):
         type=type,
         numberofobjects=number_of_objects,
         beginindex=begin_index,
+        generalsearchfields=["general.id"],
+        generalsearchstring=search_string,
     )
     if resp.objects is None:
         return []
     return list(map(unpack_object, resp["objects"]["object"]))
 
 
-def get_objects_all(type):
+def get_objects_all(type, search_string):
     """Get all objects of a given type."""
     n = client.service.findObjects(
         login={
@@ -77,7 +79,7 @@ def get_objects_all(type):
 
     res = []
     for i in range(num_pages):
-        page = get_objects(type, 1000, i * 1000)
+        page = get_objects(type, 1000, i * 1000, search_string)
         res += page
     return res
 

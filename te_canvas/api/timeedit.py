@@ -19,20 +19,24 @@ class Objects(Resource):
     parser.add_argument("type", type=str, required=True)
     parser.add_argument("number_of_objects", type=int)
     parser.add_argument("begin_index", type=int)
+    parser.add_argument("search_string", type=str)
 
     @timeedit_api.param("type", "Type of object to get.")
     @timeedit_api.param("number_of_objects", "Number of objects to return, max 1000.")
     @timeedit_api.param("begin_index", "Starting index of requested object sequence.")
+    @timeedit_api.param("search_string", "general.id must contain this string")
     def get(self):
         args = self.parser.parse_args(strict=True)
         type = args["type"]
         n = args["number_of_objects"]
         i = args["begin_index"]
+        s = args["search_string"]
         if n or i:
-            data = get_objects(type, n or 1000, i or 0)
+            data = get_objects(type, n or 1000, i or 0, s)
         else:
-            data = get_objects_all(type)
+            data = get_objects_all(type, s)
 
+        # TODO: Error handling
         return {"status": "success", "data": data}
 
 
