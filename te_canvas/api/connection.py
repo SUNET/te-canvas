@@ -23,19 +23,19 @@ class ConnectionApi(Resource):
 
     # --- POST ----
     #
-    # If a Connection exists for canvas_group this is a NO-OP.
+    # If a Connection exists for canvas_group and te_group this is a NO-OP.
     #
 
     post_parser = reqparse.RequestParser()
     post_parser.add_argument("canvas_group", type=str, required=True)
-    post_parser.add_argument("te_groups", type=str, required=True)
+    post_parser.add_argument("te_group", type=str, required=True)
 
     @connection_api.param("canvas_group", "Canvas group ID")
-    @connection_api.param("te_groups", "TimeEdit group IDs (comma separated)")
+    @connection_api.param("te_group", "TimeEdit group ID")
     def post(self):
         args = self.post_parser.parse_args(strict=True)
         try:
-            db.add_connection(args.canvas_group, args.te_groups.split(","))
+            db.add_connection(args.canvas_group, args.te_group)
         except IntegrityError as e:
             if not isinstance(e.orig, UniqueViolation):
                 logger.error(e)
@@ -43,7 +43,7 @@ class ConnectionApi(Resource):
 
             return {
                 "status": "unchanged",
-                "message": f"Connection for {args.canvas_group} already exists.",
+                "message": f"Connection ({args.canvas_group}, {args.te_group}) already exists.",
             }
         except SQLAlchemyError as e:
             logger.error(e)
@@ -55,12 +55,14 @@ class ConnectionApi(Resource):
 
     delete_parser = reqparse.RequestParser()
     delete_parser.add_argument("canvas_group", type=str, required=True)
+    post_parser.add_argument("te_group", type=str, required=True)
 
     @connection_api.param("canvas_group", "Canvas group ID")
+    @connection_api.param("te_group", "TimeEdit group ID")
     def delete(self):
         args = self.delete_parser.parse_args(strict=True)
         try:
-            db.delete_connection(args.canvas_group)
+            db.delete_connection(args.canvas_group, args.te_group)
         except NoResultFound:
             return {"status": "unchanged", "message": "Connection not found."}
             # (?): Also return a different status code than 200?
@@ -79,7 +81,7 @@ class ConnectionApi(Resource):
             data = {
                 "status": "success",
                 "data": [
-                    {"canvas_group": x, "te_groups": y, "delete_flag": z}
+                    {"canvas_group": x, "te_group": y, "delete_flag": z}
                     for (x, y, z) in db.get_connections()
                 ],
             }
