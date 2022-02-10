@@ -82,7 +82,7 @@ def find_objects_all(type, search_string):
 
 
 def unpack_object(o):
-    res = {"id": o["extid"]}
+    res = {"extid": o["extid"]}
     for f in o["fields"]["field"]:
         res[f["extid"]] = f["value"][0]
     return res
@@ -102,13 +102,13 @@ def get_object(extid: str):
     res = list(map(unpack_object, resp))[0]
     print(res)
     types = find_types_all()
-    type_id = res["id"].split("_")[0] # NOTE: Assumption that external id is of form <type>_id
+    type_id = res["extid"].split("_")[0] # NOTE: Assumption that external id is of form <type>_id
     res["type.id"] = type_id
     res["type.name"] = types[type_id]
     return res
 
 
-def find_reservations_all(ids):
+def find_reservations_all(extids):
     """Get all reservations for a given set of objects."""
     n = client.service.findReservations(
         login={
@@ -116,7 +116,7 @@ def find_reservations_all(ids):
             "password": password,
             "applicationkey": key,
         },
-        searchobjects={"object": [{"extid": id} for id in ids]},
+        searchobjects={"object": [{"extid": id} for id in extids]},
         numberofreservations=1,
     ).totalnumberofreservations
 
@@ -130,7 +130,7 @@ def find_reservations_all(ids):
                 "password": password,
                 "applicationkey": key,
             },
-            searchobjects={"object": [{"extid": id} for id in ids]},
+            searchobjects={"object": [{"extid": id} for id in extids]},
             # TODO: Returntypes should be configurable. Some base values should
             # be used for title and location, configurable values should be
             # concatenated to form event description. Configure this from web
