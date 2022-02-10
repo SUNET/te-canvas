@@ -88,6 +88,26 @@ def unpack_object(o):
     return res
 
 
+def get_object_by_id(extid: str):
+    """Get a specific object based on external id."""
+    # NOTE: API says that this returns an array of objects, but only the first extid is used.
+    resp = client.service.getObjects(
+        login={
+            "username": username,
+            "password": password,
+            "applicationkey": key,
+        },
+        objects=[extid]
+    )
+    res = list(map(unpack_object, resp))[0]
+    print(res)
+    types = get_types_all()
+    type_id = res["id"].split("_")[0] # NOTE: Assumption that external id is of form <type>_id
+    res["type.id"] = type_id
+    res["type.name"] = types[type_id]
+    return res
+
+
 def get_reservations_all(ids):
     """Get all reservations for a given set of objects."""
     n = client.service.findReservations(

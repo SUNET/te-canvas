@@ -2,7 +2,7 @@ from flask import request
 from flask_restx import Resource, Namespace, fields, reqparse
 from sqlalchemy.exc import DBAPIError
 
-from te_canvas.te import get_objects, get_objects_all, get_types_all
+from te_canvas.te import get_objects, get_objects_all, get_types_all, get_object_by_id
 import te_canvas.log as log
 
 logger = log.get_logger()
@@ -40,10 +40,23 @@ class Objects(Resource):
         return {"status": "success", "data": data}
 
 
+class Object(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument("extid", type=str, required=True)
+    @timeedit_api.param("extid", "External id.")
+    def get(self):
+        args = self.parser.parse_args(strict=True)
+        extid = args["extid"]
+        data = get_object_by_id(extid)
+
+        # TODO: Error handling
+        return {"status": "success", "data": data}
+
 class Types(Resource):
     def get(self):
         return {"status": "success", "data": get_types_all()}
 
 
 timeedit_api.add_resource(Objects, "/objects")
+timeedit_api.add_resource(Object, "/object")
 timeedit_api.add_resource(Types, "/types")
