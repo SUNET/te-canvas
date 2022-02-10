@@ -36,11 +36,7 @@ def get_types_all():
         },
         ignorealias=False,
     )
-    return list(map(unpack_type, res))
-
-
-def unpack_type(t):
-    return {"id": t["extid"], "name": t["name"]}
+    return { t["extid"]: t["name"] for t in res }
 
 
 # TODO: Add returnFields parameter, populate from getAlFields?
