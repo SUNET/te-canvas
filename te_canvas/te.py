@@ -53,7 +53,7 @@ def get_objects(type, number_of_objects, begin_index, search_string):
         beginindex=begin_index,
         generalsearchfields=["general.id"],
         generalsearchstring=search_string,
-        returnfields=["general.id"]
+        returnfields=["general.id", "general.title"]
     )
     if resp.objects is None:
         return []
