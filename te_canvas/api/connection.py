@@ -55,7 +55,7 @@ class ConnectionApi(Resource):
 
     delete_parser = reqparse.RequestParser()
     delete_parser.add_argument("canvas_group", type=str, required=True)
-    post_parser.add_argument("te_group", type=str, required=True)
+    delete_parser.add_argument("te_group", type=str, required=True)
 
     @connection_api.param("canvas_group", "Canvas group ID")
     @connection_api.param("te_group", "TimeEdit group ID")
@@ -65,7 +65,6 @@ class ConnectionApi(Resource):
             db.delete_connection(args.canvas_group, args.te_group)
         except NoResultFound:
             return {"status": "unchanged", "message": "Connection not found."}
-            # (?): Also return a different status code than 200?
         except SQLAlchemyError as e:
             # Includes if multiple connections were found with the same ID pair,
             # in which case one() raises MultipleResultsFound.
