@@ -2,7 +2,7 @@ from flask import request
 from flask_restx import Resource, Namespace, fields, reqparse
 from sqlalchemy.exc import DBAPIError
 
-from te_canvas.te import get_objects, get_objects_all, get_types_all, get_object_by_id
+from te_canvas.te import find_objects, find_objects_all, find_types_all, get_object
 import te_canvas.log as log
 
 logger = log.get_logger()
@@ -32,9 +32,9 @@ class Objects(Resource):
         i = args["begin_index"]
         s = args["search_string"]
         if n or i:
-            data = get_objects(type, n or 1000, i or 0, s)
+            data = find_objects(type, n or 1000, i or 0, s)
         else:
-            data = get_objects_all(type, s)
+            data = find_objects_all(type, s)
 
         # TODO: Error handling
         return {"status": "success", "data": data}
@@ -47,14 +47,14 @@ class Object(Resource):
     def get(self):
         args = self.parser.parse_args(strict=True)
         extid = args["extid"]
-        data = get_object_by_id(extid)
+        data = get_object(extid)
 
         # TODO: Error handling
         return {"status": "success", "data": data}
 
 class Types(Resource):
     def get(self):
-        return {"status": "success", "data": get_types_all()}
+        return {"status": "success", "data": find_types_all()}
 
 
 timeedit_api.add_resource(Objects, "/objects")

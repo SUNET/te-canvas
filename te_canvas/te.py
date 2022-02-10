@@ -27,7 +27,7 @@ except ConnectionError:
     sys.exit(-1)
 
 
-def get_types_all():
+def find_types_all():
     res = client.service.findTypes(
         login={
             "username": username,
@@ -40,7 +40,7 @@ def get_types_all():
 
 
 # TODO: Add returnFields parameter, populate from getAlFields?
-def get_objects(type, number_of_objects, begin_index, search_string):
+def find_objects(type, number_of_objects, begin_index, search_string):
     """Get max 1000 objects of a given type."""
     resp = client.service.findObjects(
         login={
@@ -60,7 +60,7 @@ def get_objects(type, number_of_objects, begin_index, search_string):
     return list(map(unpack_object, resp["objects"]["object"]))
 
 
-def get_objects_all(type, search_string):
+def find_objects_all(type, search_string):
     """Get all objects of a given type."""
     n = client.service.findObjects(
         login={
@@ -76,7 +76,7 @@ def get_objects_all(type, search_string):
 
     res = []
     for i in range(num_pages):
-        page = get_objects(type, 1000, i * 1000, search_string)
+        page = find_objects(type, 1000, i * 1000, search_string)
         res += page
     return res
 
@@ -88,7 +88,7 @@ def unpack_object(o):
     return res
 
 
-def get_object_by_id(extid: str):
+def get_object(extid: str):
     """Get a specific object based on external id."""
     # NOTE: API says that this returns an array of objects, but only the first extid is used.
     resp = client.service.getObjects(
@@ -101,14 +101,14 @@ def get_object_by_id(extid: str):
     )
     res = list(map(unpack_object, resp))[0]
     print(res)
-    types = get_types_all()
+    types = find_types_all()
     type_id = res["id"].split("_")[0] # NOTE: Assumption that external id is of form <type>_id
     res["type.id"] = type_id
     res["type.name"] = types[type_id]
     return res
 
 
-def get_reservations_all(ids):
+def find_reservations_all(ids):
     """Get all reservations for a given set of objects."""
     n = client.service.findReservations(
         login={
