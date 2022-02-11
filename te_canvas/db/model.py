@@ -38,7 +38,7 @@ def delete_connection(canvas_group: str, te_group: str):
         ).one().delete_flag = True
 
 
-def get_connections() -> [(str, str, bool)]:
+def get_connections() -> list[tuple[str, str, bool]]:
     with sqla_session() as session:
         # NOTE: We cannot return a list of Connection here, since the Session
         # they are connected to is closed at end of this block.
