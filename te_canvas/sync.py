@@ -21,15 +21,13 @@ def sync_job():
                 print(f"Event: {event.canvas_id}")
                 # canvas.delete_event(canvas_id)
 
-            # Clear database
+            # Clear deleted events
             session.query(Event).filter(Event.canvas_group == canvas_group).delete()
 
-            # Recalculate TimeEdit connections for canvas_group
-            for connection in session.query(Connection).filter(
-                Connection.canvas_group == canvas_group
-            ):
-                if connection.delete_flag:
-                    session.delete(connection)
+            # Delete flagged connections
+            session.query(Connection).filter(
+                Connection.canvas_group == canvas_group and Connection.delete_flag
+            ).delete()
 
             # Push to Canvas and add to database
             te_groups = (
