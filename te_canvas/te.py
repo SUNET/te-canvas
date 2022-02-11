@@ -177,7 +177,7 @@ def unpack_reservation(r):
     return res
 
 
-def unpack_fields(object: dict) -> (str, dict[str, str]):
+def unpack_fields(object: dict) -> tuple[str, dict[str, str]]:
     """Takes a TimeEdit `object`. Return the object `type` and all its fields packed in a dict."""
     res = {}
     res["id"] = object["extid"]
