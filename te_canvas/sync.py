@@ -7,36 +7,41 @@ from te_canvas.db.model import Connection, Event
 logger = log.get_logger()
 
 
+# TODO: Error handling
 def sync_job():
     with sqla_session() as session:
-        for c in session.query(Connection):
-            logger.info(
-                f"Syncing from TimeEdit: {c.te_groups} to Canvas: {c.canvas_group}"
-            )
+        # Note the comma!
+        for (canvas_group,) in session.query(Connection.canvas_group).distinct():
+            print(f"Canvas group: {canvas_group}")
 
-            # Remove all events previously added by us
-            for row in session.query(Event).filter(
-                Event.canvas_group == c.canvas_group
+            # Remove all events previously added by us to this Canvas group
+            for event in session.query(Event).filter(
+                Event.canvas_group == canvas_group
             ):
-                if not canvas.delete_event(row.canvas_id):
-                    break
+                print(f"Event: {event.canvas_id}")
+                # canvas.delete_event(canvas_id)
 
             # Clear database
-            session.query(Event).filter(
-                Event.canvas_group == c.canvas_group
-            ).delete()
+            session.query(Event).filter(Event.canvas_group == canvas_group).delete()
 
-            # If the connection has been flagged for deletion
-            if c.delete_flag:
-                session.delete(c)
-                continue
+            # Recalculate TimeEdit connections for canvas_group
+            for connection in session.query(Connection).filter(
+                Connection.canvas_group == canvas_group
+            ):
+                if connection.delete_flag:
+                    session.delete(connection)
 
             # Push to Canvas and add to database
-            for r in te.find_reservations_all(c.te_groups):
+            te_groups = (
+                session.query(Connection.te_group)
+                .filter(Connection.canvas_group == canvas_group)
+                .all()
+            )
+            for r in te.find_reservations_all(te_groups):
                 # TODO: Use configured values to create description.
                 canvas_event = canvas.create_event(
                     {
-                        "context_code": f"course_{c.canvas_group}",
+                        "context_code": f"course_{canvas_group}",
                         "title": r["activity"]["activity.id"],
                         "location_name": r["room"]["room.name"],
                         "description": "<br>".join(
@@ -50,13 +55,10 @@ def sync_job():
                     }
                 )
 
-                if not canvas_event:
-                    break
-
                 session.add(
                     Event(
                         te_id=r["id"],
                         canvas_id=canvas_event.id,
-                        canvas_group=c.canvas_group,
+                        canvas_group=canvas_group,
                     )
                 )
