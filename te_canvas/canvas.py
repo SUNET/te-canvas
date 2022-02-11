@@ -30,7 +30,7 @@ def get_courses_all():
     return courses
 
 
-def create_event(event) -> CalendarEvent:
+def create_event(event: dict) -> CalendarEvent:
     return canvas.create_calendar_event(event)
 
 
