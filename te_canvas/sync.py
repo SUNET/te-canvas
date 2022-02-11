@@ -20,9 +20,8 @@ def sync_job():
             for event in session.query(Event).filter(
                 Event.canvas_group == canvas_group
             ):
-                # ASSUME: If this event does not exist on Canvas, this is a NOOP
-                # and no exception is raised.
-                # TODO: Verify this assumption.
+                # If this event does not exist on Canvas, this is a NOOP and no
+                # exception is raised.
                 canvas.delete_event(event.canvas_id)
 
             # Clear deleted events

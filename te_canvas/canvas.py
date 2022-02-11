@@ -3,6 +3,7 @@ import sys
 
 from canvasapi import Canvas
 from canvasapi.calendar_event import CalendarEvent
+from canvasapi.exceptions import ResourceDoesNotExist
 
 from te_canvas.log import get_logger
 
@@ -33,5 +34,10 @@ def create_event(event) -> CalendarEvent:
     return canvas.create_calendar_event(event)
 
 
-def delete_event(id):
-    return canvas.get_calendar_event(id).delete()
+# If the event does not exist on Canvas, this is a NOOP and no exception is
+# raised.
+def delete_event(id: int):
+    try:
+        canvas.get_calendar_event(id).delete()
+    except ResourceDoesNotExist:
+        pass
