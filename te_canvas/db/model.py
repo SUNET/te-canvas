@@ -6,8 +6,7 @@ from te_canvas.db.session import Base, sqla_session, engine
 #
 # Data model
 #
-# Connections from TimeEdit to Canvas are many-to-one. A Canvas group have at
-# most one connection. So `canvas_group` is a unique identifier for connections.
+# Connections from TimeEdit to Canvas are many-to-many.
 #
 
 
