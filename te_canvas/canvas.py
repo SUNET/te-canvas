@@ -2,6 +2,7 @@ import os
 import sys
 
 from canvasapi import Canvas
+from canvasapi.calendar_event import CalendarEvent
 
 from te_canvas.log import get_logger
 
@@ -28,7 +29,7 @@ def get_courses_all():
     return courses
 
 
-def create_event(event):
+def create_event(event) -> CalendarEvent | None:
     try:
         calendar_event = canvas.create_calendar_event(event)
     except Exception:
