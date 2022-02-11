@@ -29,22 +29,9 @@ def get_courses_all():
     return courses
 
 
-def create_event(event) -> CalendarEvent | None:
-    try:
-        calendar_event = canvas.create_calendar_event(event)
-    except Exception:
-        logger.error("Failed to create calendar event on Canvas.")
-        return None
-
-    return calendar_event
+def create_event(event) -> CalendarEvent:
+    return canvas.create_calendar_event(event)
 
 
 def delete_event(id):
-    # TODO: Do this using one request
-    try:
-        calendar_event = canvas.get_calendar_event(id).delete()
-    except Exception:
-        logger.error("Failed to remove calendar event from Canvas.")
-        return None
-
-    return calendar_event
+    return canvas.get_calendar_event(id).delete()

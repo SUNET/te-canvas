@@ -7,19 +7,23 @@ from te_canvas.db.model import Connection, Event
 logger = log.get_logger()
 
 
-# TODO: Error handling
+# Invariant 1: Events in database is a superset of (our) events on Canvas.
+# Invariant 2: For every event e in the database, there exists a connection c s.t.
+#              c.canvas_group = e.canvas_group and
+#              c.te_group = e.te_group.
 def sync_job():
-    with sqla_session() as session:
+    with sqla_session() as session:  # Any exception -> session.rollback()
         # Note the comma!
         for (canvas_group,) in session.query(Connection.canvas_group).distinct():
-            print(f"Canvas group: {canvas_group}")
 
             # Remove all events previously added by us to this Canvas group
             for event in session.query(Event).filter(
                 Event.canvas_group == canvas_group
             ):
-                print(f"Event: {event.canvas_id}")
-                # canvas.delete_event(canvas_id)
+                # ASSUME: If this event does not exist on Canvas, this is a NOOP
+                # and no exception is raised.
+                # TODO: Verify this assumption.
+                canvas.delete_event(event.canvas_id)
 
             # Clear deleted events
             session.query(Event).filter(Event.canvas_group == canvas_group).delete()
@@ -36,27 +40,30 @@ def sync_job():
                 .all()
             )
             for r in te.find_reservations_all(te_groups):
-                # TODO: Use configured values to create description.
-                canvas_event = canvas.create_event(
-                    {
-                        "context_code": f"course_{canvas_group}",
-                        "title": r["activity"]["activity.id"],
-                        "location_name": r["room"]["room.name"],
-                        "description": "<br>".join(
-                            [
-                                r["courseevt"]["courseevt.coursename"],
-                                r["person_staff"]["person.fullname"],
-                            ]
-                        ),
-                        "start_at": r["start_at"],
-                        "end_at": r["end_at"],
-                    }
-                )
-
-                session.add(
-                    Event(
-                        te_id=r["id"],
-                        canvas_id=canvas_event.id,
-                        canvas_group=canvas_group,
+                # Try/finally ensures invariant 1.
+                try:
+                    # TODO: Use configured values to create description.
+                    canvas_event = canvas.create_event(
+                        {
+                            "context_code": f"course_{canvas_group}",
+                            "title": r["activity"]["activity.id"],
+                            "location_name": r["room"]["room.name"],
+                            "description": "<br>".join(
+                                [
+                                    r["courseevt"]["courseevt.coursename"],
+                                    r["person_staff"]["person.fullname"],
+                                ]
+                            ),
+                            "start_at": r["start_at"],
+                            "end_at": r["end_at"],
+                        }
                     )
-                )
+                finally:
+                    session.add(
+                        Event(
+                            te_id=r["id"],
+                            canvas_id=canvas_event.id,
+                            canvas_group=canvas_group,
+                        )
+                    )
+                    raise
