@@ -7,7 +7,7 @@ version_api = Namespace("version", description="Version API", prefix="/api")
 
 class VersionApi(Resource):
     def get(self):
-        return {"status": "success", "data": {"version": "v0.0.1"}}
+        return "v0.0.1"
 
 
 version_api.add_resource(VersionApi, "")

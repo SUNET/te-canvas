@@ -16,11 +16,8 @@ canvas_api = Namespace(
 
 class Courses(Resource):
     def get(self):
-        try:
-            data = get_courses_all()
-        except Exception:
-            return {"status": "failure"}, 500
-        return {"status": "success", "data": [c.id for c in data]}
+        data = get_courses_all()
+        return [c.id for c in data]
 
 
 canvas_api.add_resource(Courses, "/courses")

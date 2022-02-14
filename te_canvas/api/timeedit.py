@@ -35,9 +35,7 @@ class Objects(Resource):
             data = find_objects(type, n or 1000, i or 0, s)
         else:
             data = find_objects_all(type, s)
-
-        # TODO: Error handling
-        return {"status": "success", "data": data}
+        return data
 
 
 class Object(Resource):
@@ -47,14 +45,11 @@ class Object(Resource):
     def get(self):
         args = self.parser.parse_args(strict=True)
         extid = args["extid"]
-        data = get_object(extid)
-
-        # TODO: Error handling
-        return {"status": "success", "data": data}
+        return get_object(extid)
 
 class Types(Resource):
     def get(self):
-        return {"status": "success", "data": find_types_all()}
+        return find_types_all()
 
 
 timeedit_api.add_resource(Objects, "/objects")

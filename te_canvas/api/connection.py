@@ -37,18 +37,14 @@ class ConnectionApi(Resource):
         try:
             db.add_connection(args.canvas_group, args.te_group)
         except IntegrityError as e:
-            if not isinstance(e.orig, UniqueViolation):
-                logger.error(e)
-                return {"status": "failure"}, 500
-
-            return {
-                "status": "unchanged",
-                "message": f"Connection ({args.canvas_group}, {args.te_group}) already exists.",
-            }
-        except SQLAlchemyError as e:
-            logger.error(e)
-            return {"status": "failure"}, 500
-        return {"status": "success"}
+            # This conditional required to go from sqlalchemy's wrapper
+            # IntegrityError to psycopg2-specific UniqueViolation.
+            if isinstance(e.orig, UniqueViolation):
+                return {
+                    "message": f"Connection ({args.canvas_group}, {args.te_group}) already exists.",
+                }, 409
+            raise
+        return "", 204
 
     # --- DELETE ----
     #
@@ -64,31 +60,21 @@ class ConnectionApi(Resource):
         try:
             db.delete_connection(args.canvas_group, args.te_group)
         except NoResultFound:
-            return {"status": "unchanged", "message": "Connection not found."}
-        except SQLAlchemyError as e:
-            # Includes if multiple connections were found with the same ID pair,
-            # in which case one() raises MultipleResultsFound.
-            logger.error(e)
-            return {"status": "failure"}, 500
-        return {"status": "success"}
+            return {"message": "Connection not found."}, 400
+        # We raise the rest of exceptions. This includes the case where multiple
+        # connections were found with the same ID pair, in which case one()
+        # raises MultipleResultsFound.
+
+        return "", 204
 
     # --- GET ----
     #
 
     def get(self):
-        try:
-            data = {
-                "status": "success",
-                "data": [
-                    {"canvas_group": x, "te_group": y, "delete_flag": z}
-                    for (x, y, z) in db.get_connections()
-                ],
-            }
-        except SQLAlchemyError as e:
-            logger.error(e)
-            data = {"status": "failure"}, 500
-
-        return data
+        return {
+            {"canvas_group": x, "te_group": y, "delete_flag": z}
+            for (x, y, z) in db.get_connections()
+        }
 
 
 connection_api.add_resource(ConnectionApi, "")
