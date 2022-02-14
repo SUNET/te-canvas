@@ -22,7 +22,7 @@ except Exception as e:
 try:
     client = zeep.Client(wsdl)
     key = client.service.register(cert).applicationkey
-except ConnectionError:
+except Exception:
     logger.error(f'TimeEdit connection to "{wsdl}" failed, exiting.')
     sys.exit(-1)
 
