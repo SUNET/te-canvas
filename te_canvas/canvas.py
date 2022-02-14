@@ -20,14 +20,8 @@ canvas = Canvas(url, key)
 
 
 def get_courses_all():
-    try:
-        root_user = canvas.get_account(1)
-        courses = list(root_user.get_courses())
-    except Exception:
-        logger.error("Failed to get account 1 courses from Canvas.")
-        return None
-
-    return courses
+    root_user = canvas.get_account(1)
+    return list(root_user.get_courses())
 
 
 def create_event(event: dict) -> CalendarEvent:
