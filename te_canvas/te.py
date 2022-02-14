@@ -36,7 +36,9 @@ def find_types_all():
         },
         ignorealias=False,
     )
-    return { t["extid"]: t["name"] for t in res }
+    if len(res) == 0:
+        logger.warning("te.find_types_all() returned 0 types.")
+    return {t["extid"]: t["name"] for t in res}
 
 
 # TODO: Add returnFields parameter, populate from getAlFields?
@@ -56,6 +58,8 @@ def find_objects(type, number_of_objects, begin_index, search_string):
         returnfields=["general.id", "general.title"]
     )
     if resp.objects is None:
+        # Can't really warn about this generally since this endpoint is used for searching.
+        # logger.warning("te.find_objects(${type}, ${number_of_objects}, ${begin_index}, ${search_string}) returned 0 objects.")
         return []
     return list(map(unpack_object, resp["objects"]["object"]))
 
@@ -159,6 +163,8 @@ def find_reservations_all(extids):
             beginindex=i * 1000,
         )["reservations"]["reservation"]
         res += page
+    if len(res) == 0:
+        logger.warning(f"te.find_reservations_all({extids}) returned 0 reservations.")
     return list(map(unpack_reservation, res))
 
 

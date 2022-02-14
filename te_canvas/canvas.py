@@ -21,8 +21,10 @@ canvas = Canvas(url, key)
 
 def get_courses_all():
     root_user = canvas.get_account(1)
-    return list(root_user.get_courses())
-
+    res = list(root_user.get_courses())
+    if len(res) == 0:
+        logger.warning("canvas.get_courses_all() returned 0 courses.")
+    return res
 
 def create_event(event: dict) -> CalendarEvent:
     return canvas.create_calendar_event(event)
