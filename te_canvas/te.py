@@ -15,7 +15,7 @@ try:
     username = os.environ["TE_USERNAME"]
     password = os.environ["TE_PASSWORD"]
 except Exception as e:
-    logger.debug(f"Failed to load configuration: {e}")
+    logger.debug(f"Failed to load configuration: {e}, exiting.")
     sys.exit(-1)
 
 

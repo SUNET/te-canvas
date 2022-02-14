@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import unittest
 
 import canvasapi
@@ -12,7 +11,7 @@ try:
     url = os.environ["CANVAS_URL"]
     key = os.environ["CANVAS_KEY"]
 except Exception as e:
-    print(f"Failed to load configuration: {e}")
+    print(f"Failed to load configuration: {e}, exiting.")
     sys.exit(-1)
 
 canvas = canvasapi.Canvas(url, key)
