@@ -103,6 +103,8 @@ def get_object(extid: str):
         },
         objects=[extid]
     )
+    if resp is None:
+        return {"message": f"Object {extid} not found"}, 404
     res = list(map(unpack_object, resp))[0]
     print(res)
     types = find_types_all()
