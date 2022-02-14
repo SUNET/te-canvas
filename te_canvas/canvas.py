@@ -13,7 +13,7 @@ try:
     url = os.environ["CANVAS_URL"]
     key = os.environ["CANVAS_KEY"]
 except Exception as e:
-    logger.debug(f"Failed to load configuration: {e}")
+    logger.critical(f"Failed to load configuration: {e}")
     sys.exit(-1)
 
 canvas = Canvas(url, key)

@@ -15,7 +15,7 @@ try:
     username = os.environ["TE_USERNAME"]
     password = os.environ["TE_PASSWORD"]
 except Exception as e:
-    logger.debug(f"Failed to load configuration: {e}, exiting.")
+    logger.critical(f"Failed to load configuration: {e}, exiting.")
     sys.exit(-1)
 
 
@@ -23,7 +23,7 @@ try:
     client = zeep.Client(wsdl)
     key = client.service.register(cert).applicationkey
 except Exception:
-    logger.error(f'TimeEdit connection to "{wsdl}" failed, exiting.')
+    logger.critical(f'TimeEdit connection to "{wsdl}" failed, exiting.')
     sys.exit(-1)
 
 
