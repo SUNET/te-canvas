@@ -55,7 +55,7 @@ def find_objects(type, number_of_objects, begin_index, search_string):
         beginindex=begin_index,
         generalsearchfields=["general.id"],
         generalsearchstring=search_string,
-        returnfields=["general.id", "general.title"]
+        returnfields=["general.id", "general.title"],
     )
     if resp.objects is None:
         # Can't really warn about this generally since this endpoint is used for searching.
@@ -101,14 +101,14 @@ def get_object(extid: str):
             "password": password,
             "applicationkey": key,
         },
-        objects=[extid]
+        objects=[extid],
     )
     if resp is None:
         return {"message": f"Object {extid} not found"}, 404
     res = list(map(unpack_object, resp))[0]
-    print(res)
     types = find_types_all()
-    type_id = res["extid"].split("_")[0] # NOTE: Assumption that external id is of form <type>_id
+    # NOTE: Assumption that external id is of form <type>_id
+    type_id = res["extid"].split("_")[0]
     res["type.id"] = type_id
     res["type.name"] = types[type_id]
     return res
