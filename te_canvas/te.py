@@ -116,6 +116,12 @@ def get_object(extid: str):
 
 def find_reservations_all(extids):
     """Get all reservations for a given set of objects."""
+
+    # If extids is empty, findReservations will return *all* reservations, which
+    # is never what we want
+    if len(extids) == 0:
+        return []
+
     n = client.service.findReservations(
         login={
             "username": username,

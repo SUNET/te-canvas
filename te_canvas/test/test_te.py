@@ -33,5 +33,10 @@ class TestTE(unittest.TestCase):
         all_courseevt = te_canvas.te.find_objects_all("courseevt", None)
         self.assertEqual(first_10_courseevt, all_courseevt[1040:1050])
 
+    def test_find_reservations_all_empty(self):
+        """find_reservations_all should handle the empty list properly."""
+        reservations = te_canvas.te.find_reservations_all([])
+        self.assertEqual(reservations, [])
+
 if __name__ == "__main__":
     unittest.main()
