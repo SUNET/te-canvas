@@ -1,10 +1,10 @@
 import te_canvas.canvas as canvas
 import te_canvas.log as log
 import te_canvas.te as te
-from te_canvas.db.session import sqla_session
-from te_canvas.db.model import Connection, Event
+from te_canvas.db import DB, Connection, Event
 
 logger = log.get_logger()
+db = DB()
 
 
 def flat_list(query):
@@ -18,7 +18,7 @@ def flat_list(query):
 def sync_job():
     logger.info("Sync job started")
     canvas_groups_n = 0
-    with sqla_session() as session:  # Any exception -> session.rollback()
+    with db.sqla_session() as session:  # Any exception -> session.rollback()
         # Note the comma!
         for (canvas_group,) in session.query(Connection.canvas_group).distinct():
             canvas_groups_n += 1
