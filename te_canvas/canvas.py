@@ -26,6 +26,7 @@ def get_courses_all():
         logger.warning("canvas.get_courses_all() returned 0 courses.")
     return res
 
+
 def create_event(event: dict) -> CalendarEvent:
     return canvas.create_calendar_event(event)
 
