@@ -7,6 +7,10 @@ from te_canvas.db.model import Connection, Event
 logger = log.get_logger()
 
 
+def flat_list(query):
+    return [r[0] for r in query]
+
+
 # Invariant 1: Events in database is a superset of (our) events on Canvas.
 # Invariant 2: For every event e in the database, there exists a connection c s.t.
 #              c.canvas_group = e.canvas_group and
@@ -33,10 +37,10 @@ def sync_job():
             ).delete()
 
             # Push to Canvas and add to database
-            te_groups = (
-                session.query(Connection.te_group)
-                .filter(Connection.canvas_group == canvas_group)
-                .all()
+            te_groups = flat_list(
+                session.query(Connection.te_group).filter(
+                    Connection.canvas_group == canvas_group
+                )
             )
             for r in te.find_reservations_all(te_groups):
                 # Try/finally ensures invariant 1.
