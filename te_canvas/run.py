@@ -15,7 +15,7 @@ def get_app():
 
 logger.debug("TE - Canvas sync API is starting...")
 
-jobs = JobScheduler(nr_threads=10)
+jobs = JobScheduler()
 jobs.add(sync_job, 10, {})
 jobs.start()
 

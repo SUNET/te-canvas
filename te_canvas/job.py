@@ -1,5 +1,3 @@
-from apscheduler.executors.pool import ThreadPoolExecutor
-from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc
 
@@ -9,13 +7,8 @@ logger = get_logger()
 
 
 class JobScheduler(object):
-    def __init__(self, nr_threads=10):
-        self._scheduler = BackgroundScheduler(
-            executors={"default": ThreadPoolExecutor(nr_threads)},
-            jobstores={"default": MemoryJobStore()},
-            job_defaults={},
-            timezone=utc,
-        )
+    def __init__(self):
+        self._scheduler = BackgroundScheduler(timezone=utc)
 
     def get(self):
         return self._scheduler
