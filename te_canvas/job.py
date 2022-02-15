@@ -14,13 +14,13 @@ class JobScheduler(object):
         return self._scheduler
 
     def start(self):
-        logger.debug("[JobScheduler] Starting scheduler.")
+        logger.info("Starting scheduler.")
         return self._scheduler.start()
 
     def stop(self):
-        logger.debug("[JobScheduler] Stopping scheduler.")
+        logger.info("Stopping scheduler.")
         return self._scheduler.shutdown()
 
     def add(self, func, seconds, kwargs):
-        logger.debug(f"[JobScheduler] Adding job to scheduler: interval={seconds}")
+        logger.info(f"Adding job to scheduler: interval={seconds}")
         return self._scheduler.add_job(func, "interval", seconds=seconds, kwargs=kwargs)

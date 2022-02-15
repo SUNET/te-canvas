@@ -27,9 +27,8 @@ Base = declarative_base()
 engine = create_engine(conn_str, pool_size=50, max_overflow=0)
 Session = sessionmaker(bind=engine)
 
-# TODO: Is this correct?
 logging.getLogger("sqlalchemy.engine").addHandler(logger.handlers[0])
-logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
 
 @contextmanager

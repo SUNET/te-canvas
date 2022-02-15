@@ -16,9 +16,12 @@ def flat_list(query):
 #              c.canvas_group = e.canvas_group and
 #              c.te_group = e.te_group.
 def sync_job():
+    logger.info("Sync job started")
+    canvas_groups_n = 0
     with sqla_session() as session:  # Any exception -> session.rollback()
         # Note the comma!
         for (canvas_group,) in session.query(Connection.canvas_group).distinct():
+            canvas_groups_n += 1
 
             # Remove all events previously added by us to this Canvas group
             for event in session.query(Event).filter(
@@ -42,6 +45,8 @@ def sync_job():
                     Connection.canvas_group == canvas_group
                 )
             )
+
+            logger.info(f"Processing: {te_groups} → {canvas_group}")
             for r in te.find_reservations_all(te_groups):
                 # Try/finally ensures invariant 1.
                 try:
@@ -70,3 +75,4 @@ def sync_job():
                         )
                     )
                     raise
+    logger.info(f"Sync job completed; {canvas_groups_n} Canvas groups processed")
