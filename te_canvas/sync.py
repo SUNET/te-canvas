@@ -1,14 +1,10 @@
 import te_canvas.canvas as canvas
 import te_canvas.log as log
 import te_canvas.te as te
-from te_canvas.db import DB, Connection, Event
+from te_canvas.db import DB, Connection, Event, flat_list
 
 logger = log.get_logger()
 db = DB()
-
-
-def flat_list(query):
-    return [r[0] for r in query]
 
 
 # Invariant 1: Events in database is a superset of (our) events on Canvas.

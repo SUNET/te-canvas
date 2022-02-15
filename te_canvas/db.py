@@ -7,6 +7,11 @@ from sqlalchemy import Boolean, Column, String, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from te_canvas.log import get_logger
 
+
+def flat_list(query):
+    return [r[0] for r in query]
+
+
 Base = declarative_base()
 
 
