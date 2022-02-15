@@ -30,6 +30,13 @@ class Event(Base):
     te_group = Column(String)
 
 
+# TODO: Can we avoid having this here and do this in test_db, perhaps
+# dynamically in a test case? Not so important.
+class Test(Base):
+    __tablename__ = "unittest"
+    foo = Column(String, primary_key=True, default="bar")
+
+
 class DB:
     def __init__(self, **kwargs):
         logger = get_logger()
@@ -77,7 +84,7 @@ class DB:
             session.rollback()
             raise
         finally:
-            session.close()
+            session.close() # TODO: Will this be invoked if a re-raised exception is not caught? When?
 
     def add_connection(self, canvas_group: str, te_group: str):
         with self.sqla_session() as session:
