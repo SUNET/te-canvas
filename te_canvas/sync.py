@@ -29,7 +29,7 @@ def sync_job():
 
             # Delete flagged connections
             session.query(Connection).filter(
-                Connection.canvas_group == canvas_group and Connection.delete_flag
+                Connection.canvas_group == canvas_group, Connection.delete_flag == True
             ).delete()
 
             # Push to Canvas and add to database
