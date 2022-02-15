@@ -71,10 +71,10 @@ class ConnectionApi(Resource):
     #
 
     def get(self):
-        return {
+        return [
             {"canvas_group": x, "te_group": y, "delete_flag": z}
             for (x, y, z) in db.get_connections()
-        }
+        ]
 
 
 connection_api.add_resource(ConnectionApi, "")
