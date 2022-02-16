@@ -1,10 +1,10 @@
 import te_canvas.canvas as canvas
 import te_canvas.log as log
 import te_canvas.te as te
-from te_canvas.db import DB, Connection, Event, flat_list
+from te_canvas.db import Connection, Event, flat_list
+from te_canvas.app import app
 
 logger = log.get_logger()
-db = DB()
 
 
 # Invariant 1: Events in database is a superset of (our) events on Canvas.
@@ -14,7 +14,7 @@ db = DB()
 def sync_job():
     logger.info("Sync job started")
     canvas_groups_n = 0
-    with db.sqla_session() as session:  # Any exception -> session.rollback()
+    with app.db.sqla_session() as session:  # Any exception -> session.rollback()
         # Note the comma!
         for (canvas_group,) in session.query(Connection.canvas_group).distinct():
             canvas_groups_n += 1
