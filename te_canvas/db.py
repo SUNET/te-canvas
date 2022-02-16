@@ -93,8 +93,7 @@ class DB:
     def delete_connection(self, canvas_group: str, te_group: str):
         with self.sqla_session() as session:
             session.query(Connection).filter(
-                Connection.te_group == te_group
-                and Connection.canvas_group == canvas_group
+                Connection.te_group == te_group, Connection.canvas_group == canvas_group
             ).one().delete_flag = True
 
     def get_connections(self) -> list[tuple[str, str, bool]]:
