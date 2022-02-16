@@ -19,9 +19,6 @@ jobs = JobScheduler()
 jobs.add(sync_job, 10, {})
 jobs.start()
 
-# ASSUME: When a job raises an exception this is logged and swallowed (does not affect next run).
-# TODO: Verify this.
-
 if __name__ == "__main__":
     get_app().run(debug=False, host="0.0.0.0", port=5000, use_reloader=False)
 else:

@@ -84,7 +84,7 @@ class DB:
             session.rollback()
             raise
         finally:
-            session.close() # TODO: Will this be invoked if a re-raised exception is not caught? When?
+            session.close()
 
     def add_connection(self, canvas_group: str, te_group: str):
         with self.sqla_session() as session:
