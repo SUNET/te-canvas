@@ -30,8 +30,8 @@ class ConnectionApi(Resource):
 
     @connection_api.param("canvas_group", "Canvas group ID")
     @connection_api.param("te_group", "TimeEdit group ID")
-    @connection_api.response(409, 'Connection already exists')
-    @connection_api.response(204, 'Connection created')
+    @connection_api.response(409, "Connection already exists")
+    @connection_api.response(204, "Connection created")
     def post(self):
         args = self.post_parser.parse_args(strict=True)
         try:
@@ -55,8 +55,8 @@ class ConnectionApi(Resource):
 
     @connection_api.param("canvas_group", "Canvas group ID")
     @connection_api.param("te_group", "TimeEdit group ID")
-    @connection_api.response(400, 'Connection not found')
-    @connection_api.response(204, 'Connection deleted')
+    @connection_api.response(400, "Connection not found")
+    @connection_api.response(204, "Connection deleted")
     def delete(self):
         args = self.delete_parser.parse_args(strict=True)
         try:
