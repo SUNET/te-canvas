@@ -1,12 +1,13 @@
 from flask import request
-from flask_restx import Resource, Namespace, fields, reqparse
-from sqlalchemy.exc import SQLAlchemyError, NoResultFound, IntegrityError
+from flask_restx import Namespace, Resource, fields, reqparse
 from psycopg2.errors import UniqueViolation
+from sqlalchemy.exc import IntegrityError, NoResultFound, SQLAlchemyError
 
-import te_canvas.db.model as db
 import te_canvas.log as log
+from te_canvas.db import DB
 
 logger = log.get_logger()
+db = DB()
 
 connection_api = Namespace(
     "connection",
