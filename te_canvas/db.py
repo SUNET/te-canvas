@@ -53,10 +53,10 @@ class DB:
         env_vars = {
             k: os.environ[v] for (k, v) in env_var_mapping.items() if v in os.environ
         }
-        conn = kwargs | env_vars
+        conn = env_vars | kwargs
 
         try:
-            conn_str = "postgresql+psycopg2://{}:{}@{}:{}/{}".format(
+            self.conn_str = "postgresql+psycopg2://{}:{}@{}:{}/{}".format(
                 conn["username"],
                 conn["password"],
                 conn["hostname"],
@@ -67,7 +67,7 @@ class DB:
             logger.debug(f"Failed to load configuration: {e}")
             sys.exit(-1)
 
-        engine = create_engine(conn_str, pool_size=50, max_overflow=0)
+        engine = create_engine(self.conn_str, pool_size=50, max_overflow=0)
         self.Session = sessionmaker(bind=engine)
 
         logging.getLogger("sqlalchemy.engine").addHandler(logger.handlers[0])
