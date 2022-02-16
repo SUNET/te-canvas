@@ -15,9 +15,6 @@ connection_api = Namespace(
     prefix="/api",
 )
 
-# (?): Not RESTful to use a single endpoint with IDs in query string?
-
-
 class ConnectionApi(Resource):
 
     # NOTE: Will be deprecated in flask-restx 2.0
