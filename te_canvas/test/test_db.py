@@ -12,11 +12,11 @@ class UnittestException(Exception):
 class TestDB(unittest.TestCase):
     def test_init_env_vars(self):
         """Initalizing database with env vars."""
-        os.environ["hostname"] = "localhost"
-        os.environ["port"] = "5433"
-        os.environ["username"] = "test_user"
-        os.environ["password"] = "test_password"
-        os.environ["database"] = "test_db"
+        os.environ["TE_CANVAS_DB_HOSTNAME"] = "localhost"
+        os.environ["TE_CANVAS_DB_PORT"] = "5433"
+        os.environ["TE_CANVAS_DB_USERNAME"] = "test_user"
+        os.environ["TE_CANVAS_DB_PASSWORD"] = "test_password"
+        os.environ["TE_CANVAS_DB_DATABASE"] = "test_db"
         DB()
 
     def test_init_kwargs(self):
