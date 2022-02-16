@@ -3,27 +3,26 @@ from flask_restx import Namespace, Resource, fields, reqparse
 from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError, NoResultFound, SQLAlchemyError
 
-import te_canvas.log as log
-from te_canvas.db import DB
-
-logger = log.get_logger()
-db = DB()
-
 connection_api = Namespace(
     "connection",
     description="API for handling connections between TimeEdit and Canvas",
     prefix="/api",
 )
 
+
 class ConnectionApi(Resource):
 
-    # NOTE: Will be deprecated in flask-restx 2.0
+    # TODO: Is this correct subclassing? We need to know the supertype constructor's signature?
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, args, kwargs)
+        self.db = kwargs["db"]
 
     # --- POST ----
     #
     # If a Connection exists for canvas_group and te_group this is a NO-OP.
     #
 
+    # NOTE: Will be deprecated in flask-restx 2.0
     post_parser = reqparse.RequestParser()
     post_parser.add_argument("canvas_group", type=str, required=True)
     post_parser.add_argument("te_group", type=str, required=True)
@@ -35,7 +34,7 @@ class ConnectionApi(Resource):
     def post(self):
         args = self.post_parser.parse_args(strict=True)
         try:
-            db.add_connection(args.canvas_group, args.te_group)
+            self.db.add_connection(args.canvas_group, args.te_group)
         except IntegrityError as e:
             # This conditional required to go from sqlalchemy's wrapper
             # IntegrityError to psycopg2-specific UniqueViolation.
@@ -60,7 +59,7 @@ class ConnectionApi(Resource):
     def delete(self):
         args = self.delete_parser.parse_args(strict=True)
         try:
-            db.delete_connection(args.canvas_group, args.te_group)
+            self.db.delete_connection(args.canvas_group, args.te_group)
         except NoResultFound:
             return {"message": "Connection not found."}, 400
         # We raise the rest of exceptions. This includes the case where multiple
@@ -75,8 +74,5 @@ class ConnectionApi(Resource):
     def get(self):
         return [
             {"canvas_group": x, "te_group": y, "delete_flag": z}
-            for (x, y, z) in db.get_connections()
+            for (x, y, z) in self.db.get_connections()
         ]
-
-
-connection_api.add_resource(ConnectionApi, "")
