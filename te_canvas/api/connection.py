@@ -55,7 +55,7 @@ class ConnectionApi(Resource):
 
     @connection_api.param("canvas_group", "Canvas group ID")
     @connection_api.param("te_group", "TimeEdit group ID")
-    @connection_api.response(400, "Connection not found")
+    @connection_api.response(404, "Connection not found")
     @connection_api.response(204, "Connection deleted")
     @connection_api.response(
         409,
@@ -66,7 +66,7 @@ class ConnectionApi(Resource):
         try:
             self.db.delete_connection(args.canvas_group, args.te_group)
         except NoResultFound:
-            return {"message": "Connection not found."}, 400
+            return {"message": "Connection not found."}, 404
         except DeleteFlagAlreadySet:
             return {
                 "message": "The connection has already been flagged for deletion, but the sync job has not performed the deletion yet."
