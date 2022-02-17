@@ -1,8 +1,8 @@
 import te_canvas.canvas as canvas
 import te_canvas.log as log
 import te_canvas.te as te
-from te_canvas.db import Connection, Event, flat_list
 from te_canvas.app import app
+from te_canvas.db import Connection, Event, flat_list
 
 logger = log.get_logger()
 

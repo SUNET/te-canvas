@@ -1,8 +1,8 @@
 import os
 
 from te_canvas.app import app
-from te_canvas.log import get_logger
 from te_canvas.job import JobScheduler
+from te_canvas.log import get_logger
 from te_canvas.sync import sync_job
 
 os.environ["PYTHONPATH"] = os.getcwd()

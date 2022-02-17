@@ -1,11 +1,11 @@
-from datetime import datetime
 import os
 import sys
+from datetime import datetime
 
 import zeep
+from requests.exceptions import ConnectionError
 
 from te_canvas.log import get_logger
-from requests.exceptions import ConnectionError
 
 logger = get_logger()
 

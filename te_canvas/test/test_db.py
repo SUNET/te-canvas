@@ -18,8 +18,10 @@ class TestDB(unittest.TestCase):
         os.environ["TE_CANVAS_DB_PASSWORD"] = "test_password"
         os.environ["TE_CANVAS_DB_DATABASE"] = "test_db"
         db = DB()
-        self.assertEqual(db.conn_str, "postgresql+psycopg2://test_user:test_password@localhost:5433/test_db")
-
+        self.assertEqual(
+            db.conn_str,
+            "postgresql+psycopg2://test_user:test_password@localhost:5433/test_db",
+        )
 
     def test_init_kwargs(self):
         """Initalizing database with kwargs."""
@@ -35,7 +37,10 @@ class TestDB(unittest.TestCase):
             password="test_password",
             database="test_db",
         )
-        self.assertEqual(db.conn_str, "postgresql+psycopg2://test_user:test_password@localhost:5433/test_db")
+        self.assertEqual(
+            db.conn_str,
+            "postgresql+psycopg2://test_user:test_password@localhost:5433/test_db",
+        )
 
     def test_sqla_session(self):
         """Test commit and rollback functionality."""

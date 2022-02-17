@@ -1,6 +1,5 @@
 from flask import request
-from flask_restx import Resource, Namespace
-
+from flask_restx import Namespace, Resource
 
 version_api = Namespace("version", description="Version API", prefix="/api")
 

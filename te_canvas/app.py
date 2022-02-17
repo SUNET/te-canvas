@@ -8,8 +8,8 @@ from te_canvas.api.canvas import canvas_api
 from te_canvas.api.connection import ConnectionApi
 from te_canvas.api.timeedit import timeedit_api
 from te_canvas.api.version import version_api
-from te_canvas.log import get_logger
 from te_canvas.db import DB
+from te_canvas.log import get_logger
 
 
 class App:
@@ -33,7 +33,9 @@ class App:
             description="API for handling connections between TimeEdit and Canvas",
             prefix="/api",
         )
-        connection_api.add_resource(ConnectionApi, "", resource_class_kwargs={"db": self.db})
+        connection_api.add_resource(
+            ConnectionApi, "", resource_class_kwargs={"db": self.db}
+        )
         api.add_namespace(connection_api)
 
         @self.flask.after_request
@@ -44,5 +46,6 @@ class App:
                 )
             )
             return response
+
 
 app = App(DB())

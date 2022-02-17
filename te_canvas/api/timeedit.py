@@ -1,9 +1,9 @@
 from flask import request
-from flask_restx import Resource, Namespace, fields, reqparse
+from flask_restx import Namespace, Resource, fields, reqparse
 from sqlalchemy.exc import DBAPIError
 
-from te_canvas.te import find_objects, find_objects_all, find_types_all, get_object
 import te_canvas.log as log
+from te_canvas.te import find_objects, find_objects_all, find_types_all, get_object
 
 logger = log.get_logger()
 
@@ -41,11 +41,13 @@ class Objects(Resource):
 class Object(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument("extid", type=str, required=True)
+
     @timeedit_api.param("extid", "External id.")
     def get(self):
         args = self.parser.parse_args(strict=True)
         extid = args["extid"]
         return get_object(extid)
+
 
 class Types(Resource):
     def get(self):

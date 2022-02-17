@@ -5,6 +5,7 @@ from contextlib import contextmanager
 
 from sqlalchemy import Boolean, Column, String, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+
 from te_canvas.log import get_logger
 
 
@@ -36,6 +37,7 @@ class Event(Base):
 class Test(Base):
     __tablename__ = "unittest"
     foo = Column(String, primary_key=True, default="bar")
+
 
 class DB:
     def __init__(self, **kwargs):
@@ -92,9 +94,14 @@ class DB:
 
     def delete_connection(self, canvas_group: str, te_group: str):
         with self.sqla_session() as session:
-            row = session.query(Connection).filter(
-                Connection.te_group == te_group, Connection.canvas_group == canvas_group
-            ).one()
+            row = (
+                session.query(Connection)
+                .filter(
+                    Connection.te_group == te_group,
+                    Connection.canvas_group == canvas_group,
+                )
+                .one()
+            )
             if row.delete_flag:
                 raise DeleteFlagAlreadySet
             row.delete_flag = True
@@ -107,6 +114,7 @@ class DB:
                 (c.canvas_group, c.te_group, c.delete_flag)
                 for c in session.query(Connection)
             ]
+
 
 class DeleteFlagAlreadySet(Exception):
     pass

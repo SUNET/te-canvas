@@ -1,9 +1,9 @@
 from flask import request
-from flask_restx import Resource, Namespace, fields, reqparse
+from flask_restx import Namespace, Resource, fields, reqparse
 from sqlalchemy.exc import DBAPIError
 
-from te_canvas.canvas import get_courses_all
 import te_canvas.log as log
+from te_canvas.canvas import get_courses_all
 
 logger = log.get_logger()
 

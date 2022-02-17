@@ -1,8 +1,8 @@
+import logging
 import os
 import sys
-import unittest
-import logging
 import typing
+import unittest
 
 from te_canvas.app import App
 from te_canvas.db import DB, Connection, Event, Test
