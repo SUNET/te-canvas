@@ -37,7 +37,6 @@ class Test(Base):
     __tablename__ = "unittest"
     foo = Column(String, primary_key=True, default="bar")
 
-
 class DB:
     def __init__(self, **kwargs):
         logger = get_logger()
@@ -93,9 +92,12 @@ class DB:
 
     def delete_connection(self, canvas_group: str, te_group: str):
         with self.sqla_session() as session:
-            session.query(Connection).filter(
+            row = session.query(Connection).filter(
                 Connection.te_group == te_group, Connection.canvas_group == canvas_group
-            ).one().delete_flag = True
+            ).one()
+            if row.delete_flag:
+                raise DeleteFlagAlreadySet
+            row.delete_flag = True
 
     def get_connections(self) -> list[tuple[str, str, bool]]:
         with self.sqla_session() as session:
@@ -105,3 +107,6 @@ class DB:
                 (c.canvas_group, c.te_group, c.delete_flag)
                 for c in session.query(Connection)
             ]
+
+class DeleteFlagAlreadySet(Exception):
+    pass

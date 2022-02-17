@@ -3,6 +3,8 @@ from flask_restx import Namespace, Resource, fields, reqparse
 from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError, NoResultFound, SQLAlchemyError
 
+from te_canvas.db import DeleteFlagAlreadySet
+
 connection_api = Namespace(
     "connection",
     description="API for handling connections between TimeEdit and Canvas",
@@ -56,16 +58,24 @@ class ConnectionApi(Resource):
     @connection_api.param("te_group", "TimeEdit group ID")
     @connection_api.response(400, "Connection not found")
     @connection_api.response(204, "Connection deleted")
+    @connection_api.response(
+        409,
+        "The connection has already been flagged for deletion, but the sync job has not performed the deletion yet",
+    )
     def delete(self):
         args = self.delete_parser.parse_args(strict=True)
         try:
             self.db.delete_connection(args.canvas_group, args.te_group)
         except NoResultFound:
             return {"message": "Connection not found."}, 400
-        # We raise the rest of exceptions. This includes the case where multiple
-        # connections were found with the same ID pair, in which case one()
-        # raises MultipleResultsFound.
-
+        except DeleteFlagAlreadySet:
+            return {
+                "message": "The connection has already been flagged for deletion, but the sync job has not performed the deletion yet."
+            }, 409
+        # We raise the rest of exceptions. This includes faulty states like
+        # where multiple connections are found with the same ID pair, in which
+        # case one() raises MultipleResultsFound. On the API side this would
+        # result in a 500 internal server error.
         return "", 204
 
     # --- GET ----

@@ -189,10 +189,11 @@ class TestAPI(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 204)
 
+        # The delete flag is set but it has not been deleted yet (by the sync job)
         response = self.client.delete(
             "/api/connection", data={"te_group": "foo", "canvas_group": "bar"}
         )
-        # self.assertEqual(response.status_code, 409) # TODO: This should not be quite 400 nor 204 – The delete flag is set but it has not been deleted yet (by the sync job)
+        self.assertEqual(response.status_code, 409)
 
 
 if __name__ == "__main__":
