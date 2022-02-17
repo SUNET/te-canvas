@@ -1,6 +1,4 @@
-from flask import request
-from flask_restx import Namespace, Resource, fields, reqparse
-from sqlalchemy.exc import DBAPIError
+from flask_restx import Namespace, Resource, reqparse
 
 import te_canvas.log as log
 from te_canvas.te import find_objects, find_objects_all, find_types_all, get_object

@@ -1,8 +1,7 @@
 import os
-import sys
 import unittest
 
-from te_canvas.db import DB, Connection, Event, Test, flat_list
+from te_canvas.db import DB, Test, flat_list
 
 
 class UnittestException(Exception):

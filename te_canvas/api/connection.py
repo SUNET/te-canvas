@@ -1,7 +1,6 @@
-from flask import request
-from flask_restx import Namespace, Resource, fields, reqparse
+from flask_restx import Namespace, Resource, reqparse
 from psycopg2.errors import UniqueViolation
-from sqlalchemy.exc import IntegrityError, NoResultFound, SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from te_canvas.db import DeleteFlagAlreadySet
 
