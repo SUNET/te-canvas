@@ -44,7 +44,10 @@ class Object(Resource):
     def get(self):
         args = self.parser.parse_args(strict=True)
         extid = args["extid"]
-        return get_object(extid)
+        res = get_object(extid)
+        if res is None:
+            return {"message": f"Object {extid} not found"}, 404
+        return res
 
 
 class Types(Resource):

@@ -91,7 +91,7 @@ def unpack_object(o):
     return res
 
 
-def get_object(extid: str):
+def get_object(extid: str) -> dict | None:
     """Get a specific object based on external id."""
     # NOTE: API says that this returns an array of objects, but only the first extid is used.
     resp = client.service.getObjects(
@@ -103,7 +103,7 @@ def get_object(extid: str):
         objects=[extid],
     )
     if resp is None:
-        return {"message": f"Object {extid} not found"}, 404
+        return None
     res = list(map(unpack_object, resp))[0]
     types = find_types_all()
     # NOTE: Assumption that external id is of form <type>_id
