@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import datetime
+from typing import Optional
 
 import zeep
 
@@ -91,7 +92,7 @@ def unpack_object(o):
     return res
 
 
-def get_object(extid: str) -> dict | None:
+def get_object(extid: str) -> Optional[dict]:
     """Get a specific object based on external id."""
     # NOTE: API says that this returns an array of objects, but only the first extid is used.
     resp = client.service.getObjects(
