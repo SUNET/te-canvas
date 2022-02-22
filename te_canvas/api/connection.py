@@ -80,8 +80,13 @@ class ConnectionApi(Resource):
     # --- GET ----
     #
 
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument("canvas_group", type=str)
+
+    @connection_api.param("canvas_group", "Canvas group ID")
     def get(self):
+        args = self.get_parser.parse_args(strict=True)
         return [
             {"canvas_group": x, "te_group": y, "delete_flag": z}
-            for (x, y, z) in self.db.get_connections()
+            for (x, y, z) in self.db.get_connections(args.canvas_group)
         ]
