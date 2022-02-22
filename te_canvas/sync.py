@@ -47,6 +47,7 @@ def sync_job():
                 # Try/finally ensures invariant 1.
                 try:
                     # TODO: Use configured values to create description.
+                    # TODO: Handle missing properties gracefully, i.e. catch KeyError.
                     canvas_event = canvas.create_event(
                         {
                             "context_code": f"course_{canvas_group}",
