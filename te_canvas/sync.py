@@ -70,5 +70,4 @@ def sync_job():
                             canvas_group=canvas_group,
                         )
                     )
-                    raise
     logger.info(f"Sync job completed; {canvas_groups_n} Canvas groups processed")
