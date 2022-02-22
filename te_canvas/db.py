@@ -107,7 +107,9 @@ class DB:
                 raise DeleteFlagAlreadySet
             row.delete_flag = True
 
-    def get_connections(self, canvas_group: Optional[str] = None) -> list[tuple[str, str, bool]]:
+    def get_connections(
+        self, canvas_group: Optional[str] = None
+    ) -> list[tuple[str, str, bool]]:
         with self.sqla_session() as session:
             # NOTE: We cannot return a list of Connection here, since the Session
             # they are connected to is closed at end of this block.
@@ -116,10 +118,7 @@ class DB:
             if canvas_group is not None:
                 query = query.filter(Connection.canvas_group == canvas_group)
 
-            return [
-                (c.canvas_group, c.te_group, c.delete_flag)
-                for c in query
-            ]
+            return [(c.canvas_group, c.te_group, c.delete_flag) for c in query]
 
 
 class DeleteFlagAlreadySet(Exception):
