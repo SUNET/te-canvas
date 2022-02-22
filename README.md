@@ -1,4 +1,34 @@
 # te-canvas
 
+## Quick start
 
-To run: python3 -m te_canvas.run
+Export the following env vars:
+
+```
+TE_WSDL_URL
+TE_CERT
+TE_USERNAME
+TE_PASSWORD
+
+CANVAS_URL
+CANVAS_KEY
+
+TE_CANVAS_URL
+TE_CANVAS_DB_HOSTNAME
+TE_CANVAS_DB_PORT
+POSTGRES_USER
+POSTGRES_PASSWORD
+POSTGRES_DB
+```
+
+Install the requirements:
+
+```
+pip install -r requirements/dev.txt
+```
+
+Start the dev server:
+
+```
+python -m te_canvas.main
+```
