@@ -21,13 +21,19 @@ POSTGRES_PASSWORD
 POSTGRES_DB
 ```
 
+Start PostgreSQL:
+
+```
+docker-compose up -d
+```
+
 Install the requirements:
 
 ```
 pip install -r requirements/dev.txt
 ```
 
-Start the dev server:
+Start dev server:
 
 ```
 python -m te_canvas.main
