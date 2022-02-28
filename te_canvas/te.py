@@ -74,6 +74,8 @@ def find_objects_all(type, search_string):
         },
         type=type,
         numberofobjects=1,
+        generalsearchfields=["general.id"],
+        generalsearchstring=search_string,
     ).totalnumberofobjects
 
     num_pages = -(-n // 1000)
