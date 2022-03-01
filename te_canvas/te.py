@@ -53,8 +53,7 @@ def find_objects(type, number_of_objects, begin_index, search_string):
         type=type,
         numberofobjects=number_of_objects,
         beginindex=begin_index,
-        generalsearchfields=["general.id"],
-        # NOTE TE-BUG: API says that this is an array, but only the first field is used.
+        generalsearchfields={"field": ["general.id", "general.title"]},
         generalsearchstring=search_string,
         returnfields=["general.id", "general.title"],
     )
@@ -75,7 +74,7 @@ def find_objects_all(type, search_string):
         },
         type=type,
         numberofobjects=1,
-        generalsearchfields=["general.id"],
+        generalsearchfields={"field": ["general.id", "general.title"]},
         generalsearchstring=search_string,
     ).totalnumberofobjects
 
@@ -97,14 +96,13 @@ def unpack_object(o):
 
 def get_object(extid: str) -> Optional[dict]:
     """Get a specific object based on external id."""
-    # NOTE TE-BUG: API says that this returns an array of objects, but only the first extid is used.
     resp = client.service.getObjects(
         login={
             "username": username,
             "password": password,
             "applicationkey": key,
         },
-        objects=[extid],
+        objects={"object": [extid]},
     )
     if resp is None:
         return None
