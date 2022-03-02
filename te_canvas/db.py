@@ -4,7 +4,9 @@ import sys
 from contextlib import contextmanager
 from typing import Optional
 
+from psycopg2.errors import UniqueViolation
 from sqlalchemy import Boolean, Column, String, create_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from te_canvas.log import get_logger
@@ -91,7 +93,24 @@ class DB:
 
     def add_connection(self, canvas_group: str, te_group: str):
         with self.sqla_session() as session:
-            session.add(Connection(canvas_group=canvas_group, te_group=te_group))
+            try:
+                session.add(Connection(canvas_group=canvas_group, te_group=te_group))
+            except IntegrityError as e:
+                # This conditional required to go from sqlalchemy's wrapper
+                # IntegrityError to psycopg2-specific UniqueViolation.
+                if isinstance(e.orig, UniqueViolation):
+                    row = (
+                        session.query(Connection)
+                        .filter(
+                            Connection.te_group == te_group,
+                            Connection.canvas_group == canvas_group,
+                        )
+                        .one()
+                    )
+                    if row.delete_flag:
+                        raise DeleteFlagAlreadySet
+                    else:
+                        raise UniqueViolation
 
     def delete_connection(self, canvas_group: str, te_group: str):
         with self.sqla_session() as session:

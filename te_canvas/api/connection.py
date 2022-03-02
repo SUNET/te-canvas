@@ -30,21 +30,25 @@ class ConnectionApi(Resource):
 
     @connection_api.param("canvas_group", "Canvas group ID")
     @connection_api.param("te_group", "TimeEdit group ID")
-    @connection_api.response(409, "Connection already exists")
     @connection_api.response(204, "Connection created")
+    @connection_api.response(404, "Connection already exists")
+    @connection_api.response(
+        409,
+        "Connection is flagged for deletion, but has not been deleted yet.",
+    )
     def post(self):
         args = self.post_parser.parse_args(strict=True)
         try:
             self.db.add_connection(args.canvas_group, args.te_group)
-        except IntegrityError as e:
-            # This conditional required to go from sqlalchemy's wrapper
-            # IntegrityError to psycopg2-specific UniqueViolation.
-            if isinstance(e.orig, UniqueViolation):
-                return {
-                    "message": f"Connection ({args.canvas_group}, {args.te_group}) already exists.",
-                }, 409
-            raise
-        return "", 204
+            return "", 204
+        except UniqueViolation:
+            return {
+                "message": f"Connection already exists.",
+            }, 404
+        except DeleteFlagAlreadySet:
+            return {
+                "Connection is flagged for deletion, but has not been deleted yet. Try again later.",
+            }, 409
 
     # --- DELETE ----
     #
@@ -55,27 +59,27 @@ class ConnectionApi(Resource):
 
     @connection_api.param("canvas_group", "Canvas group ID")
     @connection_api.param("te_group", "TimeEdit group ID")
-    @connection_api.response(404, "Connection not found")
     @connection_api.response(204, "Connection deleted")
+    @connection_api.response(404, "Connection not found")
     @connection_api.response(
         409,
-        "The connection has already been flagged for deletion, but the sync job has not performed the deletion yet",
+        "Connection is flagged for deletion, but has not been deleted yet.",
     )
     def delete(self):
         args = self.delete_parser.parse_args(strict=True)
         try:
             self.db.delete_connection(args.canvas_group, args.te_group)
+            return "", 204
         except NoResultFound:
             return {"message": "Connection not found."}, 404
         except DeleteFlagAlreadySet:
             return {
-                "message": "The connection has already been flagged for deletion, but the sync job has not performed the deletion yet."
+                "message": "Connection is flagged for deletion, but has not been deleted yet. Try again later.",
             }, 409
         # We raise the rest of exceptions. This includes faulty states like
         # where multiple connections are found with the same ID pair, in which
         # case one() raises MultipleResultsFound. On the API side this would
         # result in a 500 internal server error.
-        return "", 204
 
     # --- GET ----
     #
