@@ -47,7 +47,7 @@ class ConnectionApi(Resource):
             }, 404
         except DeleteFlagAlreadySet:
             return {
-                "Connection is flagged for deletion, but has not been deleted yet. Try again later.",
+                "message": "Connection is flagged for deletion, but has not been deleted yet. Try again later.",
             }, 409
 
     # --- DELETE ----
