@@ -93,24 +93,16 @@ class DB:
 
     def add_connection(self, canvas_group: str, te_group: str):
         with self.sqla_session() as session:
-            try:
+            q = session.query(Connection).filter(
+                Connection.te_group == te_group,
+                Connection.canvas_group == canvas_group,
+            )
+            if q.count() == 0:
                 session.add(Connection(canvas_group=canvas_group, te_group=te_group))
-            except IntegrityError as e:
-                # This conditional required to go from sqlalchemy's wrapper
-                # IntegrityError to psycopg2-specific UniqueViolation.
-                if isinstance(e.orig, UniqueViolation):
-                    row = (
-                        session.query(Connection)
-                        .filter(
-                            Connection.te_group == te_group,
-                            Connection.canvas_group == canvas_group,
-                        )
-                        .one()
-                    )
-                    if row.delete_flag:
-                        raise DeleteFlagAlreadySet
-                    else:
-                        raise UniqueViolation
+            else:
+                if q.one().delete_flag:  # Will throw if q has > 1 row (invalid state)
+                    raise DeleteFlagAlreadySet
+                raise UniqueViolation
 
     def delete_connection(self, canvas_group: str, te_group: str):
         with self.sqla_session() as session:
