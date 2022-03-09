@@ -1,7 +1,9 @@
 {
     "executionEnvironments": [
         {
-            "root": "te_canvas"
+            "root": "."
         }
-    ]
+    ],
+    "venvPath": ".",
+    "venv": ".venv"
  }
