@@ -173,7 +173,7 @@ class TestAPI(unittest.TestCase):
         response = self.client.post(
             "/api/connection", data={"te_group": "foo", "canvas_group": "bar"}
         )
-        self.assertEqual(response.status_code, 409)  # Conflict
+        self.assertEqual(response.status_code, 404)  # Already exists
 
         response = self.client.get("/api/connection")
         self.assertEqual(response.status_code, 200)
