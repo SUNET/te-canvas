@@ -31,7 +31,6 @@ class Event(Base):
     canvas_id = Column(String, primary_key=True)
     te_id = Column(String, primary_key=True)
     canvas_group = Column(String)
-    te_group = Column(String)
 
 
 # TODO: Can we avoid having this here and do this in test_db, perhaps
