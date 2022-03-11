@@ -38,3 +38,19 @@ def delete_event(id: int):
         canvas.get_calendar_event(id).delete()
     except ResourceDoesNotExist:
         pass
+
+# NOTE: The following two functions used only for testing.
+
+def get_events_all(course: int):
+    return list(
+        canvas.get_calendar_events(
+            context_codes=[f"course_{course}"],
+            start_date="2022-01-01",
+            end_date="2032-01-01",
+        )
+    )
+
+
+def delete_events_all(course: int):
+    for event in get_events_all(course):
+        delete_event(event.id)
