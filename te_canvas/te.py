@@ -26,14 +26,16 @@ except Exception:
     logger.critical(f'TimeEdit connection to "{wsdl}" failed, exiting.')
     sys.exit(-1)
 
+login = {
+    "username": username,
+    "password": password,
+    "applicationkey": key,
+}
+
 
 def find_types_all():
     res = client.service.findTypes(
-        login={
-            "username": username,
-            "password": password,
-            "applicationkey": key,
-        },
+        login=login,
         ignorealias=False,
     )
     if len(res) == 0:
@@ -45,11 +47,7 @@ def find_types_all():
 def find_objects(type, number_of_objects, begin_index, search_string):
     """Get max 1000 objects of a given type."""
     resp = client.service.findObjects(
-        login={
-            "username": username,
-            "password": password,
-            "applicationkey": key,
-        },
+        login=login,
         type=type,
         numberofobjects=number_of_objects,
         beginindex=begin_index,
@@ -67,11 +65,7 @@ def find_objects(type, number_of_objects, begin_index, search_string):
 def find_objects_all(type, search_string):
     """Get all objects of a given type."""
     n = client.service.findObjects(
-        login={
-            "username": username,
-            "password": password,
-            "applicationkey": key,
-        },
+        login=login,
         type=type,
         numberofobjects=1,
         generalsearchfields={"field": ["general.id", "general.title"]},
@@ -97,11 +91,7 @@ def unpack_object(o):
 def get_object(extid: str) -> Optional[dict]:
     """Get a specific object based on external id."""
     resp = client.service.getObjects(
-        login={
-            "username": username,
-            "password": password,
-            "applicationkey": key,
-        },
+        login=login,
         objects={"object": [extid]},
     )
     if resp is None:
@@ -124,11 +114,7 @@ def find_reservations_all(extids):
         return []
 
     n = client.service.findReservations(
-        login={
-            "username": username,
-            "password": password,
-            "applicationkey": key,
-        },
+        login=login,
         searchobjects={"object": [{"extid": id} for id in extids]},
         numberofreservations=1,
     ).totalnumberofreservations
@@ -138,11 +124,7 @@ def find_reservations_all(extids):
     res = []
     for i in range(num_pages):
         page = client.service.findReservations(
-            login={
-                "username": username,
-                "password": password,
-                "applicationkey": key,
-            },
+            login=login,
             searchobjects={"object": [{"extid": id} for id in extids]},
             # TODO: Returntypes should be configurable. Some base values should
             # be used for title and location, configurable values should be
