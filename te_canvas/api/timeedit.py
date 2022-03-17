@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource, reqparse
 
 import te_canvas.log as log
-from te_canvas.te import find_objects, find_objects_all, find_types_all, get_object
+from te_canvas.timeedit import TimeEdit
 
 logger = log.get_logger()
 
@@ -10,6 +10,8 @@ timeedit_api = Namespace(
     description="API for getting data from TimeEdit",
     prefix="/api",
 )
+
+timeedit = TimeEdit()
 
 
 class Objects(Resource):
@@ -32,9 +34,9 @@ class Objects(Resource):
         i = args["begin_index"]
         s = args["search_string"]
         if n or i:
-            data = find_objects(type, n or 1000, i or 0, s)
+            data = timeedit.find_objects(type, n or 1000, i or 0, s)
         else:
-            data = find_objects_all(type, s)
+            data = timeedit.find_objects_all(type, s)
         return data
 
 
@@ -46,7 +48,7 @@ class Object(Resource):
     def get(self):
         args = self.parser.parse_args(strict=True)
         extid = args["extid"]
-        res = get_object(extid)
+        res = timeedit.get_object(extid)
         if res is None:
             return {"message": f"Object {extid} not found"}, 404
         return res
@@ -54,7 +56,7 @@ class Object(Resource):
 
 class Types(Resource):
     def get(self):
-        return find_types_all()
+        return timeedit.find_types_all()
 
 
 timeedit_api.add_resource(Objects, "/objects")

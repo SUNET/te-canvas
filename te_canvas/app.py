@@ -4,7 +4,6 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_restx import Api, Namespace
 
-import te_canvas.te as te
 from te_canvas.api.canvas import canvas_api
 from te_canvas.api.connection import ConnectionApi
 from te_canvas.api.timeedit import timeedit_api
@@ -12,6 +11,7 @@ from te_canvas.api.version import version_api
 from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, flat_list
 from te_canvas.log import get_logger
+from te_canvas.timeedit import TimeEdit
 
 
 class App:
@@ -20,6 +20,7 @@ class App:
 
         self.db = db
         self.canvas = Canvas()
+        self.timeedit = TimeEdit()
 
         self.flask = Flask(__name__)
         self.flask.config["SECRET_KEY"] = os.urandom(128)
@@ -83,7 +84,7 @@ class App:
                 )
 
                 self.logger.info(f"Processing: {te_groups} → {canvas_group}")
-                for r in te.find_reservations_all(te_groups):
+                for r in self.timeedit.find_reservations_all(te_groups):
                     # Try/finally ensures invariant 1.
                     try:
                         # TODO: Use configured values to create description.

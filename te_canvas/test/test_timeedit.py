@@ -2,24 +2,19 @@ import os
 import sys
 import unittest
 
-import te_canvas.te
-
-try:
-    wsdl = os.environ["TE_WSDL_URL"]
-    cert = os.environ["TE_CERT"]
-    username = os.environ["TE_USERNAME"]
-    password = os.environ["TE_PASSWORD"]
-except Exception as e:
-    print(f"Failed to load configuration: {e}, exiting.")
-    sys.exit(-1)
+from te_canvas.timeedit import TimeEdit
 
 # NOTE: Most of these depend on specific TE installation so should be considered integration tests.
 
 
 class TestTE(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.timeedit = TimeEdit()
+
     def test_find_types_all(self):
         """find_types_all should return at least one course."""
-        types = te_canvas.te.find_types_all()
+        types = self.timeedit.find_types_all()
         self.assertGreater(
             len(types), 0, "find_types_all should return at least one course."
         )
@@ -32,13 +27,13 @@ class TestTE(unittest.TestCase):
 
         NOTE: Not meaningful if there are fewer than 1000 'courseevt' in TE.
         """
-        first_10_courseevt = te_canvas.te.find_objects("courseevt", 10, 1040, None)
-        all_courseevt = te_canvas.te.find_objects_all("courseevt", None)
+        first_10_courseevt = self.timeedit.find_objects("courseevt", 10, 1040, None)
+        all_courseevt = self.timeedit.find_objects_all("courseevt", None)
         self.assertEqual(first_10_courseevt, all_courseevt[1040:1050])
 
     def test_find_reservations_all_empty(self):
         """find_reservations_all should handle the empty list properly."""
-        reservations = te_canvas.te.find_reservations_all([])
+        reservations = self.timeedit.find_reservations_all([])
         self.assertEqual(reservations, [])
 
 
