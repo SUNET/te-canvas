@@ -7,22 +7,24 @@ from te_canvas.db import DB, Connection, Event, Test
 
 
 class TestAPI(unittest.TestCase):
-    db = DB(
-        hostname="localhost",
-        port="5433",
-        username="test_user",
-        password="test_password",
-        database="test_db",
-    )
-    with db.sqla_session() as session:
-        session.query(Connection).delete()
-        session.query(Event).delete()
-        session.query(Test).delete()
+    @classmethod
+    def setUpClass(cls):
+        db = DB(
+            hostname="localhost",
+            port="5433",
+            username="test_user",
+            password="test_password",
+            database="test_db",
+        )
+        with db.sqla_session() as session:
+            session.query(Connection).delete()
+            session.query(Event).delete()
+            session.query(Test).delete()
 
-    app = App(db)
-    app.logger.setLevel(logging.CRITICAL)
+        cls.app = App(db)
+        cls.app.logger.setLevel(logging.CRITICAL)
 
-    client = app.flask.test_client()
+        cls.client = cls.app.flask.test_client()
 
     def test_api_setup(self):
         """We're using the correct DB."""
