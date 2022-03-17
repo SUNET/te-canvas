@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource
 
 import te_canvas.log as log
-from te_canvas.canvas import get_courses_all
+from te_canvas.canvas import Canvas
 
 logger = log.get_logger()
 
@@ -11,10 +11,12 @@ canvas_api = Namespace(
     prefix="/api",
 )
 
+canvas = Canvas()
+
 
 class Courses(Resource):
     def get(self):
-        data = get_courses_all()
+        data = canvas.get_courses_all()
         return [c.id for c in data]
 
 

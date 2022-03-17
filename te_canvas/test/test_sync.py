@@ -1,8 +1,8 @@
 import logging
 import unittest
 
-import te_canvas.canvas as canvas
 from te_canvas.app import App
+from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, Test
 
 CANVAS_GROUP = 169
@@ -40,14 +40,15 @@ class TestSync(unittest.TestCase):
             session.query(Event).delete()
             session.query(Test).delete()
 
-        canvas.delete_events_all(CANVAS_GROUP)
-
         cls.app = App(db)
         cls.app.logger.setLevel(logging.CRITICAL)
 
+        cls.canvas = Canvas()
+        cls.canvas.delete_events_all(CANVAS_GROUP)
+
     def test_canvas_empty(self):
         """Test setup."""
-        self.assertEqual(canvas.get_events_all(CANVAS_GROUP), [])
+        self.assertEqual(self.canvas.get_events_all(CANVAS_GROUP), [])
 
     def test_sync(self):
         """Test sync job."""
@@ -63,7 +64,7 @@ class TestSync(unittest.TestCase):
             event_local = session.query(Event).one()
 
             # There is one event added to Canvas
-            events = canvas.get_events_all(CANVAS_GROUP)
+            events = self.canvas.get_events_all(CANVAS_GROUP)
             self.assertEqual(len(events), 1)
             event_canvas = events[0]
 
@@ -79,7 +80,7 @@ class TestSync(unittest.TestCase):
         # TODO: This behaviour might need to change to e.g. not break event URLs.
         event_old = events[0]
         self.app.sync_job()
-        events = canvas.get_events_all(CANVAS_GROUP)
+        events = self.canvas.get_events_all(CANVAS_GROUP)
         self.assertEqual(len(events), 1)
         event_new = events[0]
         self.assertNotEqual(event_old.id, event_new.id)
@@ -96,5 +97,5 @@ class TestSync(unittest.TestCase):
         with self.app.db.sqla_session() as session:
             self.assertEqual(session.query(Connection).count(), 0)
             self.assertEqual(session.query(Event).count(), 0)
-        events = canvas.get_events_all(CANVAS_GROUP)
+        events = self.canvas.get_events_all(CANVAS_GROUP)
         self.assertEqual(len(events), 0)

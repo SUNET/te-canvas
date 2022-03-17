@@ -4,12 +4,12 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_restx import Api, Namespace
 
-import te_canvas.canvas as canvas
 import te_canvas.te as te
 from te_canvas.api.canvas import canvas_api
 from te_canvas.api.connection import ConnectionApi
 from te_canvas.api.timeedit import timeedit_api
 from te_canvas.api.version import version_api
+from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, flat_list
 from te_canvas.log import get_logger
 
@@ -19,6 +19,7 @@ class App:
         self.logger = get_logger()
 
         self.db = db
+        self.canvas = Canvas()
 
         self.flask = Flask(__name__)
         self.flask.config["SECRET_KEY"] = os.urandom(128)
@@ -63,7 +64,7 @@ class App:
                 ):
                     # If this event does not exist on Canvas, this is a NOOP and no
                     # exception is raised.
-                    canvas.delete_event(event.canvas_id)
+                    self.canvas.delete_event(event.canvas_id)
 
                 # Clear deleted events
                 session.query(Event).filter(Event.canvas_group == canvas_group).delete()
@@ -87,7 +88,7 @@ class App:
                     try:
                         # TODO: Use configured values to create description.
                         # TODO: Handle missing properties gracefully, i.e. catch KeyError.
-                        canvas_event = canvas.create_event(
+                        canvas_event = self.canvas.create_event(
                             {
                                 "context_code": f"course_{canvas_group}",
                                 "title": r["activity"]["activity.id"],
