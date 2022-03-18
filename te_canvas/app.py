@@ -87,22 +87,9 @@ class App:
                 for r in self.timeedit.find_reservations_all(te_groups):
                     # Try/finally ensures invariant 1.
                     try:
-                        # TODO: Use configured values to create description.
-                        # TODO: Handle missing properties gracefully, i.e. catch KeyError.
                         canvas_event = self.canvas.create_event(
-                            {
-                                "context_code": f"course_{canvas_group}",
-                                "title": r["activity"]["activity.id"],
-                                "location_name": r["room"]["room.name"],
-                                "description": "<br>".join(
-                                    [
-                                        r["courseevt"]["courseevt.coursename"],
-                                        r["person_staff"]["person.fullname"],
-                                    ]
-                                ),
-                                "start_at": r["start_at"],
-                                "end_at": r["end_at"],
-                            }
+                            self.__canvas_event(r)
+                            | {"context_code": f"course_{canvas_group}"}
                         )
                     finally:
                         session.add(
@@ -115,6 +102,37 @@ class App:
         self.logger.info(
             f"Sync job completed; {canvas_groups_n} Canvas groups processed"
         )
+
+    def __canvas_event(self, res):
+        """Build a canvas event from a TimeEdit `reservation`."""
+        # TODO: Use configured values to create description. Configure this from web interface for connections.
+        # TODO: Use English (e.g. `courseevt.coursename_eng`) for some users? Or configurable for entire course instance.
+        return {
+            "title": self.__get_nested(
+                res["objects"], "activity", "activity.id", "<missing>"
+            ),
+            "location_name": self.__get_nested(
+                res["objects"], "room", "room.name", "<missing>"
+            ),
+            "description": "<br>".join(
+                [
+                    self.__get_nested(
+                        res["objects"], "courseevt", "courseevt.coursename", "<missing>"
+                    ),
+                    self.__get_nested(
+                        res["objects"], "person_staff", "person.fullname", "<missing>"
+                    ),
+                ]
+            ),
+            "start_at": res["start_at"],
+            "end_at": res["end_at"],
+        }
+
+    def __get_nested(self, x, a, b, default):
+        """Utility function for getting x[a][b] without raising a KeyError when either a or b might be missing."""
+        if (a not in x) or (b not in x[a]):
+            return default
+        return x[a][b]
 
 
 app = App(DB())
