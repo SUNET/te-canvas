@@ -43,7 +43,6 @@ class TimeEdit:
             logger.warning("te.find_types_all() returned 0 types.")
         return {t["extid"]: t["name"] for t in res}
 
-    # TODO: Add returnFields parameter, populate from getAlFields?
     def find_objects(self, type, number_of_objects, begin_index, search_string):
         """Get max 1000 objects of a given type."""
         resp = self.client.service.findObjects(
@@ -101,13 +100,25 @@ class TimeEdit:
         res["type.name"] = types[type_id]
         return res
 
-    def find_reservations_all(self, extids):
+    def find_reservations_all(
+        self, extids: list[str], return_types: dict[str, list[str]]
+    ):
         """Get all reservations for a given set of objects."""
 
         # If extids is empty, findReservations will return *all* reservations, which
         # is never what we want
         if len(extids) == 0:
             return []
+
+        return_types_packed = {
+            "typefield": [
+                {
+                    "type": type,
+                    "field": fields,
+                }
+                for type, fields in return_types.items()
+            ]
+        }
 
         n = self.client.service.findReservations(
             login=self.login,
@@ -119,41 +130,20 @@ class TimeEdit:
 
         res = []
         for i in range(num_pages):
+            # TODO: Add returnfields (fields on reservation itself)
             page = self.client.service.findReservations(
                 login=self.login,
                 searchobjects={"object": [{"extid": id} for id in extids]},
-                # TODO: Returntypes should be configurable. Some base values should
-                # be used for title and location, configurable values should be
-                # concatenated to form event description. Configure this from web
-                # interface for connections.
-                # TODO: Use English (e.g. `courseevt.coursename_eng`) for some
-                # users? Or configurable for entire course instance.
-                returntypes={
-                    "typefield": [
-                        {
-                            "type": "person_staff",
-                            "field": ["person.id", "person.fullname"],
-                        },
-                        {
-                            "type": "courseevt",
-                            "field": [
-                                "courseevt.uniqueid",
-                                "courseevt.coursename",
-                                "courseevt.coursename_eng",
-                            ],
-                        },
-                        {"type": "activity", "field": ["activity.id"]},
-                        {"type": "room", "field": ["room.name"]},
-                    ]
-                },
                 numberofreservations=1000,
                 beginindex=i * 1000,
+                returntypes=return_types_packed,
             )["reservations"]["reservation"]
             res += page
         if len(res) == 0:
             logger.warning(
                 f"te.find_reservations_all({extids}) returned 0 reservations."
             )
+
         return list(map(self.__unpack_reservation, res))
 
     def __unpack_reservation(self, r):

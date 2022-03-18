@@ -33,7 +33,7 @@ class TestTE(unittest.TestCase):
 
     def test_find_reservations_all_empty(self):
         """find_reservations_all should handle the empty list properly."""
-        reservations = self.timeedit.find_reservations_all([])
+        reservations = self.timeedit.find_reservations_all([], {})
         self.assertEqual(reservations, [])
 
 

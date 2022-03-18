@@ -84,7 +84,9 @@ class App:
                 )
 
                 self.logger.info(f"Processing: {te_groups} → {canvas_group}")
-                for r in self.timeedit.find_reservations_all(te_groups):
+                for r in self.timeedit.find_reservations_all(
+                    te_groups, self.__return_types()
+                ):
                     # Try/finally ensures invariant 1.
                     try:
                         canvas_event = self.canvas.create_event(
@@ -109,23 +111,37 @@ class App:
         # TODO: Use English (e.g. `courseevt.coursename_eng`) for some users? Or configurable for entire course instance.
         return {
             "title": self.__get_nested(
-                res["objects"], "activity", "activity.id", "<missing>"
+                res["objects"], "activity", "activity.id", "MISSING_PROPERTY"
             ),
             "location_name": self.__get_nested(
-                res["objects"], "room", "room.name", "<missing>"
+                res["objects"], "room", "room.name", "MISSING_PROPERTY"
             ),
             "description": "<br>".join(
                 [
                     self.__get_nested(
-                        res["objects"], "courseevt", "courseevt.coursename", "<missing>"
+                        res["objects"],
+                        "courseevt",
+                        "courseevt.coursename",
+                        "MISSING_PROPERTY",
                     ),
                     self.__get_nested(
-                        res["objects"], "person_staff", "person.fullname", "<missing>"
+                        res["objects"],
+                        "person_staff",
+                        "person.fullname",
+                        "MISSING_PROPERTY",
                     ),
                 ]
             ),
             "start_at": res["start_at"],
             "end_at": res["end_at"],
+        }
+
+    def __return_types(self):
+        return {
+            "activity": ["activity.id"],
+            "room": ["room.name"],
+            "courseevt": ["courseevt.coursename"],
+            "person_staff": ["person.fullname"],
         }
 
     def __get_nested(self, x, a, b, default):
