@@ -37,9 +37,7 @@ class App:
             description="API for handling connections between TimeEdit and Canvas",
             prefix="/api",
         )
-        connection_api.add_resource(
-            ConnectionApi, "", resource_class_kwargs={"db": self.db}
-        )
+        connection_api.add_resource(ConnectionApi, "", resource_class_kwargs={"db": self.db})
         api.add_namespace(connection_api)
 
         @self.flask.after_request
@@ -60,9 +58,7 @@ class App:
                 canvas_groups_n += 1
 
                 # Remove all events previously added by us to this Canvas group
-                for event in session.query(Event).filter(
-                    Event.canvas_group == canvas_group
-                ):
+                for event in session.query(Event).filter(Event.canvas_group == canvas_group):
                     # If this event does not exist on Canvas, this is a NOOP and no
                     # exception is raised.
                     self.canvas.delete_event(event.canvas_id)
@@ -78,20 +74,15 @@ class App:
 
                 # Push to Canvas and add to database
                 te_groups = flat_list(
-                    session.query(Connection.te_group).filter(
-                        Connection.canvas_group == canvas_group
-                    )
+                    session.query(Connection.te_group).filter(Connection.canvas_group == canvas_group)
                 )
 
                 self.logger.info(f"Processing: {te_groups} → {canvas_group}")
-                for r in self.timeedit.find_reservations_all(
-                    te_groups, self.__return_types()
-                ):
+                for r in self.timeedit.find_reservations_all(te_groups, self.__return_types()):
                     # Try/finally ensures invariant 1.
                     try:
                         canvas_event = self.canvas.create_event(
-                            self.__canvas_event(r)
-                            | {"context_code": f"course_{canvas_group}"}
+                            self.__canvas_event(r) | {"context_code": f"course_{canvas_group}"}
                         )
                     finally:
                         session.add(
@@ -101,21 +92,15 @@ class App:
                                 canvas_group=canvas_group,
                             )
                         )
-        self.logger.info(
-            f"Sync job completed; {canvas_groups_n} Canvas groups processed"
-        )
+        self.logger.info(f"Sync job completed; {canvas_groups_n} Canvas groups processed")
 
     def __canvas_event(self, res):
         """Build a canvas event from a TimeEdit `reservation`."""
         # TODO: Use configured values to create description. Configure this from web interface for connections.
         # TODO: Use English (e.g. `courseevt.coursename_eng`) for some users? Or configurable for entire course instance.
         return {
-            "title": self.__get_nested(
-                res["objects"], "activity", "activity.id", "MISSING_PROPERTY"
-            ),
-            "location_name": self.__get_nested(
-                res["objects"], "room", "room.name", "MISSING_PROPERTY"
-            ),
+            "title": self.__get_nested(res["objects"], "activity", "activity.id", "MISSING_PROPERTY"),
+            "location_name": self.__get_nested(res["objects"], "room", "room.name", "MISSING_PROPERTY"),
             "description": "<br>".join(
                 [
                     self.__get_nested(

@@ -53,9 +53,7 @@ class DB:
             "database": "TE_CANVAS_DB_DATABASE",
         }
 
-        env_vars = {
-            k: os.environ[v] for (k, v) in env_var_mapping.items() if v in os.environ
-        }
+        env_vars = {k: os.environ[v] for (k, v) in env_var_mapping.items() if v in os.environ}
         conn = env_vars | kwargs
 
         try:
@@ -117,9 +115,7 @@ class DB:
                 raise DeleteFlagAlreadySet
             row.delete_flag = True
 
-    def get_connections(
-        self, canvas_group: Optional[str] = None
-    ) -> list[tuple[str, str, bool]]:
+    def get_connections(self, canvas_group: Optional[str] = None) -> list[tuple[str, str, bool]]:
         with self.sqla_session() as session:
             # NOTE: We cannot return a list of Connection here, since the Session
             # they are connected to is closed at end of this block.

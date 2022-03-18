@@ -15,9 +15,7 @@ class TestTE(unittest.TestCase):
     def test_find_types_all(self):
         """find_types_all should return at least one course."""
         types = self.timeedit.find_types_all()
-        self.assertGreater(
-            len(types), 0, "find_types_all should return at least one course."
-        )
+        self.assertGreater(len(types), 0, "find_types_all should return at least one course.")
         # Don't know how meaningful it is to add these sorts of tests...
         # Perhaps just throw an exception if no reservations are found, since
         # this could point to some issue (unless the schedule is entirely new).

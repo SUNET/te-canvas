@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-black te_canvas
+black -l 120 te_canvas
 isort --profile black te_canvas

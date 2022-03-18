@@ -63,14 +63,10 @@ class TestAPI(unittest.TestCase):
         self.assertTrue("room" in json)
 
     def test_api_te_object(self):
-        response = self.client.get(
-            "/api/timeedit/object", query_string={"extid": "fullroom_foobar"}
-        )
+        response = self.client.get("/api/timeedit/object", query_string={"extid": "fullroom_foobar"})
         self.assertEqual(response.status_code, 404)
 
-        response = self.client.get(
-            "/api/timeedit/object", query_string={"extid": "fullroom_unittest"}
-        )
+        response = self.client.get("/api/timeedit/object", query_string={"extid": "fullroom_unittest"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, self.unittest_room)
 
@@ -80,22 +76,15 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(
             response.json,
             {
-                "errors": {
-                    "type": "Missing required parameter in the JSON body or the post body or the query string"
-                },
+                "errors": {"type": "Missing required parameter in the JSON body or the post body or the query string"},
                 "message": "Input payload validation failed",
             },
         )
 
-        response = self.client.get(
-            "/api/timeedit/objects", query_string={"type": "fullroom"}
-        )
+        response = self.client.get("/api/timeedit/objects", query_string={"type": "fullroom"})
         self.assertEqual(response.status_code, 200)
         json = typing.cast(dict, response.json)
-        self.assertTrue(
-            {x: self.unittest_room[x] for x in ["extid", "general.id", "general.title"]}
-            in json
-        )
+        self.assertTrue({x: self.unittest_room[x] for x in ["extid", "general.id", "general.title"]} in json)
 
     def test_api_te_objects_searchstring(self):
         for x in ["", "unitt", "unittest"]:
@@ -104,13 +93,7 @@ class TestAPI(unittest.TestCase):
                 query_string={"type": "fullroom", "search_string": x},
             )
             json = typing.cast(dict, response.json)
-            self.assertTrue(
-                {
-                    x: self.unittest_room[x]
-                    for x in ["extid", "general.id", "general.title"]
-                }
-                in json
-            )
+            self.assertTrue({x: self.unittest_room[x] for x in ["extid", "general.id", "general.title"]} in json)
             if x == "unittest":
                 self.assertEqual(len(json), 1)
 
@@ -121,9 +104,7 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(response.json, [])
 
     def test_api_te_objects_pagination(self):
-        response = self.client.get(
-            "/api/timeedit/objects", query_string={"type": "fullroom"}
-        )
+        response = self.client.get("/api/timeedit/objects", query_string={"type": "fullroom"})
         self.assertEqual(response.status_code, 200)
         json = typing.cast(dict, response.json)
         fullrooms_all = json
@@ -167,14 +148,10 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [])
 
-        response = self.client.post(
-            "/api/connection", data={"te_group": "foo", "canvas_group": "bar"}
-        )
+        response = self.client.post("/api/connection", data={"te_group": "foo", "canvas_group": "bar"})
         self.assertEqual(response.status_code, 204)  # No content
 
-        response = self.client.post(
-            "/api/connection", data={"te_group": "foo", "canvas_group": "bar"}
-        )
+        response = self.client.post("/api/connection", data={"te_group": "foo", "canvas_group": "bar"})
         self.assertEqual(response.status_code, 404)  # Already exists
 
         response = self.client.get("/api/connection")
@@ -184,15 +161,11 @@ class TestAPI(unittest.TestCase):
             [{"te_group": "foo", "canvas_group": "bar", "delete_flag": False}],
         )
 
-        response = self.client.delete(
-            "/api/connection", data={"te_group": "foo", "canvas_group": "bar"}
-        )
+        response = self.client.delete("/api/connection", data={"te_group": "foo", "canvas_group": "bar"})
         self.assertEqual(response.status_code, 204)
 
         # The delete flag is set but it has not been deleted yet (by the sync job)
-        response = self.client.delete(
-            "/api/connection", data={"te_group": "foo", "canvas_group": "bar"}
-        )
+        response = self.client.delete("/api/connection", data={"te_group": "foo", "canvas_group": "bar"})
         self.assertEqual(response.status_code, 409)
 
 

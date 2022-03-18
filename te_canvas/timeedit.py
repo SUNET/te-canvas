@@ -100,9 +100,7 @@ class TimeEdit:
         res["type.name"] = types[type_id]
         return res
 
-    def find_reservations_all(
-        self, extids: list[str], return_types: dict[str, list[str]]
-    ):
+    def find_reservations_all(self, extids: list[str], return_types: dict[str, list[str]]):
         """Get all reservations for a given set of objects."""
 
         # If extids is empty, findReservations will return *all* reservations, which
@@ -140,9 +138,7 @@ class TimeEdit:
             )["reservations"]["reservation"]
             res += page
         if len(res) == 0:
-            logger.warning(
-                f"te.find_reservations_all({extids}) returned 0 reservations."
-            )
+            logger.warning(f"te.find_reservations_all({extids}) returned 0 reservations.")
 
         return list(map(self.__unpack_reservation, res))
 

@@ -24,9 +24,7 @@ class Objects(Resource):
     @timeedit_api.param("type", "Type of object to get.")
     @timeedit_api.param("number_of_objects", "Number of objects to return, max 1000.")
     @timeedit_api.param("begin_index", "Starting index of requested object sequence.")
-    @timeedit_api.param(
-        "search_string", "general.id or general.title must contain this string"
-    )
+    @timeedit_api.param("search_string", "general.id or general.title must contain this string")
     def get(self):
         args = self.parser.parse_args(strict=True)
         type = args["type"]
