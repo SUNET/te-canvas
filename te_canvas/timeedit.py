@@ -164,16 +164,17 @@ class TimeEdit:
             "end_at": datetime.strptime(r["end"], date_format),
             "length": r["length"],
             "modified": r["modified"],
+            "objects": {},
         }
         for o in r["objects"]["object"]:
             type, fields = self.__unpack_fields(o)
-            res[type] = fields
+            res["objects"][type] = fields
         return res
 
     def __unpack_fields(self, object: dict) -> tuple[str, dict[str, str]]:
         """Takes a TimeEdit `object`. Return the object `type` and all its fields packed in a dict."""
         res = {}
-        res["id"] = object["extid"]
+        res["extid"] = object["extid"]
         for f in object["fields"]["field"]:
             # NOTE: Assumption that there is only one value per field
             res[f["extid"]] = f["value"][0]
