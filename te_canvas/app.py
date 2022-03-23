@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from flask import Flask, request
 from flask_cors import CORS
@@ -94,7 +95,7 @@ class App:
                 "te_event_modify_date": te_event_modify_date,
             }
 
-    def __has_changed(self, prev_state: State, state: State) -> bool:
+    def __has_changed(self, prev_state: Optional[State], state: State) -> bool:
         return state != prev_state
 
     # Invariant 1: Events in database is a superset of (our) events on Canvas.
