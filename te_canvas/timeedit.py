@@ -149,7 +149,7 @@ class TimeEdit:
             "start_at": datetime.strptime(r["begin"], date_format),
             "end_at": datetime.strptime(r["end"], date_format),
             "length": r["length"],
-            "modified": r["modified"],
+            "modified": datetime.strptime(r["modified"], date_format),
             "objects": {},
         }
         for o in r["objects"]["object"]:

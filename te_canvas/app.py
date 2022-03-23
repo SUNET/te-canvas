@@ -13,6 +13,8 @@ from te_canvas.db import DB, Connection, Event, flat_list
 from te_canvas.log import get_logger
 from te_canvas.timeedit import TimeEdit
 
+State = dict[str, str]
+
 
 class App:
     def __init__(self, db):
@@ -49,19 +51,75 @@ class App:
             )
             return response
 
+        # Mapping canvas_group to in-memory State:s
+        self.states: dict[str, State] = {}
+
+    # Modifications to detect:
+    # 1. Connection modified
+    #     1a. Connection added
+    #     1b. Connection flagged for deletion
+    # 2. TE event modified
+    # 3. TE event created
+    # 4. TE event deleted
+    #
+    # TODO:
+    # 5. sync_job not completed, should be retried
+    # 6. Canvas event modified?
+    #
+    # Means of detection:
+    # 1:   Hash of TE connections not flagged for deletion
+    # 2:   Latest modification timestamp in set of TE events
+    # 3,4: Hash of TE event IDs
+    def __state(self, canvas_group: str) -> State:
+        with self.db.sqla_session() as session:
+            # 1
+            te_groups = flat_list(
+                session.query(Connection.te_group)
+                .filter(Connection.canvas_group == canvas_group, Connection.delete_flag == False)
+                .order_by(Connection.canvas_group, Connection.te_group)
+            )
+
+            te_events = self.timeedit.find_reservations_all(te_groups, {})
+
+            # 3,4
+            te_event_ids = [str(e["id"]) for e in te_events]
+
+            # 2
+            te_event_modify_date = str(max([e["modified"] for e in te_events]))
+
+            sep = ":"
+            return {
+                "te_groups": sep.join(te_groups),
+                "te_event_ids": sep.join(te_event_ids),
+                "te_event_modify_date": te_event_modify_date,
+            }
+
+    def __has_changed(self, prev_state: State, state: State) -> bool:
+        return state == prev_state
+
     # Invariant 1: Events in database is a superset of (our) events on Canvas.
     # Invariant 2: For every event E in the database, there exists a connection C s.t.
     #              C.canvas_group = E.canvas_group and
     #              C.te_group = E.te_group.
     def sync_job(self):
         self.logger.info("Sync job started")
-        canvas_groups_n = 0
+        canvas_groups_synced = 0
+        canvas_groups_skipped = 0
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
             # Note the comma!
             for (canvas_group,) in (
                 session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group, Connection.te_group)
             ):
-                canvas_groups_n += 1
+                # Change detection
+                prev_state = self.states.get(canvas_group)
+                new_state = self.__state(canvas_group)
+                self.states[canvas_group] = new_state
+                if not self.__has_changed(prev_state, new_state):
+                    self.logger.info(f"Skipping {canvas_group}, nothing changed")
+                    canvas_groups_skipped += 1
+                    continue
+
+                canvas_groups_synced += 1
 
                 # Remove all events previously added by us to this Canvas group
                 for event in (
@@ -106,7 +164,9 @@ class App:
                                 canvas_group=canvas_group,
                             )
                         )
-        self.logger.info(f"Sync job completed; {canvas_groups_n} Canvas groups processed")
+        self.logger.info(
+            f"Sync job completed; {canvas_groups_synced} Canvas groups synced; {canvas_groups_skipped} skipped"
+        )
 
     def __canvas_event(self, res):
         """Build a canvas event from a TimeEdit `reservation`."""
