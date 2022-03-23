@@ -20,6 +20,10 @@ Base = declarative_base()
 
 
 class Connection(Base):
+    # NOTE: For a given canvas_group C and te_group T, there can only be one
+    # connection. Once a connection's delete flag has been set the connection
+    # can not be modified, and a new connection (C, T) can not be added until
+    # the old one is deleted by App.sync_job().
     __tablename__ = "connections"
     canvas_group = Column(String, primary_key=True)
     te_group = Column(String, primary_key=True)
