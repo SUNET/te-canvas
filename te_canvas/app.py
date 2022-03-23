@@ -149,11 +149,11 @@ class App:
                 )
 
                 self.logger.info(f"Processing: {te_groups} → {canvas_group}")
-                for r in self.timeedit.find_reservations_all(te_groups, self.__return_types()):
+                for r in self.timeedit.find_reservations_all(te_groups, _return_types()):
                     # Try/finally ensures invariant 1.
                     try:
                         canvas_event = self.canvas.create_event(
-                            self.__canvas_event(r) | {"context_code": f"course_{canvas_group}"}
+                            _canvas_event(r) | {"context_code": f"course_{canvas_group}"}
                         )
                     finally:
                         session.add(
@@ -167,49 +167,55 @@ class App:
             f"Sync job completed; {canvas_groups_synced} Canvas groups synced; {canvas_groups_skipped} skipped"
         )
 
-    def __canvas_event(self, res):
-        """Build a canvas event from a TimeEdit `reservation`."""
-        # TODO: Use configured values to create description. Configure this from web interface for connections.
-        # TODO: Use English (e.g. `courseevt.coursename_eng`) for some users? Or configurable for entire course instance.
-        return {
-            "title": self.__get_nested(res["objects"], "activity", "activity.id", "MISSING_PROPERTY"),
-            "location_name": self.__get_nested(res["objects"], "room", "room.name", "MISSING_PROPERTY"),
-            "description": "<br>".join(
-                [
-                    self.__get_nested(
-                        res["objects"],
-                        "courseevt",
-                        "courseevt.coursename",
-                        "MISSING_PROPERTY",
-                    ),
-                    self.__get_nested(
-                        res["objects"],
-                        "person_staff",
-                        "person.fullname",
-                        "MISSING_PROPERTY",
-                    ),
-                ]
-            ),
-            "start_at": res["start_at"],
-            "end_at": res["end_at"],
-        }
-
-    def __return_types(self):
-        return {
-            "activity": ["activity.id"],
-            "room": ["room.name"],
-            "courseevt": ["courseevt.coursename"],
-            "person_staff": ["person.fullname"],
-        }
-
-    def __get_nested(self, x, a, b, default):
-        """Utility function for getting x[a][b] without raising a KeyError when either a or b might be missing."""
-        if (a not in x) or (b not in x[a]):
-            return default
-        return x[a][b]
-
 
 app = App(DB())
 
 if __name__ == "__main__":
     app.sync_job()
+
+# --- Helper functions ---------------------------------------------------------
+
+
+def _canvas_event(res):
+    """Build a canvas event from a TimeEdit `reservation`."""
+    # TODO: Use configured values to create description. Configure this from web interface for connections.
+    # TODO: Use English (e.g. `courseevt.coursename_eng`) for some users? Or configurable for entire course instance.
+    return {
+        "title": _get_nested(res["objects"], "activity", "activity.id", "MISSING_PROPERTY"),
+        "location_name": _get_nested(res["objects"], "room", "room.name", "MISSING_PROPERTY"),
+        "description": "<br>".join(
+            [
+                _get_nested(
+                    res["objects"],
+                    "courseevt",
+                    "courseevt.coursename",
+                    "MISSING_PROPERTY",
+                ),
+                _get_nested(
+                    res["objects"],
+                    "person_staff",
+                    "person.fullname",
+                    "MISSING_PROPERTY",
+                ),
+            ]
+        ),
+        "start_at": res["start_at"],
+        "end_at": res["end_at"],
+    }
+
+
+# Dict { T: F[] }, meaning that for objects of type T we want to get fields F
+def _return_types():
+    return {
+        "activity": ["activity.id"],
+        "room": ["room.name"],
+        "courseevt": ["courseevt.coursename"],
+        "person_staff": ["person.fullname"],
+    }
+
+
+def _get_nested(x, a, b, default):
+    """Utility function for getting x[a][b] without raising a KeyError when either a or b might be missing."""
+    if (a not in x) or (b not in x[a]):
+        return default
+    return x[a][b]
