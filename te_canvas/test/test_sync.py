@@ -75,15 +75,13 @@ class TestSync(unittest.TestCase):
             # The local DB and Canvas event agree on ID
             self.assertEqual(event_local.canvas_id, str(event_canvas.id))
 
-        # Re-run sync job and see that the event has a new ID on Canvas (i.e.
-        # has been removed and re-added).
-        # TODO: This behaviour might need to change to e.g. not break event URLs.
+        # Re-run sync job and see that the event has not been removed and re-added
         event_old = events[0]
         self.app.sync_job()
         events = self.canvas.get_events_all(CANVAS_GROUP)
         self.assertEqual(len(events), 1)
         event_new = events[0]
-        self.assertNotEqual(event_old.id, event_new.id)
+        self.assertEqual(event_old.id, event_new.id)
 
         # TODO:
         # - Edit event on TE, run sync job.
