@@ -49,6 +49,10 @@ class App:
             )
             return response
 
+    # Invariant 1: Events in database is a superset of (our) events on Canvas.
+    # Invariant 2: For every event E in the database, there exists a connection C s.t.
+    #              C.canvas_group = E.canvas_group and
+    #              C.te_group = E.te_group.
     def sync_job(self):
         self.logger.info("Sync job started")
         canvas_groups_n = 0
