@@ -211,3 +211,6 @@ class App:
 
 
 app = App(DB())
+
+if __name__ == "__main__":
+    app.sync_job()
