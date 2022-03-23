@@ -85,7 +85,7 @@ class App:
             te_event_ids = [str(e["id"]) for e in te_events]
 
             # 2
-            te_event_modify_date = str(max([e["modified"] for e in te_events]))
+            te_event_modify_date = "" if len(te_events) == 0 else str(max([e["modified"] for e in te_events]))
 
             sep = ":"
             return {
@@ -95,7 +95,7 @@ class App:
             }
 
     def __has_changed(self, prev_state: State, state: State) -> bool:
-        return state == prev_state
+        return state != prev_state
 
     # Invariant 1: Events in database is a superset of (our) events on Canvas.
     # Invariant 2: For every event E in the database, there exists a connection C s.t.
@@ -132,15 +132,13 @@ class App:
                     self.canvas.delete_event(event.canvas_id)
 
                 # Clear deleted events
-                session.query(Event).filter(Event.canvas_group == canvas_group).order_by(
-                    Event.canvas_id, Event.te_id
-                ).delete()
+                session.query(Event).filter(Event.canvas_group == canvas_group).delete()
 
                 # Delete flagged connections
                 session.query(Connection).filter(
                     Connection.canvas_group == canvas_group,
                     Connection.delete_flag == True,
-                ).order_by(Connection.canvas_group, Connection.te_group).delete()
+                ).delete()
 
                 # Push to Canvas and add to database
                 te_groups = flat_list(
