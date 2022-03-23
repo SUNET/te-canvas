@@ -85,6 +85,7 @@ class TestSync(unittest.TestCase):
 
         # TODO:
         # - Edit event on TE, run sync job.
+        # - Add event on TE, run sync job.
         # - Remove event on TE, run sync job.
 
         # Flag connection for deletion, run sync_job again
