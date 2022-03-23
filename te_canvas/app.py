@@ -58,27 +58,37 @@ class App:
         canvas_groups_n = 0
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
             # Note the comma!
-            for (canvas_group,) in session.query(Connection.canvas_group).distinct():
+            for (canvas_group,) in (
+                session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group, Connection.te_group)
+            ):
                 canvas_groups_n += 1
 
                 # Remove all events previously added by us to this Canvas group
-                for event in session.query(Event).filter(Event.canvas_group == canvas_group):
+                for event in (
+                    session.query(Event)
+                    .filter(Event.canvas_group == canvas_group)
+                    .order_by(Event.canvas_id, Event.te_id)
+                ):
                     # If this event does not exist on Canvas, this is a NOOP and no
                     # exception is raised.
                     self.canvas.delete_event(event.canvas_id)
 
                 # Clear deleted events
-                session.query(Event).filter(Event.canvas_group == canvas_group).delete()
+                session.query(Event).filter(Event.canvas_group == canvas_group).order_by(
+                    Event.canvas_id, Event.te_id
+                ).delete()
 
                 # Delete flagged connections
                 session.query(Connection).filter(
                     Connection.canvas_group == canvas_group,
                     Connection.delete_flag == True,
-                ).delete()
+                ).order_by(Connection.canvas_group, Connection.te_group).delete()
 
                 # Push to Canvas and add to database
                 te_groups = flat_list(
-                    session.query(Connection.te_group).filter(Connection.canvas_group == canvas_group)
+                    session.query(Connection.te_group)
+                    .filter(Connection.canvas_group == canvas_group)
+                    .order_by(Connection.canvas_group, Connection.te_group)
                 )
 
                 self.logger.info(f"Processing: {te_groups} → {canvas_group}")
