@@ -144,24 +144,18 @@ class TimeEdit:
 
     def __unpack_reservation(self, r):
         date_format = "%Y%m%dT%H%M%S"
-        res = {
+        return {
             "id": r["id"],
             "start_at": datetime.strptime(r["begin"], date_format),
             "end_at": datetime.strptime(r["end"], date_format),
             "length": r["length"],
             "modified": datetime.strptime(r["modified"], date_format),
-            "objects": {},
+            "objects": [self.__unpack_reservation_object(o) for o in r["objects"]["object"]],
         }
-        for o in r["objects"]["object"]:
-            type, fields = self.__unpack_fields(o)
-            res["objects"][type] = fields
-        return res
 
-    def __unpack_fields(self, object: dict) -> tuple[str, dict[str, str]]:
-        """Takes a TimeEdit `object`. Return the object `type` and all its fields packed in a dict."""
-        res = {}
-        res["extid"] = object["extid"]
-        for f in object["fields"]["field"]:
-            # NOTE: Assumption that there is only one value per field
-            res[f["extid"]] = f["value"][0]
-        return object["type"], res
+    def __unpack_reservation_object(self, object: dict) -> dict:
+        return {
+            "type": object["type"],
+            "extid": object["extid"],
+            "fields": {f["extid"]: f["value"][0] for f in object["fields"]["field"]},
+        }
