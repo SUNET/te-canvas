@@ -1,5 +1,6 @@
 import logging
 import unittest
+from typing import Optional
 
 from te_canvas.app import App
 from te_canvas.canvas import Canvas
@@ -10,18 +11,18 @@ TE_GROUP = "courseevt_te-canvas-test"
 
 integration_test_event = {
     "title": "Föreläsning",
-    "location_name": "Unit Test Room",
+    "location_name": "Unit Test Room, Unit Test Room 2",
     "start_at": "2022-01-03T08:00:00Z",
     "end_at": "2022-01-03T09:00:00Z",
     "context_code": f"course_{CANVAS_GROUP}",
 }
 
 
-def dict_eq(superset: dict, subset: dict) -> bool:
+def dict_eq(superset: dict, subset: dict) -> Optional[str]:
     for key in subset:
         if not key in superset or superset[key] != subset[key]:
-            return False
-    return True
+            return key
+    return None
 
 
 class TestSync(unittest.TestCase):
@@ -45,6 +46,8 @@ class TestSync(unittest.TestCase):
 
         cls.canvas = Canvas()
         cls.canvas.delete_events_all(CANVAS_GROUP)
+
+        logging.disable()
 
     def test_canvas_empty(self):
         """Test setup."""
@@ -70,7 +73,7 @@ class TestSync(unittest.TestCase):
 
             # Event data is as expected
             self.assertEqual(event_local.canvas_group, str(CANVAS_GROUP))
-            self.assertTrue(dict_eq(vars(event_canvas), integration_test_event))
+            self.assertEqual(dict_eq(vars(event_canvas), integration_test_event), None)
 
             # The local DB and Canvas event agree on ID
             self.assertEqual(event_local.canvas_id, str(event_canvas.id))
