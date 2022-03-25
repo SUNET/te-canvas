@@ -19,6 +19,10 @@ TE_CANVAS_DB_PORT
 POSTGRES_USER
 POSTGRES_PASSWORD
 POSTGRES_DB
+
+EVENT_TITLE
+EVENT_LOCATION
+EVENT_DESCRIPTION
 ```
 
 Start PostgreSQL:
@@ -38,3 +42,20 @@ Start dev server:
 ```
 python -m te_canvas.main
 ```
+
+## Configuration
+
+The env vars `EVENT_TITLE`, `EVENT_LOCATION`, and `EVENT_DESCRIPTION` control how calendar events are translated from TimeEdit to Canvas. Each should be set to a string which may contain references to TimeEdit *object types* and their *fields* on the format `${type::field}`.
+
+For example,
+
+`EVENT_TITLE = '${activity::name} by ${teacher::firstname} ${teacher::lastname}'`
+
+and a TimeEdit reservation with the objects
+
+```
+activity = { name: 'Lecture' },
+teacher = { firstname: 'Ernst', lastname: 'Widerberg' }
+```
+
+will create a Canvas event titled *Lecture by Ernst Widerberg*.
