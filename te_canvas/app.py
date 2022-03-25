@@ -121,6 +121,7 @@ class App:
                 prev_state = self.states.get(canvas_group)
                 new_state = self.__state(canvas_group)
                 self.states[canvas_group] = new_state
+                self.logger.debug(f"State: {new_state}")
                 if not self.__has_changed(prev_state, new_state):
                     self.logger.info(f"Skipping {canvas_group}, nothing changed")
                     canvas_groups_skipped += 1
