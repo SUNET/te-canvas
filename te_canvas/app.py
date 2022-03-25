@@ -13,6 +13,7 @@ from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, flat_list
 from te_canvas.log import get_logger
 from te_canvas.timeedit import TimeEdit
+from te_canvas.translator import Translator
 
 State = dict[str, str]
 
@@ -24,6 +25,11 @@ class App:
         self.db = db
         self.canvas = Canvas()
         self.timeedit = TimeEdit()
+        self.translator = Translator(
+            os.environ["EVENT_TITLE"],
+            os.environ["EVENT_LOCATION"],
+            os.environ["EVENT_DESCRIPTION"],
+        )
 
         self.flask = Flask(__name__)
         self.flask.config["SECRET_KEY"] = os.urandom(128)
@@ -149,11 +155,11 @@ class App:
                 )
 
                 self.logger.info(f"Processing: {te_groups} → {canvas_group}")
-                for r in self.timeedit.find_reservations_all(te_groups, _return_types()):
+                for r in self.timeedit.find_reservations_all(te_groups, self.translator.return_types):
                     # Try/finally ensures invariant 1.
                     try:
                         canvas_event = self.canvas.create_event(
-                            _canvas_event(r) | {"context_code": f"course_{canvas_group}"}
+                            self.translator.canvas_event(r) | {"context_code": f"course_{canvas_group}"}
                         )
                     finally:
                         session.add(
@@ -172,50 +178,3 @@ app = App(DB())
 
 if __name__ == "__main__":
     app.sync_job()
-
-# --- Helper functions ---------------------------------------------------------
-
-
-def _canvas_event(res):
-    """Build a canvas event from a TimeEdit `reservation`."""
-    # TODO: Use configured values to create description. Configure this from web interface for connections.
-    # TODO: Use English (e.g. `courseevt.coursename_eng`) for some users? Or configurable for entire course instance.
-    return {
-        "title": _get_nested(res["objects"], "activity", "activity.id", "MISSING_PROPERTY"),
-        "location_name": _get_nested(res["objects"], "room", "room.name", "MISSING_PROPERTY"),
-        "description": "<br>".join(
-            [
-                _get_nested(
-                    res["objects"],
-                    "courseevt",
-                    "courseevt.coursename",
-                    "MISSING_PROPERTY",
-                ),
-                _get_nested(
-                    res["objects"],
-                    "person_staff",
-                    "person.fullname",
-                    "MISSING_PROPERTY",
-                ),
-            ]
-        ),
-        "start_at": res["start_at"],
-        "end_at": res["end_at"],
-    }
-
-
-# Dict { T: F[] }, meaning that for objects of type T we want to get fields F
-def _return_types():
-    return {
-        "activity": ["activity.id"],
-        "room": ["room.name"],
-        "courseevt": ["courseevt.coursename"],
-        "person_staff": ["person.fullname"],
-    }
-
-
-def _get_nested(x, a, b, default):
-    """Utility function for getting x[a][b] without raising a KeyError when either a or b might be missing."""
-    if (a not in x) or (b not in x[a]):
-        return default
-    return x[a][b]
