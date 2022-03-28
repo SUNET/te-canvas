@@ -27,9 +27,11 @@ class ConnectionApi(Resource):
     post_parser = reqparse.RequestParser()
     post_parser.add_argument("canvas_group", type=str, required=True)
     post_parser.add_argument("te_group", type=str, required=True)
+    post_parser.add_argument("te_type", type=str, required=True)
 
     @connection_api.param("canvas_group", "Canvas group ID")
     @connection_api.param("te_group", "TimeEdit group ID")
+    @connection_api.param("te_type", "TimeEdit type")
     @connection_api.response(204, "Connection created")
     @connection_api.response(404, "Connection already exists")
     @connection_api.response(
@@ -39,7 +41,7 @@ class ConnectionApi(Resource):
     def post(self):
         args = self.post_parser.parse_args(strict=True)
         try:
-            self.db.add_connection(args.canvas_group, args.te_group)
+            self.db.add_connection(args.canvas_group, args.te_group, args.te_type)
             return "", 204
         except UniqueViolation:
             return {
@@ -91,6 +93,6 @@ class ConnectionApi(Resource):
     def get(self):
         args = self.get_parser.parse_args(strict=True)
         return [
-            {"canvas_group": x, "te_group": y, "delete_flag": z}
-            for (x, y, z) in self.db.get_connections(args.canvas_group)
+            {"canvas_group": x, "te_group": y, "te_type": z, "delete_flag": d}
+            for (x, y, z, d) in self.db.get_connections(args.canvas_group)
         ]

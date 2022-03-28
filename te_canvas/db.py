@@ -27,6 +27,7 @@ class Connection(Base):
     __tablename__ = "connections"
     canvas_group = Column(String, primary_key=True)
     te_group = Column(String, primary_key=True)
+    te_type = Column(String)
     delete_flag = Column(Boolean, default=False)
 
 
@@ -92,14 +93,14 @@ class DB:
         finally:
             session.close()
 
-    def add_connection(self, canvas_group: str, te_group: str):
+    def add_connection(self, canvas_group: str, te_group: str, te_type: str):
         with self.sqla_session() as session:
             q = session.query(Connection).filter(
                 Connection.te_group == te_group,
                 Connection.canvas_group == canvas_group,
             )
             if q.count() == 0:
-                session.add(Connection(canvas_group=canvas_group, te_group=te_group))
+                session.add(Connection(canvas_group=canvas_group, te_group=te_group, te_type=te_type))
             else:
                 if q.one().delete_flag:  # Will throw if q has > 1 row (invalid state)
                     raise DeleteFlagAlreadySet
@@ -119,7 +120,7 @@ class DB:
                 raise DeleteFlagAlreadySet
             row.delete_flag = True
 
-    def get_connections(self, canvas_group: Optional[str] = None) -> list[tuple[str, str, bool]]:
+    def get_connections(self, canvas_group: Optional[str] = None) -> list[tuple[str, str, str, bool]]:
         with self.sqla_session() as session:
             # NOTE: We cannot return a list of Connection here, since the Session
             # they are connected to is closed at end of this block.
@@ -128,7 +129,7 @@ class DB:
             if canvas_group is not None:
                 query = query.filter(Connection.canvas_group == canvas_group)
 
-            return [(c.canvas_group, c.te_group, c.delete_flag) for c in query]
+            return [(c.canvas_group, c.te_group, c.te_type, c.delete_flag) for c in query]
 
 
 class DeleteFlagAlreadySet(Exception):
