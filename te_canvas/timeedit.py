@@ -92,13 +92,7 @@ class TimeEdit:
         )
         if resp is None:
             return None
-        res = list(map(self.__unpack_object, resp))[0]
-        types = self.find_types_all()
-        # NOTE: Assumption that external id is of form <type>_id
-        type_id = res["extid"].split("_")[0]
-        res["type.id"] = type_id
-        res["type.name"] = types[type_id]
-        return res
+        return list(map(self.__unpack_object, resp))[0]
 
     def find_reservations_all(self, extids: list[str], return_types: dict[str, list[str]]):
         """Get all reservations for a given set of objects."""

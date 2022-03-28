@@ -52,8 +52,6 @@ class TestAPI(unittest.TestCase):
         "general.title": "Unit Test Room",
         "room.id": "unittest",
         "room.name": "Unit Test Room",
-        "type.id": "fullroom",
-        "type.name": "Lokal (Hel)",
     }
 
     def test_api_te_types(self):
