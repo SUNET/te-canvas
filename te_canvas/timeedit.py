@@ -58,7 +58,7 @@ class TimeEdit:
             # Can't really warn about this generally since this endpoint is used for searching.
             # logger.warning("te.find_objects(${type}, ${number_of_objects}, ${begin_index}, ${search_string}) returned 0 objects.")
             return []
-        return list(map(self.__unpack_object, resp["objects"]["object"]))
+        return list(map(_unpack_object, resp["objects"]["object"]))
 
     def find_objects_all(self, type, search_string):
         """Get all objects of a given type."""
@@ -78,12 +78,6 @@ class TimeEdit:
             res += page
         return res
 
-    def __unpack_object(self, o):
-        res = {"extid": o["extid"]}
-        for f in o["fields"]["field"]:
-            res[f["extid"]] = f["value"][0]
-        return res
-
     def get_object(self, extid: str) -> Optional[dict]:
         """Get a specific object based on external id."""
         resp = self.client.service.getObjects(
@@ -92,7 +86,7 @@ class TimeEdit:
         )
         if resp is None:
             return None
-        return list(map(self.__unpack_object, resp))[0]
+        return list(map(_unpack_object, resp))[0]
 
     def find_reservations_all(self, extids: list[str], return_types: dict[str, list[str]]):
         """Get all reservations for a given set of objects."""
@@ -134,22 +128,34 @@ class TimeEdit:
         if len(res) == 0:
             logger.warning(f"te.find_reservations_all({extids}) returned 0 reservations.")
 
-        return list(map(self.__unpack_reservation, res))
+        return list(map(_unpack_reservation, res))
 
-    def __unpack_reservation(self, r):
-        date_format = "%Y%m%dT%H%M%S"
-        return {
-            "id": r["id"],
-            "start_at": datetime.strptime(r["begin"], date_format),
-            "end_at": datetime.strptime(r["end"], date_format),
-            "length": r["length"],
-            "modified": datetime.strptime(r["modified"], date_format),
-            "objects": [self.__unpack_reservation_object(o) for o in r["objects"]["object"]],
-        }
 
-    def __unpack_reservation_object(self, object: dict) -> dict:
-        return {
-            "type": object["type"],
-            "extid": object["extid"],
-            "fields": {f["extid"]: f["value"][0] for f in object["fields"]["field"]},
-        }
+# ---- Helper functions --------------------------------------------------------
+
+
+def _unpack_object(o):
+    res = {"extid": o["extid"]}
+    for f in o["fields"]["field"]:
+        res[f["extid"]] = f["value"][0]
+    return res
+
+
+def _unpack_reservation(r):
+    date_format = "%Y%m%dT%H%M%S"
+    return {
+        "id": r["id"],
+        "start_at": datetime.strptime(r["begin"], date_format),
+        "end_at": datetime.strptime(r["end"], date_format),
+        "length": r["length"],
+        "modified": datetime.strptime(r["modified"], date_format),
+        "objects": [_unpack_reservation_object(o) for o in r["objects"]["object"]],
+    }
+
+
+def _unpack_reservation_object(object: dict) -> dict:
+    return {
+        "type": object["type"],
+        "extid": object["extid"],
+        "fields": {f["extid"]: f["value"][0] for f in object["fields"]["field"]},
+    }

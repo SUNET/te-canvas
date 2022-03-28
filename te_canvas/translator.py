@@ -29,6 +29,8 @@ class Translator:
         }
 
 
+# ---- Helper functions --------------------------------------------------------
+
 SEPARATOR = "::"
 
 # Subclass to allow any characters in braced identifiers. We consider only braced identifiers.
