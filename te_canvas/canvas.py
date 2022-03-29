@@ -6,6 +6,7 @@ from canvasapi.calendar_event import CalendarEvent
 from canvasapi.exceptions import ResourceDoesNotExist
 
 from te_canvas.log import get_logger
+from te_canvas.translator import EVENT_TAG
 
 
 class Canvas:
@@ -38,8 +39,6 @@ class Canvas:
         except ResourceDoesNotExist:
             pass
 
-    # NOTE: The following two functions used only for testing.
-
     def get_events_all(self, course: int):
         return list(
             self.canvas.get_calendar_events(
@@ -49,6 +48,14 @@ class Canvas:
             )
         )
 
-    def delete_events_all(self, course: int):
+    # Recovery method to clear all Canvas events without using the event
+    # database. Goes through all Canvas events and removes all whose description
+    # contain translator.EVENT_TAG.
+    def clear_events_tagged(self, course: int):
+        deleted = []
         for event in self.get_events_all(course):
-            self.delete_event(event.id)
+            if EVENT_TAG in event.description:
+                self.logger.info(f"Deleting {event.id}")
+                deleted.append(event)
+                self.delete_event(event.id)
+        print(deleted)

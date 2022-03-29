@@ -45,7 +45,9 @@ class TestSync(unittest.TestCase):
         cls.app.logger.setLevel(logging.CRITICAL)
 
         cls.canvas = Canvas()
-        cls.canvas.delete_events_all(CANVAS_GROUP)
+        for event in cls.canvas.get_events_all(CANVAS_GROUP):
+            cls.canvas.delete_event(event.id)
+
 
         logging.disable()
 
