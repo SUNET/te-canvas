@@ -35,7 +35,9 @@ class Canvas:
     # raised.
     def delete_event(self, id: int):
         try:
-            self.canvas.get_calendar_event(id).delete()
+            event = self.canvas.get_calendar_event(id)
+            if event.workflow_state != "deleted":
+                event.delete()
         except ResourceDoesNotExist:
             pass
 
