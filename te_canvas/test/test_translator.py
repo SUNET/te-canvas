@@ -35,7 +35,7 @@ class TestTranslator(unittest.TestCase):
         canvas_event = {
             "title": "john, paul",
             "location_name": "march",
-            "description": "thursday",
+            "description": "thursday" + translator.EVENT_TAG,
             "start_at": datetime.date(2022, 3, 25),
             "end_at": datetime.date(2022, 3, 25),
         }

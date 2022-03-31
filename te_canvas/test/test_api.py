@@ -146,24 +146,30 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [])
 
-        response = self.client.post("/api/connection", data={"te_group": "foo", "canvas_group": "bar"})
+        response = self.client.post(
+            "/api/connection", data={"te_group": "foo", "te_type": "test_type", "canvas_group": "bar"}
+        )
         self.assertEqual(response.status_code, 204)  # No content
 
-        response = self.client.post("/api/connection", data={"te_group": "foo", "canvas_group": "bar"})
+        response = self.client.post(
+            "/api/connection", data={"te_group": "foo", "te_type": "test_type", "canvas_group": "bar"}
+        )
         self.assertEqual(response.status_code, 404)  # Already exists
 
         response = self.client.get("/api/connection")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.json,
-            [{"te_group": "foo", "canvas_group": "bar", "delete_flag": False}],
+            [{"te_group": "foo", "te_type": "test_type", "canvas_group": "bar", "delete_flag": False}],
         )
 
         response = self.client.delete("/api/connection", data={"te_group": "foo", "canvas_group": "bar"})
         self.assertEqual(response.status_code, 204)
 
         # The delete flag is set but it has not been deleted yet (by the sync job)
-        response = self.client.delete("/api/connection", data={"te_group": "foo", "canvas_group": "bar"})
+        response = self.client.delete(
+            "/api/connection", data={"te_group": "foo", "canvas_group": "bar"}
+        )
         self.assertEqual(response.status_code, 409)
 
 
