@@ -114,9 +114,8 @@ class App:
         canvas_groups_skipped = 0
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
             # Note the comma!
-            for (canvas_group,) in (
-                session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group)
-            ):
+            for (canvas_group,) in session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group):
+                self.logger.info(f"Processing {canvas_group}")
                 # Change detection
                 prev_state = self.states.get(canvas_group)
                 new_state = self.__state(canvas_group)
@@ -130,6 +129,9 @@ class App:
                 canvas_groups_synced += 1
 
                 # Remove all events previously added by us to this Canvas group
+                self.logger.info(
+                    f"Deleting events for {canvas_group} ({session.query(Event).filter(Event.canvas_group == canvas_group).count()} events)"
+                )
                 for event in (
                     session.query(Event)
                     .filter(Event.canvas_group == canvas_group)
@@ -156,7 +158,7 @@ class App:
                 )
 
                 reservations = self.timeedit.find_reservations_all(te_groups, self.translator.return_types)
-                self.logger.info(f"Processing: {te_groups} → {canvas_group} ({len(reservations)} events)")
+                self.logger.info(f"Adding events: {te_groups} → {canvas_group} ({len(reservations)} events)")
                 for r in reservations:
                     # Try/finally ensures invariant 1.
                     try:
