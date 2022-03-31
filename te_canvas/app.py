@@ -115,7 +115,7 @@ class App:
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
             # Note the comma!
             for (canvas_group,) in (
-                session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group, Connection.te_group)
+                session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group)
             ):
                 # Change detection
                 prev_state = self.states.get(canvas_group)
