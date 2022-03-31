@@ -155,8 +155,9 @@ class App:
                     .order_by(Connection.canvas_group, Connection.te_group)
                 )
 
-                self.logger.info(f"Processing: {te_groups} → {canvas_group}")
-                for r in self.timeedit.find_reservations_all(te_groups, self.translator.return_types):
+                reservations = self.timeedit.find_reservations_all(te_groups, self.translator.return_types)
+                self.logger.info(f"Processing: {te_groups} → {canvas_group} ({len(reservations)} events)")
+                for r in reservations:
                     # Try/finally ensures invariant 1.
                     try:
                         canvas_event = self.canvas.create_event(
