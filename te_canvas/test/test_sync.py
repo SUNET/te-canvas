@@ -48,7 +48,6 @@ class TestSync(unittest.TestCase):
         for event in cls.canvas.get_events_all(CANVAS_GROUP):
             cls.canvas.delete_event(event.id)
 
-
         logging.disable()
 
     def test_canvas_empty(self):
