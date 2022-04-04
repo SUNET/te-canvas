@@ -27,7 +27,7 @@ EVENT_DESCRIPTION
 Start PostgreSQL:
 
 ```
-docker-compose up -d
+docker-compose up postgres
 ```
 
 Install the requirements:
@@ -36,10 +36,16 @@ Install the requirements:
 pip install -r requirements/dev.txt
 ```
 
-Start dev server:
+Start API dev server:
 
 ```
-python -m te_canvas.main
+python -m te_canvas.flask
+```
+
+Start sync engine:
+
+```
+python -m te_canvas.job
 ```
 
 ## Configuration
@@ -58,3 +64,30 @@ teacher = { firstname: 'Ernst', lastname: 'Widerberg' }
 ```
 
 will create a Canvas event titled *Lecture by Ernst Widerberg*.
+
+## Docker
+
+Start API server:
+
+```
+docker-compose --profile api up
+```
+
+Start sync engine:
+
+```
+docker-compose --profile sync up
+```
+
+Start both:
+
+```
+docker-compose --profile api --profile sync up
+```
+
+## Testing
+
+```
+docker-compose --profile testing up
+./test.sh
+```
