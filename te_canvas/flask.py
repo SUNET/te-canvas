@@ -44,3 +44,7 @@ def create_app(db: DB = DB(), timeedit: TimeEdit = TimeEdit(), canvas: Canvas = 
     api.add_namespace(connection_api.ns)
 
     return flask
+
+
+if __name__ == "__main__":
+    create_app().run(debug=True, host="0.0.0.0", port=5000)
