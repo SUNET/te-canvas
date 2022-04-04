@@ -1,5 +1,8 @@
 from typing import Optional
 
+from apscheduler.schedulers.background import BlockingScheduler
+from pytz import utc
+
 from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, flat_list
 from te_canvas.log import get_logger
@@ -9,7 +12,28 @@ from te_canvas.translator import Translator
 State = dict[str, str]
 
 
-class Sync:
+class JobScheduler(object):
+    def __init__(self):
+        self.scheduler = BlockingScheduler(timezone=utc)
+        self.logger = get_logger()
+
+    def get(self):
+        return self.scheduler
+
+    def start(self):
+        self.logger.info("Starting scheduler.")
+        return self.scheduler.start()
+
+    def stop(self):
+        self.logger.info("Stopping scheduler.")
+        return self.scheduler.shutdown()
+
+    def add(self, func, seconds, kwargs):
+        self.logger.info(f"Adding job to scheduler: interval={seconds}")
+        return self.scheduler.add_job(func, "interval", seconds=seconds, kwargs=kwargs)
+
+
+class Syncer:
     def __init__(
         self,
         db: DB = DB(),
@@ -145,4 +169,9 @@ class Sync:
 
 
 if __name__ == "__main__":
-    Sync().sync_job()
+    syncer = Syncer()
+    syncer.sync_job()
+
+    jobs = JobScheduler()
+    jobs.add(syncer.sync_job, 10, {})
+    jobs.start()

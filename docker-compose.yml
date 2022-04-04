@@ -16,7 +16,7 @@ services:
       - ${POSTGRES_PORT}:5432
 
   postgres-test:
-    profiles: ["testing"]
+    profiles: ["test"]
     image: "postgres:12"
     volumes:
       - type: volume

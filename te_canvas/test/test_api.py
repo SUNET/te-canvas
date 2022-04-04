@@ -2,7 +2,7 @@ import typing
 import unittest
 
 from te_canvas.db import DB, Connection, Event, Test
-from te_canvas.flask import create_app
+from te_canvas.api import create_app
 
 
 class TestAPI(unittest.TestCase):

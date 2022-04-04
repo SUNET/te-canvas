@@ -39,13 +39,13 @@ pip install -r requirements/dev.txt
 Start API dev server:
 
 ```
-python -m te_canvas.flask
+python -m te_canvas.api
 ```
 
 Start sync engine:
 
 ```
-python -m te_canvas.job
+python -m te_canvas.sync
 ```
 
 ## Configuration
@@ -88,6 +88,6 @@ docker-compose --profile api --profile sync up
 ## Testing
 
 ```
-docker-compose --profile testing up
+docker-compose --profile test up
 ./test.sh
 ```
