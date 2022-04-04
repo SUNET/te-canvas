@@ -1,0 +1,12 @@
+FROM python:3
+
+WORKDIR /usr/src/app
+
+COPY requirements/prod.txt ./
+RUN pip install --no-cache-dir -r prod.txt
+
+COPY . .
+
+ENV PYTHONPATH=/usr/src/app
+
+CMD [ "gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "te_canvas.app:get_flask()" ]

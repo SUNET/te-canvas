@@ -25,6 +25,34 @@ services:
       - POSTGRES_DB=test_db
     ports:
       - 5433:5432
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile_api
+    depends_on: [ postgres ]
+    ports: [ 127.0.0.1:5000:5000 ]
+    environment:
+      - CANVAS_KEY
+      - CANVAS_URL
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
+      - POSTGRES_USER
+      - TE_CANVAS_DB_DATABASE
+      - TE_CANVAS_DB_PASSWORD
+      - TE_CANVAS_DB_PORT
+      - TE_CANVAS_DB_USERNAME
+      - TE_CANVAS_URL
+      - TE_CERT
+      - TE_PASSWORD
+      - TE_USERNAME
+      - TE_WSDL_URL
+
+      - TE_CANVAS_DB_HOSTNAME=postgres
+
+      # TODO: To be removed after api/sync separation
+      - EVENT_TITLE
+      - EVENT_LOCATION
+      - EVENT_DESCRIPTION
 
 volumes:
   postgres-data:
