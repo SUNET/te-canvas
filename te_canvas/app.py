@@ -49,11 +49,12 @@ class App:
         connection_api.add_resource(ConnectionApi, "", resource_class_kwargs={"db": self.db})
         api.add_namespace(connection_api)
 
+        # TODO: More standard option for logging request, e.g. werkzeug logger?
         @self.flask.after_request
         def log_request(response):
             self.logger.info(
-                "[API] Method: {}, Status: {}, URL: {}, JSON: {}".format(
-                    request.method, response.status_code, request.url, request.json
+                "[API] Method: {}, Status: {}, URL: {}".format(
+                    request.method, response.status_code, request.url
                 )
             )
             return response
