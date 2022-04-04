@@ -20,7 +20,6 @@ class TestAPI(unittest.TestCase):
             session.query(Event).delete()
             session.query(Test).delete()
 
-
         cls.client = create_app(cls.db).test_client()
 
     def test_api_setup(self):

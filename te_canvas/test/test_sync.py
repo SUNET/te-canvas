@@ -2,9 +2,9 @@ import logging
 import unittest
 from typing import Optional
 
-from te_canvas.sync import Sync
 from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, Test
+from te_canvas.sync import Sync
 
 CANVAS_GROUP = 169
 TE_GROUP = "courseevt_te-canvas-test"
