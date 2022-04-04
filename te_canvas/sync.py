@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 
 from te_canvas.canvas import Canvas
@@ -10,18 +9,20 @@ from te_canvas.translator import Translator
 State = dict[str, str]
 
 
-class App:
-    def __init__(self, db):
+class Sync:
+    def __init__(
+        self,
+        db: DB = DB(),
+        timeedit: TimeEdit = TimeEdit(),
+        canvas: Canvas = Canvas(),
+        translator: Translator = Translator(),
+    ):
         self.logger = get_logger()
 
         self.db = db
-        self.canvas = Canvas()
-        self.timeedit = TimeEdit()
-        self.translator = Translator(
-            os.environ["EVENT_TITLE"],
-            os.environ["EVENT_LOCATION"],
-            os.environ["EVENT_DESCRIPTION"],
-        )
+        self.canvas = canvas
+        self.timeedit = timeedit
+        self.translator = translator
 
         # Mapping canvas_group to in-memory State:s
         self.states: dict[str, State] = {}
@@ -143,7 +144,5 @@ class App:
         )
 
 
-app = App(DB())
-
 if __name__ == "__main__":
-    app.sync_job()
+    Sync().sync_job()

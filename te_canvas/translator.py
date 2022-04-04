@@ -1,3 +1,4 @@
+import os
 import re
 from string import Template
 
@@ -8,7 +9,12 @@ EVENT_TAG = r'<br><em><span style="font-size: 8pt;">Event added by TimeEdit inte
 
 
 class Translator:
-    def __init__(self, title, location, description):
+    def __init__(
+        self,
+        title=os.environ["EVENT_TITLE"],
+        location=os.environ["EVENT_LOCATION"],
+        description=os.environ["EVENT_DESCRIPTION"],
+    ):
         self.template_title = title
         self.template_location = location
         self.template_description = description
