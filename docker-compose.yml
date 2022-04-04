@@ -1,5 +1,6 @@
 version: '3.7'
 services:
+
   postgres:
     profiles: ["sync", "api"]
     image: "postgres:12"
@@ -12,7 +13,8 @@ services:
       - POSTGRES_PASSWORD
       - POSTGRES_DB
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:5432
+
   postgres-test:
     profiles: ["testing"]
     image: "postgres:12"
@@ -26,6 +28,7 @@ services:
       - POSTGRES_DB=test_db
     ports:
       - 5433:5432
+
   api-server:
     profiles: ["api"]
     build:
@@ -34,22 +37,20 @@ services:
     depends_on: [ postgres ]
     ports: [ 127.0.0.1:5000:5000 ]
     environment:
-      - CANVAS_KEY
-      - CANVAS_URL
-      - POSTGRES_DB
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
-      - TE_CANVAS_DB_DATABASE
-      - TE_CANVAS_DB_PASSWORD
-      - TE_CANVAS_DB_PORT
-      - TE_CANVAS_DB_USERNAME
-      - TE_CANVAS_URL
-      - TE_CERT
-      - TE_PASSWORD
-      - TE_USERNAME
       - TE_WSDL_URL
+      - TE_CERT
+      - TE_USERNAME
+      - TE_PASSWORD
 
-      - TE_CANVAS_DB_HOSTNAME=postgres
+      - CANVAS_URL
+      - CANVAS_KEY
+
+      - POSTGRES_HOSTNAME=postgres
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+
   syncer:
     profiles: ["sync"]
     build:
@@ -57,26 +58,23 @@ services:
       dockerfile: Dockerfile_sync
     depends_on: [ postgres ]
     environment:
-      - CANVAS_KEY
-      - CANVAS_URL
-      - POSTGRES_DB
-      - POSTGRES_PASSWORD
-      - POSTGRES_USER
-      - TE_CANVAS_DB_DATABASE
-      - TE_CANVAS_DB_PASSWORD
-      - TE_CANVAS_DB_PORT
-      - TE_CANVAS_DB_USERNAME
-      - TE_CANVAS_URL
-      - TE_CERT
-      - TE_PASSWORD
-      - TE_USERNAME
       - TE_WSDL_URL
+      - TE_CERT
+      - TE_USERNAME
+      - TE_PASSWORD
+
+      - CANVAS_URL
+      - CANVAS_KEY
+
+      - POSTGRES_HOSTNAME=postgres
+      - POSTGRES_PORT
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
 
       - EVENT_TITLE
       - EVENT_LOCATION
       - EVENT_DESCRIPTION
-
-      - TE_CANVAS_DB_HOSTNAME=postgres
 
 volumes:
   postgres-data:

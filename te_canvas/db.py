@@ -51,11 +51,11 @@ class DB:
         logger = get_logger()
 
         env_var_mapping = {
-            "hostname": "TE_CANVAS_DB_HOSTNAME",
-            "port": "TE_CANVAS_DB_PORT",
-            "username": "TE_CANVAS_DB_USERNAME",
-            "password": "TE_CANVAS_DB_PASSWORD",
-            "database": "TE_CANVAS_DB_DATABASE",
+            "hostname": "POSTGRES_HOSTNAME",
+            "port": "POSTGRES_PORT",
+            "username": "POSTGRES_USER",
+            "password": "POSTGRES_PASSWORD",
+            "database": "POSTGRES_DB",
         }
 
         env_vars = {k: os.environ[v] for (k, v) in env_var_mapping.items() if v in os.environ}

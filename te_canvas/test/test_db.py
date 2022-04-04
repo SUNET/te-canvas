@@ -11,11 +11,11 @@ class UnittestException(Exception):
 class TestDB(unittest.TestCase):
     def test_init_env_vars(self):
         """Initalizing database with env vars."""
-        os.environ["TE_CANVAS_DB_HOSTNAME"] = "localhost"
-        os.environ["TE_CANVAS_DB_PORT"] = "5433"
-        os.environ["TE_CANVAS_DB_USERNAME"] = "test_user"
-        os.environ["TE_CANVAS_DB_PASSWORD"] = "test_password"
-        os.environ["TE_CANVAS_DB_DATABASE"] = "test_db"
+        os.environ["POSTGRES_HOSTNAME"] = "localhost"
+        os.environ["POSTGRES_PORT"] = "5433"
+        os.environ["POSTGRES_USER"] = "test_user"
+        os.environ["POSTGRES_PASSWORD"] = "test_password"
+        os.environ["POSTGRES_DB"] = "test_db"
         db = DB()
         self.assertEqual(
             db.conn_str,
@@ -24,11 +24,11 @@ class TestDB(unittest.TestCase):
 
     def test_init_kwargs(self):
         """Initalizing database with kwargs."""
-        os.environ["TE_CANVAS_DB_HOSTNAME"] = "a"
-        os.environ["TE_CANVAS_DB_PORT"] = "b"
-        os.environ["TE_CANVAS_DB_USERNAME"] = "c"
-        os.environ["TE_CANVAS_DB_PASSWORD"] = "d"
-        os.environ["TE_CANVAS_DB_DATABASE"] = "e"
+        os.environ["POSTGRES_HOSTNAME"] = "a"
+        os.environ["POSTGRES_PORT"] = "b"
+        os.environ["POSTGRES_USER"] = "c"
+        os.environ["POSTGRES_PASSWORD"] = "d"
+        os.environ["POSTGRES_DB"] = "e"
         db = DB(
             hostname="localhost",
             port="5433",
