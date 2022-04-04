@@ -1,35 +1,32 @@
-import logging
 import typing
 import unittest
 
-from te_canvas.app import App
 from te_canvas.db import DB, Connection, Event, Test
+from te_canvas.flask import create_app
 
 
 class TestAPI(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        db = DB(
+        cls.db = DB(
             hostname="localhost",
             port="5433",
             username="test_user",
             password="test_password",
             database="test_db",
         )
-        with db.sqla_session() as session:
+        with cls.db.sqla_session() as session:
             session.query(Connection).delete()
             session.query(Event).delete()
             session.query(Test).delete()
 
-        cls.app = App(db)
-        cls.app.logger.setLevel(logging.CRITICAL)
 
-        cls.client = cls.app.flask.test_client()
+        cls.client = create_app(cls.db).test_client()
 
     def test_api_setup(self):
         """We're using the correct DB."""
         self.assertEqual(
-            self.app.db.conn_str,
+            self.db.conn_str,
             "postgresql+psycopg2://test_user:test_password@localhost:5433/test_db",
         )
 

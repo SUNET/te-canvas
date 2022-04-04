@@ -4,16 +4,17 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from te_canvas.db import DeleteFlagAlreadySet
 
-connection_api = Namespace(
+ns = Namespace(
     "connection",
     description="API for handling connections between TimeEdit and Canvas",
     prefix="/api",
 )
 
 
-class ConnectionApi(Resource):
+class Connection(Resource):
 
     # TODO: Is this correct subclassing? We need to know the supertype constructor's signature?
+    #       Used for the other APIs as well.
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
         self.db = kwargs["db"]
@@ -29,12 +30,12 @@ class ConnectionApi(Resource):
     post_parser.add_argument("te_group", type=str, required=True)
     post_parser.add_argument("te_type", type=str, required=True)
 
-    @connection_api.param("canvas_group", "Canvas group ID")
-    @connection_api.param("te_group", "TimeEdit group ID")
-    @connection_api.param("te_type", "TimeEdit type")
-    @connection_api.response(204, "Connection created")
-    @connection_api.response(404, "Connection already exists")
-    @connection_api.response(
+    @ns.param("canvas_group", "Canvas group ID")
+    @ns.param("te_group", "TimeEdit group ID")
+    @ns.param("te_type", "TimeEdit type")
+    @ns.response(204, "Connection created")
+    @ns.response(404, "Connection already exists")
+    @ns.response(
         409,
         "Connection is flagged for deletion, but has not been deleted yet.",
     )
@@ -59,11 +60,11 @@ class ConnectionApi(Resource):
     delete_parser.add_argument("canvas_group", type=str, required=True)
     delete_parser.add_argument("te_group", type=str, required=True)
 
-    @connection_api.param("canvas_group", "Canvas group ID")
-    @connection_api.param("te_group", "TimeEdit group ID")
-    @connection_api.response(204, "Connection deleted")
-    @connection_api.response(404, "Connection not found")
-    @connection_api.response(
+    @ns.param("canvas_group", "Canvas group ID")
+    @ns.param("te_group", "TimeEdit group ID")
+    @ns.response(204, "Connection deleted")
+    @ns.response(404, "Connection not found")
+    @ns.response(
         409,
         "Connection is flagged for deletion, but has not been deleted yet.",
     )
@@ -89,7 +90,7 @@ class ConnectionApi(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument("canvas_group", type=str)
 
-    @connection_api.param("canvas_group", "Canvas group ID")
+    @ns.param("canvas_group", "Canvas group ID")
     def get(self):
         args = self.get_parser.parse_args(strict=True)
         return [

@@ -49,11 +49,6 @@ services:
 
       - TE_CANVAS_DB_HOSTNAME=postgres
 
-      # TODO: To be removed after api/sync separation
-      - EVENT_TITLE
-      - EVENT_LOCATION
-      - EVENT_DESCRIPTION
-
 volumes:
   postgres-data:
   postgres-data-test:

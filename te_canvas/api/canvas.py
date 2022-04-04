@@ -5,19 +5,18 @@ from te_canvas.canvas import Canvas
 
 logger = log.get_logger()
 
-canvas_api = Namespace(
+ns = Namespace(
     "canvas",
     description="API for getting data from Canvas",
     prefix="/api",
 )
 
-canvas = Canvas()
-
 
 class Courses(Resource):
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, args, kwargs)
+        self.canvas = kwargs["canvas"]
+
     def get(self):
-        data = canvas.get_courses_all()
+        data = self.canvas.get_courses_all()
         return [c.id for c in data]
-
-
-canvas_api.add_resource(Courses, "/courses")

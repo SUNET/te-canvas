@@ -1,14 +1,6 @@
 import os
 from typing import Optional
 
-from flask import Flask, request
-from flask_cors import CORS
-from flask_restx import Api, Namespace
-
-from te_canvas.api.canvas import canvas_api
-from te_canvas.api.connection import ConnectionApi
-from te_canvas.api.timeedit import timeedit_api
-from te_canvas.api.version import version_api
 from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, flat_list
 from te_canvas.log import get_logger
@@ -30,34 +22,6 @@ class App:
             os.environ["EVENT_LOCATION"],
             os.environ["EVENT_DESCRIPTION"],
         )
-
-        self.flask = Flask(__name__)
-        self.flask.config["SECRET_KEY"] = os.urandom(128)
-
-        CORS(self.flask, resources={r"/api/*": {"origins": "*"}})
-
-        api = Api(self.flask, prefix="/api")
-        api.add_namespace(version_api)
-        api.add_namespace(timeedit_api)
-        api.add_namespace(canvas_api)
-
-        connection_api = Namespace(
-            "connection",
-            description="API for handling connections between TimeEdit and Canvas",
-            prefix="/api",
-        )
-        connection_api.add_resource(ConnectionApi, "", resource_class_kwargs={"db": self.db})
-        api.add_namespace(connection_api)
-
-        # TODO: More standard option for logging request, e.g. werkzeug logger?
-        @self.flask.after_request
-        def log_request(response):
-            self.logger.info(
-                "[API] Method: {}, Status: {}, URL: {}".format(
-                    request.method, response.status_code, request.url
-                )
-            )
-            return response
 
         # Mapping canvas_group to in-memory State:s
         self.states: dict[str, State] = {}
@@ -180,11 +144,6 @@ class App:
 
 
 app = App(DB())
-
-
-def get_flask():
-    return App(DB()).flask
-
 
 if __name__ == "__main__":
     app.sync_job()
