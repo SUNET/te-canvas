@@ -2,7 +2,7 @@ import logging
 import unittest
 from typing import Optional
 
-from te_canvas.app import App
+from te_canvas.sync import Sync
 from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, Test
 
@@ -41,8 +41,8 @@ class TestSync(unittest.TestCase):
             session.query(Event).delete()
             session.query(Test).delete()
 
-        cls.app = App(db)
-        cls.app.logger.setLevel(logging.CRITICAL)
+        cls.sync = Sync(db)
+        cls.sync.logger.setLevel(logging.CRITICAL)
 
         cls.canvas = Canvas()
         for event in cls.canvas.get_events_all(CANVAS_GROUP):
@@ -57,12 +57,12 @@ class TestSync(unittest.TestCase):
     def test_sync(self):
         """Test sync job."""
         # Add connection, perform sync
-        with self.app.db.sqla_session() as session:
+        with self.sync.db.sqla_session() as session:
             session.add(Connection(canvas_group=CANVAS_GROUP, te_group=TE_GROUP))
-        self.app.sync_job()
+        self.sync.sync_job()
 
         # Check that...
-        with self.app.db.sqla_session() as session:
+        with self.sync.db.sqla_session() as session:
             # There is one event added to the local DB
             self.assertEqual(session.query(Event).count(), 1)
             event_local = session.query(Event).one()
@@ -81,7 +81,7 @@ class TestSync(unittest.TestCase):
 
         # Re-run sync job and see that the event has not been removed and re-added
         event_old = events[0]
-        self.app.sync_job()
+        self.sync.sync_job()
         events = self.canvas.get_events_all(CANVAS_GROUP)
         self.assertEqual(len(events), 1)
         event_new = events[0]
@@ -93,11 +93,11 @@ class TestSync(unittest.TestCase):
         # - Remove event on TE, run sync job.
 
         # Flag connection for deletion, run sync_job again
-        with self.app.db.sqla_session() as session:
+        with self.sync.db.sqla_session() as session:
             session.query(Connection).one().delete_flag = True
-        self.app.sync_job()
+        self.sync.sync_job()
 
-        with self.app.db.sqla_session() as session:
+        with self.sync.db.sqla_session() as session:
             self.assertEqual(session.query(Connection).count(), 0)
             self.assertEqual(session.query(Event).count(), 0)
         events = self.canvas.get_events_all(CANVAS_GROUP)
