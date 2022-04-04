@@ -180,5 +180,10 @@ class App:
 
 app = App(DB())
 
+
+def get_flask():
+    return App(DB()).flask
+
+
 if __name__ == "__main__":
     app.sync_job()
