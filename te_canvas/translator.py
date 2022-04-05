@@ -11,13 +11,13 @@ EVENT_TAG = r'<br><em><span style="font-size: 8pt;">Event added by TimeEdit inte
 class Translator:
     def __init__(
         self,
-        title=os.environ["EVENT_TITLE"],
-        location=os.environ["EVENT_LOCATION"],
-        description=os.environ["EVENT_DESCRIPTION"],
+        title=None,
+        location=None,
+        description=None,
     ):
-        self.template_title = title
-        self.template_location = location
-        self.template_description = description
+        self.template_title = title or os.environ["EVENT_TITLE"]
+        self.template_location = location or os.environ["EVENT_LOCATION"]
+        self.template_description = description or os.environ["EVENT_DESCRIPTION"]
 
         self.fields = (
             _extract_fields(self.template_title)
