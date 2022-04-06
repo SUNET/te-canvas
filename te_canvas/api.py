@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from flask_restx import Api
 
@@ -11,6 +11,7 @@ import te_canvas.api_ns.version as version_api
 from te_canvas.canvas import Canvas
 from te_canvas.db import DB
 from te_canvas.timeedit import TimeEdit
+from te_canvas.log import get_logger
 
 
 def create_app(db: DB = DB(), timeedit: TimeEdit = TimeEdit(), canvas: Canvas = Canvas()) -> Flask:
@@ -18,6 +19,17 @@ def create_app(db: DB = DB(), timeedit: TimeEdit = TimeEdit(), canvas: Canvas = 
     flask.config["SECRET_KEY"] = os.urandom(128)
 
     CORS(flask, resources={r"/api/*": {"origins": "*"}})
+
+    # TODO: More standard option for logging request, e.g. werkzeug logger?
+    logger = get_logger()
+    @flask.after_request
+    def log_request(response):
+        logger.info(
+            "[API] Method: {}, Status: {}, URL: {}".format(
+                request.method, response.status_code, request.url
+            )
+        )
+        return response
 
     api = Api(flask, prefix="/api")
 
