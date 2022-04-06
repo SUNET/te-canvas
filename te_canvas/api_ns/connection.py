@@ -92,6 +92,9 @@ class Connection(Resource):
 
     @ns.param("canvas_group", "Canvas group ID")
     def get(self):
+        # BUG:
+        # This line causes dockerized gunicorn to respond with 400 for some
+        # reason. Works in non-docker gunicorn.
         args = self.get_parser.parse_args(strict=True)
         return [
             {"canvas_group": x, "te_group": y, "te_type": z, "delete_flag": d}
