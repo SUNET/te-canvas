@@ -12,6 +12,7 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - POSTGRES_DB
+    networks: [ te-canvas ]
     ports:
       - ${POSTGRES_PORT}:5432
 
@@ -26,16 +27,16 @@ services:
       - POSTGRES_USER=test_user
       - POSTGRES_PASSWORD=test_password
       - POSTGRES_DB=test_db
+    networks: [ te-canvas ]
     ports:
       - 5433:5432
 
-  api-server:
+  api:
     profiles: ["api"]
     build:
       context: .
       dockerfile: Dockerfile_api
     depends_on: [ postgres ]
-    ports: [ 127.0.0.1:5000:5000 ]
     environment:
       - TE_WSDL_URL
       - TE_CERT
@@ -50,8 +51,10 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - POSTGRES_DB
+    networks: [ te-canvas ]
+    ports: [ 127.0.0.1:5000:5000 ]
 
-  syncer:
+  sync:
     profiles: ["sync"]
     build:
       context: .
@@ -75,7 +78,11 @@ services:
       - EVENT_TITLE
       - EVENT_LOCATION
       - EVENT_DESCRIPTION
+    networks: [ te-canvas ]
 
 volumes:
   postgres-data:
   postgres-data-test:
+networks:
+  te-canvas:
+    external: true
