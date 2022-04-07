@@ -1,9 +1,8 @@
-version: '3.7'
 services:
 
   postgres:
-    profiles: ["sync", "api"]
-    image: "postgres:12"
+    profiles: [ sync, api ]
+    image: postgres:12
     volumes:
       - type: volume
         source: postgres-data
@@ -13,12 +12,10 @@ services:
       - POSTGRES_PASSWORD
       - POSTGRES_DB
     networks: [ te-canvas ]
-    ports:
-      - ${POSTGRES_PORT}:5432
 
   postgres-test:
-    profiles: ["test"]
-    image: "postgres:12"
+    profiles: [ test ]
+    image: postgres:12
     volumes:
       - type: volume
         source: postgres-data-test
@@ -28,11 +25,9 @@ services:
       - POSTGRES_PASSWORD=test_password
       - POSTGRES_DB=test_db
     networks: [ te-canvas ]
-    ports:
-      - 5433:5432
 
   api:
-    profiles: ["api"]
+    profiles: [ api ]
     build:
       context: .
       dockerfile: Dockerfile_api
@@ -52,10 +47,9 @@ services:
       - POSTGRES_PASSWORD
       - POSTGRES_DB
     networks: [ te-canvas ]
-    ports: [ 127.0.0.1:5000:5000 ]
 
   sync:
-    profiles: ["sync"]
+    profiles: [ sync ]
     build:
       context: .
       dockerfile: Dockerfile_sync
