@@ -1,0 +1,11 @@
+extra_jobs:
+  - name: te-canvas-api
+    builders:
+      - docker
+    docker_name: te-canvas-api
+    docker_context_dir: docker-api
+  - name: te-canvas-sync
+    builders:
+      - docker
+    docker_name: te-canvas-sync
+    docker_context_dir: docker-sync
