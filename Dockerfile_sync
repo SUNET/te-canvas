@@ -9,4 +9,4 @@ COPY . .
 
 ENV PYTHONPATH=/usr/src/app
 
-CMD [ "python", "-m", "te_canvas.job" ]
+CMD [ "python", "-m", "te_canvas.sync" ]
