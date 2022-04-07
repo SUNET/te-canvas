@@ -2,10 +2,10 @@ FROM python:3
 
 WORKDIR /usr/src/app
 
-COPY requirements/prod.txt ./
+COPY requirements/prod.txt .
 RUN pip install --no-cache-dir -r prod.txt
 
-COPY . .
+COPY te_canvas te_canvas
 
 ENV PYTHONPATH=/usr/src/app
 
