@@ -75,4 +75,3 @@ volumes:
   postgres-data-test:
 networks:
   te-canvas:
-    external: true
