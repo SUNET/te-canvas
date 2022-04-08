@@ -5,3 +5,10 @@ services:
     ports: [ 127.0.0.1:5433:5433 ]
   api:
     ports: [ 127.0.0.1:5000:5000 ]
+    build:
+      context: .
+      dockerfile: Dockerfile_api
+  sync:
+    build:
+      context: .
+      dockerfile: Dockerfile_sync
