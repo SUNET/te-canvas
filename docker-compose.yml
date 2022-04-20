@@ -8,9 +8,9 @@ services:
         source: postgres-data
         target: /var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER
+      - POSTGRES_DB=te_canvas
+      - POSTGRES_USER=te_canvas_user
       - POSTGRES_PASSWORD
-      - POSTGRES_DB
     networks: [ te-canvas ]
 
   postgres-test:
@@ -21,9 +21,9 @@ services:
         source: postgres-data-test
         target: /var/lib/postgresql/data/
     environment:
+      - POSTGRES_DB=test_db
       - POSTGRES_USER=test_user
       - POSTGRES_PASSWORD=test_password
-      - POSTGRES_DB=test_db
     networks: [ te-canvas ]
 
   api:
@@ -41,9 +41,9 @@ services:
 
       - POSTGRES_HOSTNAME=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_USER
+      - POSTGRES_DB=te_canvas
+      - POSTGRES_USER=te_canvas_user
       - POSTGRES_PASSWORD
-      - POSTGRES_DB
     networks: [ te-canvas ]
 
   sync:
@@ -61,9 +61,9 @@ services:
 
       - POSTGRES_HOSTNAME=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_USER
+      - POSTGRES_DB=te_canvas
+      - POSTGRES_USER=te_canvas_user
       - POSTGRES_PASSWORD
-      - POSTGRES_DB
 
       - EVENT_TITLE
       - EVENT_LOCATION
