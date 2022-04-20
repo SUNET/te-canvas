@@ -28,9 +28,7 @@ services:
 
   api:
     profiles: [ api ]
-    build:
-      context: .
-      dockerfile: Dockerfile_api
+    image: docker.sunet.se/te-canvas-api
     depends_on: [ postgres ]
     environment:
       - TE_WSDL_URL
@@ -50,9 +48,7 @@ services:
 
   sync:
     profiles: [ sync ]
-    build:
-      context: .
-      dockerfile: Dockerfile_sync
+    image: docker.sunet.se/te-canvas-sync
     depends_on: [ postgres ]
     environment:
       - TE_WSDL_URL
@@ -79,4 +75,3 @@ volumes:
   postgres-data-test:
 networks:
   te-canvas:
-    external: true
