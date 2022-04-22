@@ -7,6 +7,3 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_sync
-networks:
-  te-canvas:
-    external: true
