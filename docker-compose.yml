@@ -11,7 +11,7 @@ services:
       - POSTGRES_DB=te_canvas
       - POSTGRES_USER=te_canvas_user
       - POSTGRES_PASSWORD
-    networks: [ internal ]
+    networks: [ te-canvas ]
 
   postgres-test:
     profiles: [ test ]
@@ -24,7 +24,7 @@ services:
       - POSTGRES_DB=test_db
       - POSTGRES_USER=test_user
       - POSTGRES_PASSWORD=test_password
-    networks: [ internal ]
+    networks: [ te-canvas ]
 
   api:
     profiles: [ api ]
@@ -44,7 +44,7 @@ services:
       - POSTGRES_DB=te_canvas
       - POSTGRES_USER=te_canvas_user
       - POSTGRES_PASSWORD
-    networks: [ internal ]
+    networks: [ te-canvas ]
 
   sync:
     profiles: [ sync ]
@@ -68,10 +68,10 @@ services:
       - EVENT_TITLE
       - EVENT_LOCATION
       - EVENT_DESCRIPTION
-    networks: [ internal ]
+    networks: [ te-canvas ]
 
 volumes:
   postgres-data:
   postgres-data-test:
 networks:
-  internal:
+  te-canvas:
