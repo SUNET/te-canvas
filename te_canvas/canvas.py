@@ -16,7 +16,7 @@ class Canvas:
             url = os.environ["CANVAS_URL"]
             key = os.environ["CANVAS_KEY"]
         except Exception as e:
-            self.logger.critical(f"Failed to load configuration: {e}")
+            self.logger.critical(f"Missing env var: {e}")
             sys.exit(-1)
 
         self.canvas = CanvasAPI(url, key)

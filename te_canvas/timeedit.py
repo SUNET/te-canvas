@@ -18,7 +18,7 @@ class TimeEdit:
             username = os.environ["TE_USERNAME"]
             password = os.environ["TE_PASSWORD"]
         except Exception as e:
-            logger.critical(f"Failed to load configuration: {e}, exiting.")
+            logger.critical(f"Missing env var: {e}")
             sys.exit(-1)
 
         try:
