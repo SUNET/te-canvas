@@ -8,3 +8,4 @@
 ln -s ../te-canvas/docker-compose.yml back.yml
 ln -s ../te-canvas-front/docker-compose.yml front.yml
 ln -s ../te-canvas-front/nginx-docker.conf .
+ln -s ../te-canvas-front/lti.json .
