@@ -1,6 +1,8 @@
 services:
 
   postgres:
+    logging:
+      driver: local
     profiles: [ sync, api ]
     image: postgres:12
     volumes:
@@ -13,6 +15,8 @@ services:
       - POSTGRES_PASSWORD
 
   postgres-test:
+    logging:
+      driver: local
     profiles: [ test ]
     image: postgres:12
     volumes:
@@ -25,6 +29,8 @@ services:
       - POSTGRES_PASSWORD=test_password
 
   api:
+    logging:
+      driver: local
     profiles: [ api ]
     image: docker.sunet.se/te-canvas-api
     depends_on: [ postgres ]
@@ -44,6 +50,8 @@ services:
       - POSTGRES_PASSWORD
 
   sync:
+    logging:
+      driver: local
     profiles: [ sync ]
     image: docker.sunet.se/te-canvas-sync
     depends_on: [ postgres ]
