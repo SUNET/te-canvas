@@ -58,20 +58,21 @@ class DB:
             "database": "POSTGRES_DB",
         }
 
-        env_vars = {k: os.environ[v] for (k, v) in env_var_mapping.items() if v in os.environ}
+        try:
+            env_vars = {k: os.environ[v] for (k, v) in env_var_mapping.items()}
+        except KeyError as e:
+            logger.critical(f"Missing env var: {e}")
+            sys.exit(-1)
+
         conn = env_vars | kwargs
 
-        try:
-            self.conn_str = "postgresql+psycopg2://{}:{}@{}:{}/{}".format(
-                conn["username"],
-                conn["password"],
-                conn["hostname"],
-                conn["port"],
-                conn["database"],
-            )
-        except Exception as e:
-            logger.debug(f"Failed to load configuration: {e}")
-            sys.exit(-1)
+        self.conn_str = "postgresql+psycopg2://{}:{}@{}:{}/{}".format(
+            conn["username"],
+            conn["password"],
+            conn["hostname"],
+            conn["port"],
+            conn["database"],
+        )
 
         engine = create_engine(self.conn_str, pool_size=50, max_overflow=0)
         self.Session = sessionmaker(bind=engine)
