@@ -10,8 +10,8 @@ import te_canvas.api_ns.timeedit as timeedit_api
 import te_canvas.api_ns.version as version_api
 from te_canvas.canvas import Canvas
 from te_canvas.db import DB
-from te_canvas.timeedit import TimeEdit
 from te_canvas.log import get_logger
+from te_canvas.timeedit import TimeEdit
 
 
 def create_app(db: DB = DB(), timeedit: TimeEdit = TimeEdit(), canvas: Canvas = Canvas()) -> Flask:
@@ -22,13 +22,10 @@ def create_app(db: DB = DB(), timeedit: TimeEdit = TimeEdit(), canvas: Canvas = 
 
     # TODO: More standard option for logging request, e.g. werkzeug logger?
     logger = get_logger()
+
     @flask.after_request
     def log_request(response):
-        logger.info(
-            "[API] Method: {}, Status: {}, URL: {}".format(
-                request.method, response.status_code, request.url
-            )
-        )
+        logger.info("[API] Method: {}, Status: {}, URL: {}".format(request.method, response.status_code, request.url))
         return response
 
     api = Api(flask, prefix="/api")
