@@ -87,10 +87,10 @@ Start both:
 docker-compose --profile api --profile sync up
 ```
 
-To start Docker in production mode, without exposed ports and using prebuilt images:
+To start in dev mode, with exposed ports (*not safe in production*) and using locally built images:
 
 ```
-docker-compose -f docker-compose.yml --profile <sync | api> up
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml --profile <sync | api> up
 ```
 
 ## Testing
