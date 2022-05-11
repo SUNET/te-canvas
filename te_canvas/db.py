@@ -2,11 +2,12 @@ import logging
 import os
 import sys
 from contextlib import contextmanager
+from time import sleep
 from typing import Optional
 
 from psycopg2.errors import UniqueViolation
 from sqlalchemy import Boolean, Column, String, create_engine
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from te_canvas.log import get_logger
@@ -80,7 +81,13 @@ class DB:
         logging.getLogger("sqlalchemy.engine").addHandler(logger.handlers[0])
         logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
-        Base.metadata.create_all(engine)
+        while True:
+            try:
+                Base.metadata.create_all(engine)
+                break
+            except OperationalError:
+                logger.info("Retrying database connection")
+                sleep(1)
 
     @contextmanager
     def sqla_session(self):
