@@ -99,3 +99,24 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml --profile <sync |
 docker-compose --profile test up
 ./test.sh
 ```
+
+## Suggested complete project setup
+
+```
+.
+├── te-canvas       [repo]
+├── te-canvas-front [repo]
+├── front
+│   ├── docker-compose.yml -> ../te-canvas-front/docker-compose.yml
+│   ├── lti.json           -> ../te-canvas-front/lti.json
+│   ├── nginx-docker.conf  -> ../te-canvas-front/nginx-docker.conf
+│   ├── ssl.crt            -> /etc/letsencrypt/live/my-domain.com/fullchain.pem
+│   ├── ssl.key            -> /etc/letsencrypt/live/my-domain.com/privkey.pem
+│   └── platforms.json
+├── back-1
+│   ├── docker-compose.yml -> ../te-canvas/docker-compose.yml
+│   └── .env
+└── back-2
+    ├── docker-compose.yml -> ../te-canvas/docker-compose.yml
+    └── .env
+```
