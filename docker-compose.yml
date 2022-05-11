@@ -48,6 +48,7 @@ services:
       - POSTGRES_DB=te_canvas
       - POSTGRES_USER=te_canvas_user
       - POSTGRES_PASSWORD
+    networks: [ te-canvas ]
 
   sync:
     logging:
@@ -77,3 +78,7 @@ services:
 volumes:
   postgres-data:
   postgres-data-test:
+
+networks:
+  te-canvas:
+    external: true
