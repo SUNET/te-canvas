@@ -32,7 +32,7 @@ services:
     logging:
       driver: local
     profiles: [ api ]
-    image: docker.sunet.se/te-canvas-api
+    image: docker.sunet.se/te-canvas-api:${TAG_API-latest}
     depends_on: [ postgres ]
     environment:
       - TE_WSDL_URL
@@ -54,7 +54,7 @@ services:
     logging:
       driver: local
     profiles: [ sync ]
-    image: docker.sunet.se/te-canvas-sync
+    image: docker.sunet.se/te-canvas-sync:${TAG_SYNC-latest}
     depends_on: [ postgres ]
     environment:
       - TE_WSDL_URL

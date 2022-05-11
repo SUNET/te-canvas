@@ -23,7 +23,7 @@ EVENT_TITLE
 EVENT_LOCATION
 EVENT_DESCRIPTION
 
-* Predifined in docker-compose file
+* Predefined in docker-compose file
 ```
 
 Start PostgreSQL:
@@ -68,6 +68,33 @@ teacher = { firstname: 'Ernst', lastname: 'Widerberg' }
 will create a Canvas event titled *Lecture by Ernst Widerberg*.
 
 ## Docker
+
+Export the following env vars:
+
+```
+TE_WSDL_URL
+TE_CERT
+TE_USERNAME
+TE_PASSWORD
+
+CANVAS_URL
+CANVAS_KEY
+
+POSTGRES_HOSTNAME*
+POSTGRES_PORT*
+POSTGRES_DB*
+POSTGRES_USER*
+POSTGRES_PASSWORD
+
+EVENT_TITLE
+EVENT_LOCATION
+EVENT_DESCRIPTION
+
+TAG_API*
+TAG_SYNC*
+
+* Predefined in docker-compose file
+```
 
 Start API server:
 
