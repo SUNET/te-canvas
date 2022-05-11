@@ -5,7 +5,8 @@ from string import Template
 # This module gathers functionality for "translating" a TimeEdit event into a
 # Canvas event and dealing with templates related to this.
 
-EVENT_TAG = r'<br><em><span style="font-size: 8pt;">Event added by TimeEdit integration</span></em>'
+TAG_TITLE = r'​'
+TAG_DESC = r'<br><em><span style="font-size: 8pt;">Event added by TimeEdit integration</span></em>'
 
 
 class Translator:
@@ -29,9 +30,9 @@ class Translator:
 
     def canvas_event(self, timeedit_reservation):
         return {
-            "title": _string(self.template_title, self.fields, timeedit_reservation["objects"]),
+            "title": _string(self.template_title, self.fields, timeedit_reservation["objects"]) + TAG_TITLE,
             "location_name": _string(self.template_location, self.fields, timeedit_reservation["objects"]),
-            "description": _string(self.template_description, self.fields, timeedit_reservation["objects"]) + EVENT_TAG,
+            "description": _string(self.template_description, self.fields, timeedit_reservation["objects"]) + TAG_DESC,
             "start_at": timeedit_reservation["start_at"],
             "end_at": timeedit_reservation["end_at"],
         }

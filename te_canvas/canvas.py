@@ -6,7 +6,7 @@ from canvasapi.calendar_event import CalendarEvent
 from canvasapi.exceptions import ResourceDoesNotExist
 
 from te_canvas.log import get_logger
-from te_canvas.translator import EVENT_TAG
+from te_canvas.translator import TAG_TITLE
 
 
 class Canvas:
@@ -56,7 +56,7 @@ class Canvas:
     def clear_events_tagged(self, course: int):
         deleted = []
         for event in self.get_events_all(course):
-            if EVENT_TAG in event.description:
+            if event.title.endswith(TAG_TITLE):
                 self.logger.info(f"Deleting {event.id}")
                 deleted.append(event)
                 self.delete_event(event.id)
