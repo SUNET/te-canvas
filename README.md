@@ -112,6 +112,7 @@ docker-compose --profile test up
 │   ├── nginx-docker.conf  -> ../te-canvas-front/nginx-docker.conf
 │   ├── ssl.crt            -> /etc/letsencrypt/live/my-domain.com/fullchain.pem
 │   ├── ssl.key            -> /etc/letsencrypt/live/my-domain.com/privkey.pem
+│   ├── .env
 │   └── platforms.json
 ├── back-1
 │   ├── docker-compose.yml -> ../te-canvas/docker-compose.yml
@@ -120,3 +121,5 @@ docker-compose --profile test up
     ├── docker-compose.yml -> ../te-canvas/docker-compose.yml
     └── .env
 ```
+
+The front end will access back end services using container names, e.g. `back-1_api_1`.
