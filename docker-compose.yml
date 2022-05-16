@@ -27,6 +27,7 @@ services:
       - POSTGRES_DB=test_db
       - POSTGRES_USER=test_user
       - POSTGRES_PASSWORD=test_password
+    ports: [ 127.0.0.1:5433:5432 ]
 
   api:
     logging:
