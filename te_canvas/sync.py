@@ -34,12 +34,12 @@ class JobScheduler(object):
 
 
 class Syncer:
-    def __init__(self, db: DB = DB(), timeedit: TimeEdit = TimeEdit(), canvas: Canvas = Canvas()):
+    def __init__(self, db: DB = None, timeedit: TimeEdit = None, canvas: Canvas = None):
         self.logger = get_logger()
 
-        self.db = db
-        self.canvas = canvas
-        self.timeedit = timeedit
+        self.db = db or DB()
+        self.canvas = canvas or Canvas()
+        self.timeedit = timeedit or TimeEdit()
         self.translator = Translator(self.timeedit)
 
         # Mapping canvas_group to in-memory State:s
