@@ -5,7 +5,7 @@
 Export the following env vars:
 
 ```
-TE_WSDL_URL
+TE_ID
 TE_CERT
 TE_USERNAME
 TE_PASSWORD
@@ -72,7 +72,7 @@ will create a Canvas event titled *Lecture by Ernst Widerberg*.
 Export the following env vars:
 
 ```
-TE_WSDL_URL
+TE_ID
 TE_CERT
 TE_USERNAME
 TE_PASSWORD

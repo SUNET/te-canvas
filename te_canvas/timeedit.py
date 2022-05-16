@@ -13,13 +13,15 @@ logger = get_logger()
 class TimeEdit:
     def __init__(self):
         try:
-            wsdl = os.environ["TE_WSDL_URL"]
+            self.id = os.environ["TE_ID"]
             cert = os.environ["TE_CERT"]
             username = os.environ["TE_USERNAME"]
             password = os.environ["TE_PASSWORD"]
         except Exception as e:
             logger.critical(f"Missing env var: {e}")
             sys.exit(-1)
+
+        wsdl = f"https://cloud.timeedit.net/soap/3/{self.id}/wsdl"
 
         try:
             self.client = zeep.Client(wsdl)
@@ -33,6 +35,10 @@ class TimeEdit:
             "password": password,
             "applicationkey": key,
         }
+
+    def reservation_url(self, id: str) -> str:
+        # TODO: Add proper query args
+        return f"https://cloud.timeedit.net/{self.id}/web/staff/ri.html?id={id}"
 
     def find_types_all(self):
         res = self.client.service.findTypes(

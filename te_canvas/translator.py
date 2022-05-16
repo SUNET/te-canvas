@@ -12,10 +12,12 @@ TAG_DESC = r'<br><em><span style="font-size: 8pt;">Event added by TimeEdit integ
 class Translator:
     def __init__(
         self,
+        timeedit,
         title=None,
         location=None,
         description=None,
     ):
+        self.timeedit = timeedit
         self.template_title = title or os.environ["EVENT_TITLE"]
         self.template_location = location or os.environ["EVENT_LOCATION"]
         self.template_description = description or os.environ["EVENT_DESCRIPTION"]
@@ -32,7 +34,8 @@ class Translator:
         return {
             "title": _string(self.template_title, self.fields, timeedit_reservation["objects"]) + TAG_TITLE,
             "location_name": _string(self.template_location, self.fields, timeedit_reservation["objects"]),
-            "description": _string(self.template_description, self.fields, timeedit_reservation["objects"]) + TAG_DESC,
+            "description": _string(self.template_description, self.fields, timeedit_reservation["objects"]) + TAG_DESC +
+            f'<br><br><a href="{self.timeedit.reservation_url(timeedit_reservation["id"])}">Edit on TimeEdit</a>',
             "start_at": timeedit_reservation["start_at"],
             "end_at": timeedit_reservation["end_at"],
         }

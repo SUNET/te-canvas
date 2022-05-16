@@ -35,7 +35,7 @@ services:
     image: docker.sunet.se/te-canvas-api:${TAG_API-latest}
     depends_on: [ postgres ]
     environment:
-      - TE_WSDL_URL
+      - TE_ID
       - TE_CERT
       - TE_USERNAME
       - TE_PASSWORD
@@ -57,7 +57,7 @@ services:
     image: docker.sunet.se/te-canvas-sync:${TAG_SYNC-latest}
     depends_on: [ postgres ]
     environment:
-      - TE_WSDL_URL
+      - TE_ID
       - TE_CERT
       - TE_USERNAME
       - TE_PASSWORD
