@@ -7,7 +7,7 @@ from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, flat_list
 from te_canvas.log import get_logger
 from te_canvas.timeedit import TimeEdit
-from te_canvas.translator import Translator
+from te_canvas.translator import Translator, TAG_TITLE
 
 State = dict[str, str]
 
@@ -52,9 +52,9 @@ class Syncer:
     # 2. TE event modified
     # 3. TE event created
     # 4. TE event deleted
-    # 5. Canvas event modified
-    # 6. Canvas event created
-    # 7. Canvas event deleted
+    # 5. Tagged Canvas event modified
+    # 6. Tagged Canvas event created
+    # 7. Tagged Canvas event deleted
     #
     # TODO:
     # 8. sync_job not completed, should be retried
@@ -63,8 +63,8 @@ class Syncer:
     # 1:   Hash of TE connections not flagged for deletion
     # 2:   Latest modification timestamp in set of TE events
     # 3,4: Hash of TE event IDs
-    # 5:   Latest modification timestamp in set of Canvas events
-    # 6,7: Hash of Canvas event IDs
+    # 5:   Latest modification timestamp in set of tagged Canvas events
+    # 6,7: Hash of tagged Canvas event IDs
 
     def __state_te(self, canvas_group: str) -> State:
         with self.db.sqla_session() as session:
@@ -93,11 +93,15 @@ class Syncer:
     def __state_canvas(self, canvas_group: str) -> State:
         canvas_events = self.canvas.get_events_all(int(canvas_group))
 
-        # 5,6
-        canvas_event_ids = [str(e.id) for e in canvas_events]
+        # 6,7
+        canvas_event_ids = [str(e.id) for e in canvas_events if e.title.endswith(TAG_TITLE)]
 
-        # 7
-        canvas_event_modify_date = "" if len(canvas_events) == 0 else str(max([e.updated_at for e in canvas_events]))
+        # 5
+        canvas_event_modify_date = (
+            ""
+            if len(canvas_events) == 0
+            else str(max([e.updated_at for e in canvas_events if e.title.endswith(TAG_TITLE)]))
+        )
 
         sep = ":"
         return {
