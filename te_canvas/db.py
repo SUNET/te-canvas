@@ -42,6 +42,8 @@ class Event(Base):
 # TODO: Can we avoid having this here and do this in test_db, perhaps
 # dynamically in a test case? Not so important. But would be nice if this table
 # is not included in the real database.
+# Not really necessary, right? Since we use a separate test_db we can use any
+# table for simple commit/rollback testing.
 class Test(Base):
     __tablename__ = "unittest"
     foo = Column(String, primary_key=True, default="bar")
