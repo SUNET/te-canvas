@@ -52,16 +52,21 @@ class Syncer:
     # 2. TE event modified
     # 3. TE event created
     # 4. TE event deleted
+    # 5. Canvas event modified
+    # 6. Canvas event created
+    # 7. Canvas event deleted
     #
     # TODO:
-    # 5. sync_job not completed, should be retried
-    # 6. Canvas event modified?
+    # 8. sync_job not completed, should be retried
     #
     # Means of detection:
     # 1:   Hash of TE connections not flagged for deletion
     # 2:   Latest modification timestamp in set of TE events
     # 3,4: Hash of TE event IDs
-    def __state(self, canvas_group: str) -> State:
+    # 5:   Latest modification timestamp in set of Canvas events
+    # 6,7: Hash of Canvas event IDs
+
+    def __state_te(self, canvas_group: str) -> State:
         with self.db.sqla_session() as session:
             # 1
             te_groups = flat_list(
@@ -85,6 +90,21 @@ class Syncer:
                 "te_event_modify_date": te_event_modify_date,
             }
 
+    def __state_canvas(self, canvas_group: str) -> State:
+        canvas_events = self.canvas.get_events_all(int(canvas_group))
+
+        # 5,6
+        canvas_event_ids = [str(e.id) for e in canvas_events]
+
+        # 7
+        canvas_event_modify_date = "" if len(canvas_events) == 0 else str(max([e.updated_at for e in canvas_events]))
+
+        sep = ":"
+        return {
+            "canvas_event_ids": sep.join(canvas_event_ids),
+            "canvas_event_modify_date": canvas_event_modify_date,
+        }
+
     def __has_changed(self, prev_state: Optional[State], state: State) -> bool:
         return state != prev_state
 
@@ -96,15 +116,18 @@ class Syncer:
         self.logger.info("Sync job started")
         canvas_groups_synced = 0
         canvas_groups_skipped = 0
+
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
             # Note the comma!
             for (canvas_group,) in session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group):
                 self.logger.info(f"Processing {canvas_group}")
+
                 # Change detection
                 prev_state = self.states.get(canvas_group)
-                new_state = self.__state(canvas_group)
+                new_state = self.__state_te(canvas_group) | self.__state_canvas(canvas_group)
                 self.states[canvas_group] = new_state
                 self.logger.debug(f"State: {new_state}")
+
                 if not self.__has_changed(prev_state, new_state):
                     self.logger.info(f"Skipping {canvas_group}, nothing changed")
                     canvas_groups_skipped += 1
@@ -157,6 +180,16 @@ class Syncer:
                                 canvas_group=canvas_group,
                             )
                         )
+
+                # Record new Canvas state
+                # TODO: Race condition here, if something changed on Canvas
+                # between being added by us and this state get, it will not be
+                # detected. Can be fixed by building state from the calls to
+                # Canvas.create_event instead of doing a state get afterwards.
+                prev_state = self.states[canvas_group]  # Implicit assert that this is not None
+                new_state = prev_state | self.__state_canvas(canvas_group)
+                self.states[canvas_group] = new_state
+
         self.logger.info(
             f"Sync job completed; {canvas_groups_synced} Canvas groups synced; {canvas_groups_skipped} skipped"
         )
