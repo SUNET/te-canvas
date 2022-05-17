@@ -1,8 +1,9 @@
 import os
 import unittest
 
-from te_canvas.db import DB, Test, flat_list, Config
 from sqlalchemy.exc import NoResultFound
+
+from te_canvas.db import DB, Config, Test, flat_list
 
 
 class UnittestException(Exception):

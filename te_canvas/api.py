@@ -5,10 +5,10 @@ from flask_cors import CORS
 from flask_restx import Api
 
 import te_canvas.api_ns.canvas as canvas_api
+import te_canvas.api_ns.config as config_api
 import te_canvas.api_ns.connection as connection_api
 import te_canvas.api_ns.timeedit as timeedit_api
 import te_canvas.api_ns.version as version_api
-import te_canvas.api_ns.config as config_api
 from te_canvas.canvas import Canvas
 from te_canvas.db import DB
 from te_canvas.log import get_logger

@@ -5,7 +5,6 @@ ns = Namespace("config", description="Config API", prefix="/api")
 
 
 class Config(Resource):
-
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
         self.db = kwargs["db"]
