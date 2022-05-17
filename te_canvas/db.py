@@ -157,6 +157,11 @@ class DB:
         with self.sqla_session() as session:
             return session.query(Config).filter(Config.key == key).one().value
 
+    # No exception raised if not found
+    def delete_config(self, key: str):
+        with self.sqla_session() as session:
+            session.query(Config).filter(Config.key == key).delete()
+
 
 class DeleteFlagAlreadySet(Exception):
     pass

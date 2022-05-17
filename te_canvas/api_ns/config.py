@@ -9,23 +9,28 @@ class Config(Resource):
         super().__init__(api, args, kwargs)
         self.db = kwargs["db"]
 
-    get_parser = reqparse.RequestParser()
-    get_parser.add_argument("key", type=str, required=True)
+    key_parser = reqparse.RequestParser()
+    key_parser.add_argument("key", type=str, required=True)
+
+    key_value_parser = reqparse.RequestParser()
+    key_value_parser.add_argument("key", type=str, required=True)
+    key_value_parser.add_argument("value", type=str, required=True)
+
+    @ns.param("key", "Key")
+    @ns.param("value", "Value")
+    def put(self):
+        args = self.key_value_parser.parse_args(strict=True)
+        self.db.set_config(args.key, args.value)
 
     @ns.param("key", "Key")
     def get(self):
-        args = self.get_parser.parse_args(strict=True)
+        args = self.key_parser.parse_args(strict=True)
         try:
             return self.db.get_config(args.key)
         except NoResultFound:
             return "", 404
 
-    put_parser = reqparse.RequestParser()
-    put_parser.add_argument("key", type=str, required=True)
-    put_parser.add_argument("value", type=str, required=True)
-
     @ns.param("key", "Key")
-    @ns.param("value", "Value")
-    def put(self):
-        args = self.put_parser.parse_args(strict=True)
-        self.db.set_config(args.key, args.value)
+    def delete(self):
+        args = self.key_parser.parse_args(strict=True)
+        self.db.delete_config(args.key)
