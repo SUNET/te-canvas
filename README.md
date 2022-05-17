@@ -29,7 +29,7 @@ EVENT_DESCRIPTION
 Start PostgreSQL:
 
 ```
-docker-compose up postgres
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up postgres
 ```
 
 Install the requirements:
