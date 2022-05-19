@@ -1,3 +1,4 @@
+from flask import make_response
 from flask_restx import Namespace, Resource, reqparse
 from sqlalchemy.exc import NoResultFound
 
@@ -23,10 +24,13 @@ class Config(Resource):
         self.db.set_config(args.key, args.value)
 
     @ns.param("key", "Key")
+    @ns.produces(["text/plain"])
     def get(self):
         args = self.key_parser.parse_args(strict=True)
         try:
-            return self.db.get_config(args.key)
+            resp = make_response(self.db.get_config(args.key))
+            resp.mimetype = "text/plain"
+            return resp
         except NoResultFound:
             return "", 404
 
