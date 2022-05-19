@@ -7,7 +7,7 @@ from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, flat_list
 from te_canvas.log import get_logger
 from te_canvas.timeedit import TimeEdit
-from te_canvas.translator import Translator, TAG_TITLE
+from te_canvas.translator import TAG_TITLE, Translator
 
 State = dict[str, str]
 
