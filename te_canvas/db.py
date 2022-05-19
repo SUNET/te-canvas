@@ -39,9 +39,17 @@ class Event(Base):
     canvas_group = Column(String)
 
 
+class Config(Base):
+    __tablename__ = "config"
+    key = Column(String, primary_key=True)
+    value = Column(String)
+
+
 # TODO: Can we avoid having this here and do this in test_db, perhaps
 # dynamically in a test case? Not so important. But would be nice if this table
 # is not included in the real database.
+# Not really necessary, right? Since we use a separate test_db we can use any
+# table for simple commit/rollback testing.
 class Test(Base):
     __tablename__ = "unittest"
     foo = Column(String, primary_key=True, default="bar")
@@ -138,6 +146,21 @@ class DB:
                 query = query.filter(Connection.canvas_group == canvas_group)
 
             return [(c.canvas_group, c.te_group, c.te_type, c.delete_flag) for c in query]
+
+    def set_config(self, key: str, value: str):
+        with self.sqla_session() as session:
+            session.query(Config).filter(Config.key == key).delete()
+            session.add(Config(key=key, value=value))
+
+    # Raises: NoResultFound
+    def get_config(self, key: str) -> str:
+        with self.sqla_session() as session:
+            return session.query(Config).filter(Config.key == key).one().value
+
+    # No exception raised if not found
+    def delete_config(self, key: str):
+        with self.sqla_session() as session:
+            session.query(Config).filter(Config.key == key).delete()
 
 
 class DeleteFlagAlreadySet(Exception):

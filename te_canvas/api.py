@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_restx import Api
 
 import te_canvas.api_ns.canvas as canvas_api
+import te_canvas.api_ns.config as config_api
 import te_canvas.api_ns.connection as connection_api
 import te_canvas.api_ns.timeedit as timeedit_api
 import te_canvas.api_ns.version as version_api
@@ -51,6 +52,11 @@ def create_app(db: DB = DB(), timeedit: TimeEdit = TimeEdit(), canvas: Canvas = 
 
     connection_api.ns.add_resource(connection_api.Connection, "", resource_class_kwargs={"db": db})
     api.add_namespace(connection_api.ns)
+
+    # --- Config ---------------------------------------------------------------
+
+    config_api.ns.add_resource(config_api.Config, "", resource_class_kwargs={"db": db})
+    api.add_namespace(config_api.ns)
 
     return flask
 

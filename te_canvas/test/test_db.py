@@ -1,7 +1,9 @@
 import os
 import unittest
 
-from te_canvas.db import DB, Test, flat_list
+from sqlalchemy.exc import NoResultFound
+
+from te_canvas.db import DB, Config, Test, flat_list
 
 
 class UnittestException(Exception):
@@ -71,6 +73,34 @@ class TestDB(unittest.TestCase):
         with db.sqla_session() as session:
             session.query(Test).delete()
             self.assertEqual(flat_list(session.query(Test.foo)), [])
+
+    def test_set_get_config(self):
+        """Test config setter/getter with non-existing and existing keys."""
+        db = DB(
+            hostname="localhost",
+            port="5433",
+            username="test_user",
+            password="test_password",
+            database="test_db",
+        )
+        with db.sqla_session() as session:
+            session.query(Config).delete()
+            self.assertEqual(flat_list(session.query(Config)), [])
+
+        with self.assertRaises(NoResultFound):
+            db.get_config("foo")
+
+        db.set_config("foo", "bar")
+        self.assertEqual(db.get_config("foo"), "bar")
+
+        db.set_config("foo", "baz")
+        self.assertEqual(db.get_config("foo"), "baz")
+
+        db.delete_config("foo")
+        with self.assertRaises(NoResultFound):
+            db.get_config("foo")
+
+        db.delete_config("foo")
 
 
 if __name__ == "__main__":
