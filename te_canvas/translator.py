@@ -2,6 +2,8 @@ import os
 import re
 from string import Template
 
+from sqlalchemy.exc import NoResultFound
+
 # This module gathers functionality for "translating" a TimeEdit event into a
 # Canvas event and dealing with templates related to this.
 
@@ -9,18 +11,27 @@ from string import Template
 TAG_TITLE = r"​"
 
 
+class TemplateError(Exception):
+    pass
+
+
+# This class reads from the database only at initialization. So for any given
+# Translator instance t, t.canvas_event is a pure function.
 class Translator:
+    # Raises TemplateError
     def __init__(
         self,
+        db,
         timeedit,
         title=None,
         location=None,
         description=None,
     ):
+        self.db = db
         self.timeedit = timeedit
-        self.template_title = title or os.environ["EVENT_TITLE"]
-        self.template_location = location or os.environ["EVENT_LOCATION"]
-        self.template_description = description or os.environ["EVENT_DESCRIPTION"]
+        self.template_title = title or self.template("title")
+        self.template_location = location or self.template("location")
+        self.template_description = description or self.template("description")
 
         self.fields = (
             _extract_fields(self.template_title)
@@ -32,13 +43,32 @@ class Translator:
 
     def canvas_event(self, timeedit_reservation):
         return {
-            "title": _string(self.template_title, self.fields, timeedit_reservation["objects"]) + TAG_TITLE,
-            "location_name": _string(self.template_location, self.fields, timeedit_reservation["objects"]),
-            "description": _string(self.template_description, self.fields, timeedit_reservation["objects"])
-            + f'<br><br><a href="{self.timeedit.reservation_url(timeedit_reservation["id"])}">Edit on TimeEdit</a>',
+            "title":         _string(self.template_title,       self.fields, timeedit_reservation["objects"]) + TAG_TITLE,
+            "location_name": _string(self.template_location,    self.fields, timeedit_reservation["objects"]),
+            "description":   _string(self.template_description, self.fields, timeedit_reservation["objects"])
+                + f'<br><br><a href="{self.timeedit.reservation_url(timeedit_reservation["id"])}">Edit on TimeEdit</a>',
             "start_at": timeedit_reservation["start_at"],
-            "end_at": timeedit_reservation["end_at"],
-        }
+            "end_at":   timeedit_reservation["end_at"],
+            }  # fmt: skip
+
+    # Check if we have a complete event template definition
+    def template_config_ok(self) -> bool:
+        try:
+            for k in ["title", "location", "description"]:
+                self.template(k)
+        except TemplateError:
+            return False
+        return True
+
+    # Get template string, raise TemplateError if missing or empty
+    def template(self, key: str) -> str:
+        try:
+            res = self.db.get_config(key)
+        except NoResultFound:
+            raise TemplateError
+        if res == "":
+            raise TemplateError
+        return res
 
 
 # ---- Helper functions --------------------------------------------------------

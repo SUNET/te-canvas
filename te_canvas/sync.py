@@ -7,7 +7,7 @@ from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Connection, Event, flat_list
 from te_canvas.log import get_logger
 from te_canvas.timeedit import TimeEdit
-from te_canvas.translator import TAG_TITLE, Translator
+from te_canvas.translator import TAG_TITLE, Translator, TemplateError
 
 State = dict[str, str]
 
@@ -40,7 +40,6 @@ class Syncer:
         self.db = db or DB()
         self.canvas = canvas or Canvas()
         self.timeedit = timeedit or TimeEdit()
-        self.translator = Translator(self.timeedit)
 
         # Mapping canvas_group to in-memory State:s
         self.states: dict[str, State] = {}
@@ -55,6 +54,7 @@ class Syncer:
     # 5. Tagged Canvas event modified
     # 6. Tagged Canvas event created
     # 7. Tagged Canvas event deleted
+    # 8. Template config is edited
     #
     # TODO:
     # 8. sync_job not completed, should be retried
@@ -109,6 +109,12 @@ class Syncer:
             "canvas_event_modify_date": canvas_event_modify_date,
         }
 
+    def __state_translator(self, translator: Translator) -> State:
+        res = {}
+        for k in ["title", "location", "description"]:
+            res[k] = translator.template(k)
+        return res
+
     def __has_changed(self, prev_state: Optional[State], state: State) -> bool:
         return state != prev_state
 
@@ -126,9 +132,23 @@ class Syncer:
             for (canvas_group,) in session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group):
                 self.logger.info(f"Processing {canvas_group}")
 
+                # When a Translator is instantiated it reads template config
+                # from the DB and is after this static. So we initiate a new one
+                # for each synced canvas group, and diff for change detection
+                # with the previous instance.
+                #
+                # This could be done on the larger sync job level, but to
+                # simplify change detection and to prepare for group level
+                # parallellization we do this for each synced group.
+                translator = Translator(self.db, self.timeedit)
+
                 # Change detection
                 prev_state = self.states.get(canvas_group)
-                new_state = self.__state_te(canvas_group) | self.__state_canvas(canvas_group)
+                new_state = (
+                    self.__state_te(canvas_group)
+                    | self.__state_canvas(canvas_group)
+                    | self.__state_translator(translator)
+                )
                 self.states[canvas_group] = new_state
                 self.logger.debug(f"State: {new_state}")
 
@@ -168,14 +188,22 @@ class Syncer:
                     .order_by(Connection.canvas_group, Connection.te_group)
                 )
 
-                reservations = self.timeedit.find_reservations_all(te_groups, self.translator.return_types)
+                # Race condition issue: We do not want template strings to change from here to (*)
+                # where translator.canvas_event is invoked.
+                #
+                # So probably should just fetch the template strings to memory once at start of sync job!
+                reservations = self.timeedit.find_reservations_all(te_groups, translator.return_types)
+
                 self.logger.info(f"Adding events: {te_groups} → {canvas_group} ({len(reservations)} events)")
                 for r in reservations:
                     # Try/finally ensures invariant 1.
                     try:
                         canvas_event = self.canvas.create_event(
-                            self.translator.canvas_event(r) | {"context_code": f"course_{canvas_group}"}
+                            translator.canvas_event(r) | {"context_code": f"course_{canvas_group}"}  # (*)
                         )
+                    except TemplateError:
+                        self.logger.warning("Template error")
+                        break
                     finally:
                         session.add(
                             Event(
