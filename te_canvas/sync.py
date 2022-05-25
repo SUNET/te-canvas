@@ -195,10 +195,6 @@ class Syncer:
                     .order_by(Connection.canvas_group, Connection.te_group)
                 )
 
-                # Race condition issue: We do not want template strings to change from here to (*)
-                # where translator.canvas_event is invoked.
-                #
-                # So probably should just fetch the template strings to memory once at start of sync job!
                 reservations = self.timeedit.find_reservations_all(te_groups, translator.return_types)
 
                 self.logger.info(f"Adding events: {te_groups} → {canvas_group} ({len(reservations)} events)")
@@ -206,7 +202,7 @@ class Syncer:
                     # Try/finally ensures invariant 1.
                     try:
                         canvas_event = self.canvas.create_event(
-                            translator.canvas_event(r) | {"context_code": f"course_{canvas_group}"}  # (*)
+                            translator.canvas_event(r) | {"context_code": f"course_{canvas_group}"}
                         )
                     finally:
                         session.add(
