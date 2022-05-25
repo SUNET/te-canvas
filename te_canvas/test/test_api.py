@@ -34,13 +34,12 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)  # Success
         self.assertEqual(response.json, "v0.0.1")
 
-    ############################################################################
+    ################################################################################################
     # /API/TIMEEDIT
     #
-    # TODO: Some assertions are dependent on TE data, this seems unavoidable.
-    # But perhaps we can make the data more well defined so that it can be
-    # easily recreated on a new instance.
-    ############################################################################
+    # TODO: Some assertions are dependent on TE data, this seems unavoidable. But perhaps we can
+    # make the data more well defined so that it can be easily recreated on a new instance.
+    ################################################################################################
 
     unittest_room = {
         "extid": "fullroom_unittest",
@@ -121,10 +120,10 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, fullrooms_all[5:15])
 
-    ############################################################################
+    ################################################################################################
     # /API/CANVAS
     #
-    ############################################################################
+    ################################################################################################
 
     def test_api_canvas(self):
         response = self.client.get("/api/canvas/courses")
@@ -132,10 +131,10 @@ class TestAPI(unittest.TestCase):
         json = typing.cast(dict, response.json)
         self.assertGreater(len(json), 0)
 
-    ############################################################################
+    ################################################################################################
     # /API/CONNECTION
     #
-    ############################################################################
+    ################################################################################################
 
     def test_api_connection(self):
         response = self.client.get("/api/connection")

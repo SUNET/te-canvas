@@ -6,8 +6,8 @@ import canvasapi.exceptions
 
 from te_canvas.canvas import Canvas
 
-# NOTE: Statements are implicitly assumed to succeed, since they all should
-# throw exceptions which (if they are not caught) register in the test results.
+# NOTE: Statements are implicitly assumed to succeed, since they all should throw exceptions which
+# (if they are not caught) register in the test results.
 
 
 class TestCanvas(unittest.TestCase):

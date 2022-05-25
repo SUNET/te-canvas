@@ -79,10 +79,9 @@ class Connection(Resource):
             return {
                 "message": "Connection is flagged for deletion, but has not been deleted yet. Try again later.",
             }, 409
-        # We raise the rest of exceptions. This includes faulty states like
-        # where multiple connections are found with the same ID pair, in which
-        # case one() raises MultipleResultsFound. On the API side this would
-        # result in a 500 internal server error.
+        # We raise the rest of exceptions. This includes faulty states like where multiple
+        # connections are found with the same ID pair, in which case one() raises
+        # MultipleResultsFound. On the API side this would result in a 500 internal server error.
 
     # --- GET ----
     #

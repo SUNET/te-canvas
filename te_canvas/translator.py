@@ -4,8 +4,8 @@ from string import Template
 
 from sqlalchemy.exc import NoResultFound
 
-# This module gathers functionality for "translating" a TimeEdit event into a
-# Canvas event and dealing with templates related to this.
+# This module gathers functionality for "translating" a TimeEdit event into a Canvas event and
+# dealing with templates related to this.
 
 # Used to identify synced events
 TAG_TITLE = r"​"
@@ -15,8 +15,8 @@ class TemplateError(Exception):
     pass
 
 
-# This class reads from the database only at initialization. So for any given
-# Translator instance t, t.canvas_event is a pure function.
+# This class reads from the database only at initialization. So for any given Translator instance t,
+# t.canvas_event is a pure function.
 class Translator:
     # Raises TemplateError
     def __init__(

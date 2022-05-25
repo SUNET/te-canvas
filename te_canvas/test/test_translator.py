@@ -62,8 +62,8 @@ class TestTranslator(unittest.TestCase):
         with self.assertRaises(KeyError):
             translator._string(r"some ${random::identifier}", fields, objects)
 
-        # With ("random", "identifier") in `fields`, but no matching data in
-        # `objects`, the braced identifier is replaced with the empty string.
+        # With ("random", "identifier") in `fields`, but no matching data in `objects`, the braced
+        # identifier is replaced with the empty string.
         self.assertEqual(
             translator._string(r"some ${random::identifier}", fields + [("random", "identifier")], objects), "some "
         )

@@ -120,8 +120,7 @@ class Syncer:
 
     # Invariant 1: Events in database is a superset of (our) events on Canvas.
     # Invariant 2: For every event E in the database, there exists a connection C s.t.
-    #              C.canvas_group = E.canvas_group and
-    #              C.te_group = E.te_group.
+    #              C.canvas_group = E.canvas_group and C.te_group = E.te_group.
     def sync_job(self):
         self.logger.info("Sync job started")
         canvas_groups_synced = 0
@@ -132,14 +131,12 @@ class Syncer:
             for (canvas_group,) in session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group):
                 self.logger.info(f"Processing {canvas_group}")
 
-                # When a Translator is instantiated it reads template config
-                # from the DB and is after this static. So we initiate a new one
-                # for each synced canvas group, and diff for change detection
-                # with the previous instance.
+                # When a Translator is instantiated it reads template config from the DB and is
+                # after this static. So we initiate a new one for each synced canvas group, and diff
+                # for change detection with the previous instance.
                 #
-                # This could be done on the larger sync job level, but to
-                # simplify change detection and to prepare for group level
-                # parallellization we do this for each synced group.
+                # This could be done on the larger sync job level, but to simplify change detection
+                # and to prepare for group level parallellization we do this for each synced group.
                 try:
                     translator = Translator(self.db, self.timeedit)
                 except TemplateError:
@@ -214,10 +211,11 @@ class Syncer:
                         )
 
                 # Record new Canvas state
-                # TODO: Race condition here, if something changed on Canvas
-                # between being added by us and this state get, it will not be
-                # detected. Can be fixed by building state from the calls to
-                # Canvas.create_event instead of doing a state get afterwards.
+                #
+                # TODO: Race condition here, if something changed on Canvas between being added by
+                # us and this state get, it will not be detected. Can be fixed by building state
+                # from the calls to Canvas.create_event instead of doing a state get afterwards.
+                #
                 prev_state = self.states[canvas_group]  # Implicit assert that this is not None
                 new_state = prev_state | self.__state_canvas(canvas_group)
                 self.states[canvas_group] = new_state

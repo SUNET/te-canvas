@@ -31,8 +31,7 @@ class Canvas:
     def create_event(self, event: dict) -> CalendarEvent:
         return self.canvas.create_calendar_event(event)
 
-    # If the event does not exist on Canvas, this is a NOOP and no exception is
-    # raised.
+    # If the event does not exist on Canvas, this is a NOOP and no exception is raised.
     def delete_event(self, id: int):
         try:
             event = self.canvas.get_calendar_event(id)
@@ -50,9 +49,8 @@ class Canvas:
             )
         )
 
-    # Recovery method to clear all Canvas events without using the event
-    # database. Goes through all Canvas events and removes all whose description
-    # contain translator.EVENT_TAG.
+    # Recovery method to clear all Canvas events without using the event database. Goes through all
+    # Canvas events and removes all whose description contain translator.EVENT_TAG.
     def clear_events_tagged(self, course: int):
         deleted = []
         for event in self.get_events_all(course):

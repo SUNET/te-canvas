@@ -97,8 +97,8 @@ class TimeEdit:
     def find_reservations_all(self, extids: list[str], return_types: dict[str, list[str]]):
         """Get all reservations for a given set of objects."""
 
-        # If extids is empty, findReservations will return *all* reservations, which
-        # is never what we want
+        # If extids is empty, findReservations will return *all* reservations, which is never what
+        # we want
         if len(extids) == 0:
             return []
 

@@ -21,10 +21,9 @@ Base = declarative_base()
 
 
 class Connection(Base):
-    # NOTE: For a given canvas_group C and te_group T, there can only be one
-    # connection. Once a connection's delete flag has been set the connection
-    # can not be modified, and a new connection (C, T) can not be added until
-    # the old one is deleted by App.sync_job().
+    # NOTE: For a given canvas_group C and te_group T, there can only be one connection. Once a
+    # connection's delete flag has been set the connection can not be modified, and a new connection
+    # (C, T) can not be added until the old one is deleted by App.sync_job().
     __tablename__ = "connections"
     canvas_group = Column(String, primary_key=True)
     te_group = Column(String, primary_key=True)
@@ -45,11 +44,10 @@ class Config(Base):
     value = Column(String)
 
 
-# TODO: Can we avoid having this here and do this in test_db, perhaps
-# dynamically in a test case? Not so important. But would be nice if this table
-# is not included in the real database.
-# Not really necessary, right? Since we use a separate test_db we can use any
-# table for simple commit/rollback testing.
+# TODO: Can we avoid having this here and do this in test_db, perhaps dynamically in a test case?
+# Not so important. But would be nice if this table is not included in the real database. Not really
+# necessary, right? Since we use a separate test_db we can use any table for simple commit/rollback
+# testing.
 class Test(Base):
     __tablename__ = "unittest"
     foo = Column(String, primary_key=True, default="bar")
@@ -138,8 +136,8 @@ class DB:
 
     def get_connections(self, canvas_group: Optional[str] = None) -> list[tuple[str, str, str, bool]]:
         with self.sqla_session() as session:
-            # NOTE: We cannot return a list of Connection here, since the Session
-            # they are connected to is closed at end of this block.
+            # NOTE: We cannot return a list of Connection here, since the Session they are connected
+            # to is closed at end of this block.
             query = session.query(Connection)
 
             if canvas_group is not None:
