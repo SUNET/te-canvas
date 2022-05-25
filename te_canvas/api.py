@@ -56,6 +56,7 @@ def create_app(db: DB = DB(), timeedit: TimeEdit = TimeEdit(), canvas: Canvas = 
     # --- Config ---------------------------------------------------------------
 
     config_api.ns.add_resource(config_api.Config, "", resource_class_kwargs={"db": db})
+    config_api.ns.add_resource(config_api.Ok, "/ok", resource_class_kwargs={"db": db, "timeedit": timeedit})
     api.add_namespace(config_api.ns)
 
     return flask
