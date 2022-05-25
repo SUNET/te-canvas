@@ -140,7 +140,14 @@ class Syncer:
                 # This could be done on the larger sync job level, but to
                 # simplify change detection and to prepare for group level
                 # parallellization we do this for each synced group.
-                translator = Translator(self.db, self.timeedit)
+                try:
+                    translator = Translator(self.db, self.timeedit)
+                except TemplateError:
+                    self.logger.warning(f"Template error, skipping {canvas_group}")
+                    # Not break, so we still try again with the next group,
+                    # since we decided translator is created on group level for
+                    # now.
+                    continue
 
                 # Change detection
                 prev_state = self.states.get(canvas_group)
@@ -201,9 +208,6 @@ class Syncer:
                         canvas_event = self.canvas.create_event(
                             translator.canvas_event(r) | {"context_code": f"course_{canvas_group}"}  # (*)
                         )
-                    except TemplateError:
-                        self.logger.warning("Template error")
-                        break
                     finally:
                         session.add(
                             Event(
