@@ -19,7 +19,7 @@ def create_app(db: DB = DB(), timeedit: TimeEdit = TimeEdit(), canvas: Canvas = 
     flask = Flask(__name__)
     flask.config["SECRET_KEY"] = os.urandom(128)
 
-    CORS(flask, resources={r"/api/*": {"origins": "*"}})
+    CORS(flask)
 
     # TODO: More standard option for logging request, e.g. werkzeug logger?
     logger = get_logger()
