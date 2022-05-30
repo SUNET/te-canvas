@@ -14,6 +14,7 @@ class TimeEdit:
     def __init__(self):
         try:
             self.id = os.environ["TE_ID"]
+            self.usergroup = os.environ["TE_USERGROUP"]
             cert = os.environ["TE_CERT"]
             username = os.environ["TE_USERNAME"]
             password = os.environ["TE_PASSWORD"]
@@ -37,8 +38,10 @@ class TimeEdit:
         }
 
     def reservation_url(self, id: str) -> str:
-        # TODO: Add proper query args
-        return f"https://cloud.timeedit.net/{self.id}/web/staff/ri.html?id={id}"
+        # These query args are not understood in detail, taken blindly from the URL we get when
+        # navigating to an event detail page in web view
+        static_args = "h=t&sid=4&types=0&fe=0&fr=t&step=0&ef=2&nocache=2"
+        return f"https://cloud.timeedit.net/{self.id}/web/{self.usergroup}/ri.html?id={id}&{static_args}"
 
     def find_types_all(self):
         res = self.client.service.findTypes(
