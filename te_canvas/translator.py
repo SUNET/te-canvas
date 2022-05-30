@@ -51,6 +51,14 @@ class Translator:
             "end_at":   timeedit_reservation["end_at"],
             }  # fmt: skip
 
+    # Used for change detection in sync job
+    def state(self):
+        return {
+            "title": self.template_title,
+            "location": self.template_location,
+            "description": self.template_description
+        }
+
     # Check if we have a complete event template definition
     def template_config_ok(self) -> bool:
         try:

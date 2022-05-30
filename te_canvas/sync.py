@@ -109,12 +109,6 @@ class Syncer:
             "canvas_event_modify_date": canvas_event_modify_date,
         }
 
-    def __state_translator(self, translator: Translator) -> State:
-        res = {}
-        for k in ["title", "location", "description"]:
-            res[k] = translator.template(k)
-        return res
-
     def __has_changed(self, prev_state: Optional[State], state: State) -> bool:
         return state != prev_state
 
@@ -151,7 +145,7 @@ class Syncer:
                 new_state = (
                     self.__state_te(canvas_group)
                     | self.__state_canvas(canvas_group)
-                    | self.__state_translator(translator)
+                    | translator.state()
                 )
                 self.states[canvas_group] = new_state
                 self.logger.debug(f"State: {new_state}")
