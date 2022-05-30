@@ -6,6 +6,8 @@ Export the following env vars:
 
 ```
 TE_ID
+TE_USERGROUP
+
 TE_CERT
 TE_USERNAME
 TE_PASSWORD
@@ -73,6 +75,8 @@ Export the following env vars:
 
 ```
 TE_ID
+TE_USERGROUP
+
 TE_CERT
 TE_USERNAME
 TE_PASSWORD
