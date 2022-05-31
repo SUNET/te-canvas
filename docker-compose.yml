@@ -37,6 +37,8 @@ services:
     depends_on: [ postgres ]
     environment:
       - TE_ID
+      - TE_USERGROUP
+
       - TE_CERT
       - TE_USERNAME
       - TE_PASSWORD
@@ -59,6 +61,8 @@ services:
     depends_on: [ postgres ]
     environment:
       - TE_ID
+      - TE_USERGROUP
+
       - TE_CERT
       - TE_USERNAME
       - TE_PASSWORD
