@@ -56,7 +56,7 @@ class Translator:
         return {
             "title": self.template_title,
             "location": self.template_location,
-            "description": self.template_description
+            "description": self.template_description,
         }
 
     # Check if we have a complete event template definition
