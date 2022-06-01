@@ -1,5 +1,6 @@
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 from canvasapi import Canvas as CanvasAPI
 from canvasapi.calendar_event import CalendarEvent
@@ -49,13 +50,16 @@ class Canvas:
             )
         )
 
+    # --- NOT USED IN MAIN PROGRAM, JUST FOR UTILITY SCRIPTS ---
+
     # Recovery method to clear all Canvas events without using the event database. Goes through all
     # Canvas events and removes all whose description contain translator.EVENT_TAG.
-    def clear_events_tagged(self, course: int):
-        deleted = []
-        for event in self.get_events_all(course):
-            if event.title.endswith(TAG_TITLE):
-                self.logger.info(f"Deleting {event.id}")
-                deleted.append(event)
-                self.delete_event(event.id)
-        print(deleted)
+    def clear_events_tagged(self, course: int, max_workers: int):
+        events = self.get_events_all(course)
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            executor.map(self.__clear_events_tagged_helper, events)
+
+    def __clear_events_tagged_helper(self, event):
+        if event.title.endswith(TAG_TITLE):
+            self.logger.info(f"Deleting {event.id}")
+            self.delete_event(event.id)
