@@ -1,8 +1,10 @@
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from typing import Optional
 
+from apscheduler.events import EVENT_JOB_ERROR
 from apscheduler.schedulers.background import BlockingScheduler
 from pytz import utc
 
@@ -20,6 +22,11 @@ class JobScheduler(object):
         self.scheduler = BlockingScheduler(timezone=utc)
         self.logger = get_logger()
 
+        def listener(event):
+            self.logger.warning(f"Job raised an Exception: {event.exception.__class__.__name__}: {event.exception}")
+
+        self.scheduler.add_listener(listener, EVENT_JOB_ERROR)
+
     def get(self):
         return self.scheduler
 
@@ -33,7 +40,7 @@ class JobScheduler(object):
 
     def add(self, func, seconds, kwargs):
         self.logger.info(f"Adding job to scheduler: interval={seconds}")
-        return self.scheduler.add_job(func, "interval", seconds=seconds, kwargs=kwargs)
+        return self.scheduler.add_job(func, "interval", seconds=seconds, kwargs=kwargs, next_run_time=datetime.now(utc))
 
 
 class Syncer:
@@ -225,7 +232,6 @@ class Syncer:
 
 if __name__ == "__main__":
     syncer = Syncer()
-    syncer.sync_all()
 
     jobs = JobScheduler()
     jobs.add(syncer.sync_all, 10, {})
