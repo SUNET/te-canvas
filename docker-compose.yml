@@ -80,6 +80,8 @@ services:
       - EVENT_LOCATION
       - EVENT_DESCRIPTION
 
+      - MAX_WORKERS=1
+
 volumes:
   postgres-data:
   postgres-data-test:
