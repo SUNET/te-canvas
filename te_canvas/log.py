@@ -3,7 +3,7 @@ import logging
 from flask import current_app
 
 
-# (?): Uses Flask logger if available?
+# TODO: (?): Uses Flask logger if available?
 def get_logger():
     if current_app:
         logger = current_app.logger
