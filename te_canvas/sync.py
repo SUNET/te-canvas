@@ -146,19 +146,13 @@ class Syncer:
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
             self.logger.info(f"{canvas_group}: Processing")
 
-            # When a Translator is instantiated it reads template config from the DB and is
-            # after this static. So we initiate a new one for each synced canvas group, and diff
-            # for change detection with the previous instance.
-            #
-            # This could be done on the larger sync job level, but to simplify change detection
-            # and to prepare for group level parallellization we do this for each synced group.
+            # When a Translator is instantiated it reads template config from the DB and is after
+            # this static. So we initiate a new one for each sync, and diff for change detection
+            # with the previous instance.
             try:
                 translator = Translator(self.db, self.timeedit)
             except TemplateError:
                 self.logger.warning(f"{canvas_group}: Template error, skipping")
-                # Not break, so we still try again with the next group,
-                # since we decided translator is created on group level for
-                # now.
                 return False
 
             # Change detection
