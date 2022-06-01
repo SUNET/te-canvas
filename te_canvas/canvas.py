@@ -1,6 +1,8 @@
 import os
+import pickle
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from tempfile import NamedTemporaryFile
 
 from canvasapi import Canvas as CanvasAPI
 from canvasapi.calendar_event import CalendarEvent
@@ -56,6 +58,12 @@ class Canvas:
     # Canvas events and removes all whose description contain translator.EVENT_TAG.
     def clear_events_tagged(self, course: int, max_workers: int):
         events = self.get_events_all(course)
+
+        tmp = NamedTemporaryFile(delete=False)
+        pickle.dump(events, tmp)
+        tmp.close()
+        self.logger.info(f"Events backup pickled to {tmp.name}")
+
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             executor.map(self.__clear_events_tagged_helper, events)
 
