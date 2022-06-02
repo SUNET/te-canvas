@@ -159,7 +159,7 @@ docker-compose --profile test up
 ./test.sh
 ```
 
-The following setup is required for tests which interact with TimeEdit and Canvas instances.
+The following setup is required for tests which interact with TimeEdit and Canvas. Note that tests which interact with TimeEdit will probably not work (at the time of writing) with a TimeEdit instance other than the particular one used during development.
 
 Canvas course:
 
@@ -167,13 +167,13 @@ Canvas course:
 
 TimeEdit object:
 
-- Type: Lokal (Hel)
+- Type: `Lokal (Hel)`
 - Ext. id: `fullroom_unittest`
 - Id: `unittest`
-- Name: "Unit Test Room"
+- Name: `Unit Test Room`
 
 TimeEdit reservation:
 
 - Room: `unittest`
-- Start at: 2022-10-01, 12:00
-- End at: 2022-10-01, 13:00
+- Start at: `2022-10-01, 12:00`
+- End at: `2022-10-01, 13:00`
