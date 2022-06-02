@@ -178,6 +178,7 @@ class Syncer:
             self.sync_complete[canvas_group] = False
 
             # Remove all events previously added by us to this Canvas group
+            # TODO: Should this just use clear_events_tagged instead? Can we avoid storing events locally at all?
             self.logger.info(
                 f"{canvas_group}: Deleting events ({session.query(Event).filter(Event.canvas_group == canvas_group).count()} events)"
             )

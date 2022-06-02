@@ -36,6 +36,7 @@ class Canvas:
 
     # If the event does not exist on Canvas, this is a NOOP and no exception is raised.
     def delete_event(self, id: int):
+        # OPTIMIZATION: Can we get rid of this extra GET?
         try:
             event = self.canvas.get_calendar_event(id)
             if event.workflow_state != "deleted":
