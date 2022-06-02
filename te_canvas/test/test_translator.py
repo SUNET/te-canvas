@@ -2,6 +2,7 @@ import datetime
 import unittest
 
 import te_canvas.translator as translator
+from te_canvas.timeedit import TimeEdit
 
 
 class TestTranslator(unittest.TestCase):
@@ -10,6 +11,7 @@ class TestTranslator(unittest.TestCase):
         pass
 
     def test_translator(self):
+        timeedit = TimeEdit()
         template = r"Hello ${person::firstname} how are you this ${date::weekday} in ${date::month}?"
         fields = [("person", "firstname"), ("date", "weekday"), ("date", "month")]
         objects = [
@@ -35,12 +37,15 @@ class TestTranslator(unittest.TestCase):
         canvas_event = {
             "title": "john, paul" + translator.TAG_TITLE,
             "location_name": "march",
-            "description": "thursday",
+            "description": "thursday"
+            + f'<br><br><a href="{timeedit.reservation_url("example_id")}">Edit on TimeEdit</a>',
             "start_at": datetime.date(2022, 3, 25),
             "end_at": datetime.date(2022, 3, 25),
         }
 
         t = translator.Translator(
+            None,
+            timeedit,
             r"${person::firstname}",
             r"${date::month}",
             r"${date::weekday}",
@@ -53,7 +58,12 @@ class TestTranslator(unittest.TestCase):
 
         self.assertEqual(
             t.canvas_event(
-                {"objects": objects, "start_at": datetime.date(2022, 3, 25), "end_at": datetime.date(2022, 3, 25)}
+                {
+                    "id": "example_id",
+                    "objects": objects,
+                    "start_at": datetime.date(2022, 3, 25),
+                    "end_at": datetime.date(2022, 3, 25),
+                }
             ),
             canvas_event,
         )

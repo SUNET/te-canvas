@@ -24,7 +24,7 @@ class TestCanvas(unittest.TestCase):
         """Creating an event should succeed."""
         canvas_event = self.canvas.create_event(
             {
-                "context_code": "course_168",  # Course "ernst_test"
+                "context_code": "course_169",  # Course "te-canvas-integration-test"
                 "title": "unittest_title",
                 "location_name": "unittest_location",
                 "description": "unittest_description",

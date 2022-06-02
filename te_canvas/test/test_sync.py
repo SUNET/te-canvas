@@ -3,25 +3,28 @@ import unittest
 from typing import Optional
 
 from te_canvas.canvas import Canvas
-from te_canvas.db import DB, Connection, Event, Test
+from te_canvas.db import DB, Config, Connection, Event, Test
 from te_canvas.sync import Syncer
 
 CANVAS_GROUP = 169
-TE_GROUP = "courseevt_te-canvas-test"
+TE_GROUP = "fullroom_unittest"
 
 integration_test_event = {
-    "title": "Föreläsning",
-    "location_name": "Unit Test Room, Unit Test Room 2",
-    "start_at": "2022-01-03T08:00:00Z",
-    "end_at": "2022-01-03T09:00:00Z",
+    "title": "Test title​",
+    "location_name": "--> Unit Test Room <--",
+    "start_at": "2022-10-01T10:00:00Z",
+    "end_at": "2022-10-01T11:00:00Z",
     "context_code": f"course_{CANVAS_GROUP}",
 }
 
 
+# Check that subset is a subset of superset. Return a string describing the first differing key, or None.
 def dict_eq(superset: dict, subset: dict) -> Optional[str]:
     for key in subset:
-        if not key in superset or superset[key] != subset[key]:
-            return key
+        if not key in superset:
+            return f"{key} not in superset"
+        if superset[key] != subset[key]:
+            return f"{key}: superset: {superset[key]}, subset: {subset[key]}"
     return None
 
 
@@ -40,6 +43,12 @@ class TestSync(unittest.TestCase):
             session.query(Connection).delete()
             session.query(Event).delete()
             session.query(Test).delete()
+            session.query(Config).delete()
+
+            # Event template strings, needed to perform a sync
+            session.add(Config(key="title", value="Test title"))
+            session.add(Config(key="location", value="--> ${room::room.name} <--"))
+            session.add(Config(key="description", value="Test description"))
 
         cls.sync = Syncer(db)
         cls.sync.logger.setLevel(logging.CRITICAL)
