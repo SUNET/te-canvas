@@ -152,13 +152,19 @@ def _unpack_object(o):
 
 def _unpack_reservation(r):
     date_format = "%Y%m%dT%H%M%S"
+
+    if r["objects"] is None:
+        objects = []
+    else:
+        objects = [_unpack_reservation_object(o) for o in r["objects"]["object"]]
+
     return {
         "id": r["id"],
         "start_at": datetime.strptime(r["begin"], date_format),
         "end_at": datetime.strptime(r["end"], date_format),
         "length": r["length"],
         "modified": datetime.strptime(r["modified"], date_format),
-        "objects": [_unpack_reservation_object(o) for o in r["objects"]["object"]],
+        "objects": objects,
     }
 
 
