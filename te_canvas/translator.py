@@ -1,7 +1,7 @@
 import re
 from string import Template
 
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound  # type: ignore
 
 from te_canvas.util import State
 

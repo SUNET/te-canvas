@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, reqparse
 from psycopg2.errors import UniqueViolation
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import NoResultFound  # type: ignore
 
 from te_canvas.db import DeleteFlagAlreadySet
 

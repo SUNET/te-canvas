@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound  # type: ignore
 
 from te_canvas.db import DB, Config, Test, flat_list
 

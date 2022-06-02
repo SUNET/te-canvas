@@ -7,8 +7,8 @@ from typing import Optional
 
 from psycopg2.errors import UniqueViolation
 from sqlalchemy import Boolean, Column, String, create_engine
-from sqlalchemy.exc import IntegrityError, OperationalError
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import declarative_base, sessionmaker  # type: ignore
 
 from te_canvas.log import get_logger
 

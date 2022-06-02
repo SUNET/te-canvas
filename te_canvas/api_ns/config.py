@@ -1,6 +1,6 @@
 from flask import make_response
 from flask_restx import Namespace, Resource, reqparse
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound  # type: ignore
 
 from te_canvas.translator import TemplateError, Translator
 
