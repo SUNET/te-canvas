@@ -59,7 +59,7 @@ class TestSync(unittest.TestCase):
         # Add connection, perform sync
         with self.sync.db.sqla_session() as session:
             session.add(Connection(canvas_group=CANVAS_GROUP, te_group=TE_GROUP))
-        self.sync.sync_job()
+        self.sync.sync_all()
 
         # Check that...
         with self.sync.db.sqla_session() as session:
@@ -81,7 +81,7 @@ class TestSync(unittest.TestCase):
 
         # Re-run sync job and see that the event has not been removed and re-added
         event_old = events[0]
-        self.sync.sync_job()
+        self.sync.sync_all()
         events = self.canvas.get_events_all(CANVAS_GROUP)
         self.assertEqual(len(events), 1)
         event_new = events[0]
@@ -95,7 +95,7 @@ class TestSync(unittest.TestCase):
         # Flag connection for deletion, run sync_job again
         with self.sync.db.sqla_session() as session:
             session.query(Connection).one().delete_flag = True
-        self.sync.sync_job()
+        self.sync.sync_all()
 
         with self.sync.db.sqla_session() as session:
             self.assertEqual(session.query(Connection).count(), 0)

@@ -33,9 +33,9 @@ class TestTranslator(unittest.TestCase):
         string = "Hello john, paul how are you this thursday in march?"
         return_types = {"person": ["firstname"], "date": ["weekday", "month"]}
         canvas_event = {
-            "title": "john, paul",
+            "title": "john, paul" + translator.TAG_TITLE,
             "location_name": "march",
-            "description": "thursday" + translator.EVENT_TAG,
+            "description": "thursday",
             "start_at": datetime.date(2022, 3, 25),
             "end_at": datetime.date(2022, 3, 25),
         }
