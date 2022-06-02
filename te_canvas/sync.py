@@ -60,6 +60,9 @@ class Syncer:
         # Mapping canvas_group to in-memory State:s
         self.states: dict[str, State] = {}
 
+        # Set to false at start of each sync, set to true at completion
+        self.sync_complete: dict[str, bool] = {}
+
     # Modifications to detect:
     # 1. Connection modified
     #     1a. Connection added
@@ -164,15 +167,15 @@ class Syncer:
 
             # Change detection
             prev_state = self.states.get(canvas_group)
-            new_state = self.__state_te(canvas_group) | self.__state_canvas(canvas_group) | translator.state() | { "sync_completed": False }
+            new_state = self.__state_te(canvas_group) | self.__state_canvas(canvas_group) | translator.state()
             self.states[canvas_group] = new_state  # TODO: Verify thread safe
             self.logger.debug(f"State: {new_state}")
 
-            # TODO: Can we make this prettier?
-            if not self.__has_changed(prev_state, new_state) and prev_state is not None and prev_state["sync_completed"]:
+            if not self.__has_changed(prev_state, new_state) and self.sync_complete.get(canvas_group, False):
                 self.logger.info(f"{canvas_group}: Nothing changed, skipping")
-                self.states[canvas_group]["sync_completed"] = True
                 return False
+
+            self.sync_complete[canvas_group] = False
 
             # Remove all events previously added by us to this Canvas group
             self.logger.info(
@@ -229,7 +232,7 @@ class Syncer:
             new_state = prev_state | self.__state_canvas(canvas_group)
             self.states[canvas_group] = new_state
 
-            self.states[canvas_group]["sync_completed"] = True
+            self.sync_complete[canvas_group] = True
 
             return True
 
