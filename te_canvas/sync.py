@@ -16,7 +16,6 @@ from te_canvas.translator import TAG_TITLE, TemplateError, Translator
 from te_canvas.util import State
 
 
-
 class JobScheduler(object):
     def __init__(self):
         self.scheduler = BlockingScheduler(timezone=utc)
