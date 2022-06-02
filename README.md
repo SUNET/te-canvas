@@ -163,7 +163,7 @@ The following setup is required for tests which interact with TimeEdit and Canva
 
 Canvas course:
 
-- Id: 169 (edit in `te_canvas/test/common.py` as needed)
+- Id: `169` (edit in `te_canvas/test/common.py` as needed)
 
 TimeEdit object:
 
