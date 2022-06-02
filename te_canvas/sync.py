@@ -185,8 +185,7 @@ class Syncer:
             for event in (
                 session.query(Event).filter(Event.canvas_group == canvas_group).order_by(Event.canvas_id, Event.te_id)
             ):
-                # If this event does not exist on Canvas, this is a NOOP and no
-                # exception is raised.
+                # If this event does not exist on Canvas, this is a NOOP and no exception is raised.
                 self.canvas.delete_event(event.canvas_id)
 
             # Clear deleted events
