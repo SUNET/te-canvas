@@ -5,8 +5,8 @@ from typing import Optional
 from te_canvas.canvas import Canvas
 from te_canvas.db import DB, Config, Connection, Event, Test
 from te_canvas.sync import Syncer
+from te_canvas.test.common import CANVAS_GROUP
 
-CANVAS_GROUP = 169
 TE_GROUP = "fullroom_unittest"
 
 integration_test_event = {

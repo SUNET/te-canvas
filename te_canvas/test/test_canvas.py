@@ -5,6 +5,7 @@ import unittest
 import canvasapi.exceptions
 
 from te_canvas.canvas import Canvas
+from te_canvas.test.common import CANVAS_GROUP
 
 # NOTE: Statements are implicitly assumed to succeed, since they all should throw exceptions which
 # (if they are not caught) register in the test results.
@@ -24,7 +25,7 @@ class TestCanvas(unittest.TestCase):
         """Creating an event should succeed."""
         canvas_event = self.canvas.create_event(
             {
-                "context_code": "course_169",  # Course "te-canvas-integration-test"
+                "context_code": f"course_{CANVAS_GROUP}",  # Course "te-canvas-integration-test"
                 "title": "unittest_title",
                 "location_name": "unittest_location",
                 "description": "unittest_description",
