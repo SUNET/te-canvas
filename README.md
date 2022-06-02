@@ -128,13 +128,6 @@ To start in dev mode, with exposed ports (*not safe in production*) and using lo
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml --profile <sync | api> up
 ```
 
-## Testing
-
-```
-docker-compose --profile test up
-./test.sh
-```
-
 ## Suggested complete project setup
 
 ```
@@ -158,3 +151,29 @@ docker-compose --profile test up
 ```
 
 The front end will access back end services using container names, e.g. `back-1_api_1`.
+
+## Testing
+
+```
+docker-compose --profile test up
+./test.sh
+```
+
+The following setup is required for tests which interact with TimeEdit and Canvas instances.
+
+Canvas course:
+
+- Id: 169
+
+TimeEdit object:
+
+- Type: Lokal (Hel)
+- Ext. id: `fullroom_unittest`
+- Id: `unittest`
+- Name: "Unit Test Room"
+
+TimeEdit reservation:
+
+- Room: `unittest`
+- Start at: 2022-10-01, 12:00
+- End at: 2022-10-01, 13:00
