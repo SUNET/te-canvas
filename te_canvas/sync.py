@@ -13,8 +13,8 @@ from te_canvas.db import DB, Connection, Event, flat_list
 from te_canvas.log import get_logger
 from te_canvas.timeedit import TimeEdit
 from te_canvas.translator import TAG_TITLE, TemplateError, Translator
+from te_canvas.util import State
 
-State = dict[str, str]
 
 
 class JobScheduler(object):
@@ -164,12 +164,14 @@ class Syncer:
 
             # Change detection
             prev_state = self.states.get(canvas_group)
-            new_state = self.__state_te(canvas_group) | self.__state_canvas(canvas_group) | translator.state()
+            new_state = self.__state_te(canvas_group) | self.__state_canvas(canvas_group) | translator.state() | { "sync_completed": False }
             self.states[canvas_group] = new_state  # TODO: Verify thread safe
             self.logger.debug(f"State: {new_state}")
 
-            if not self.__has_changed(prev_state, new_state):
+            # TODO: Can we make this prettier?
+            if not self.__has_changed(prev_state, new_state) and prev_state is not None and prev_state["sync_completed"]:
                 self.logger.info(f"{canvas_group}: Nothing changed, skipping")
+                self.states[canvas_group]["sync_completed"] = True
                 return False
 
             # Remove all events previously added by us to this Canvas group
@@ -226,6 +228,8 @@ class Syncer:
             prev_state = self.states[canvas_group]  # Implicit assert that this is not None
             new_state = prev_state | self.__state_canvas(canvas_group)
             self.states[canvas_group] = new_state
+
+            self.states[canvas_group]["sync_completed"] = True
 
             return True
 

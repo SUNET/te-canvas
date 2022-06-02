@@ -1,8 +1,9 @@
-import os
 import re
 from string import Template
 
 from sqlalchemy.exc import NoResultFound
+
+from te_canvas.util import State
 
 # This module gathers functionality for "translating" a TimeEdit event into a Canvas event and
 # dealing with templates related to this.
@@ -52,7 +53,7 @@ class Translator:
             }  # fmt: skip
 
     # Used for change detection in sync job
-    def state(self):
+    def state(self) -> State:
         return {
             "title": self.template_title,
             "location": self.template_location,
