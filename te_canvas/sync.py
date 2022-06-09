@@ -17,6 +17,9 @@ from te_canvas.util import State
 
 
 class JobScheduler(object):
+    """
+    Thin wrapper around APScheduler.
+    """
     def __init__(self):
         self.scheduler = BlockingScheduler(timezone=utc)
         self.logger = get_logger()
@@ -43,6 +46,54 @@ class JobScheduler(object):
 
 
 class Syncer:
+    """
+    Syncs TimeEdit events to Canvas.
+
+    Much of the logic has to do with change detection, which is performed before syncing each Canvas
+    group. If nothing of relevance has changed since the previous sync of this group, we don't sync.
+    This saves us time and avoids unneccesarily breaking URLs to Canvas events. If there is a change
+    detected, all events added by te-canvas are deleted and re-added. A sync is thus either full or
+    not at all, we don't sync on individual event level.
+
+    Data used for change detection is in-memory only, so on restart te-canvas will perform a full
+    resync of all Canvas groups.
+
+    The syncer is mildly parallel with each thread handling the syncing of one Canvas group. Each
+    such sync consist of a number of API calls which are performed sequentially within the group.
+    Consequently, the number of threads is a maximum on the number of concurrent API calls.
+
+    The number of threads is determined by env var MAX_WORKERS. Set this to 1 to disable
+    parallelization.
+
+    Observing the header "X-Rate-Limit-Remaining" with concurrent Canvas API calls to create
+    calendar events has determined that the limit seems to lie around 60. Rate limiting on TimeEdit
+    should not be a concern.
+
+    We distinguish te-canvas events from other manually added events in Canvas by the string
+    TAG_TITLE which is added as a suffix to each te-canvas event.
+
+    Modifications to detect:
+
+    1. Connection modified
+        1a. Connection added
+        1b. Connection flagged for deletion
+    2. TE event modified
+    3. TE event created
+    4. TE event deleted
+    5. Tagged Canvas event modified
+    6. Tagged Canvas event created
+    7. Tagged Canvas event deleted
+    8. Template config edited
+
+    Means of detection:
+
+    1:   Hash of TE connections not flagged for deletion
+    2:   Latest modification timestamp in set of TE events
+    3,4: Hash of TE event IDs
+    5:   Latest modification timestamp in set of tagged Canvas events
+    6,7: Hash of tagged Canvas event IDs
+    """
+
     def __init__(self, db: DB = None, timeedit: TimeEdit = None, canvas: Canvas = None):
         self.logger = get_logger()
 
@@ -62,26 +113,11 @@ class Syncer:
         # Set to false at start of each sync, set to true at completion
         self.sync_complete: dict[str, bool] = {}
 
-    # Modifications to detect:
-    # 1. Connection modified
-    #     1a. Connection added
-    #     1b. Connection flagged for deletion
-    # 2. TE event modified
-    # 3. TE event created
-    # 4. TE event deleted
-    # 5. Tagged Canvas event modified
-    # 6. Tagged Canvas event created
-    # 7. Tagged Canvas event deleted
-    # 8. Template config is edited
-    #
-    # Means of detection:
-    # 1:   Hash of TE connections not flagged for deletion
-    # 2:   Latest modification timestamp in set of TE events
-    # 3,4: Hash of TE event IDs
-    # 5:   Latest modification timestamp in set of tagged Canvas events
-    # 6,7: Hash of tagged Canvas event IDs
-
     def __state_te(self, canvas_group: str) -> State:
+        """
+        Get the TimeEdit state relevant for canvas_group. Number comments reference "modifications
+        to detect", see class docstring.
+        """
         with self.db.sqla_session() as session:
             # 1
             te_groups = flat_list(
@@ -106,6 +142,10 @@ class Syncer:
             }
 
     def __state_canvas(self, canvas_group: str) -> State:
+        """
+        Get the Canvas state relevant for canvas_group. Number comments reference "modifications to
+        detect", see class docstring.
+        """
         canvas_events = self.canvas.get_events_all(int(canvas_group))
 
         # 6,7
@@ -127,9 +167,13 @@ class Syncer:
     def __has_changed(self, prev_state: Optional[State], state: State) -> bool:
         return state != prev_state
 
-    # Sync events for all Canvas groups. For rate limiting concerns, the maximum number of
-    # concurrent calls to Canvas or TimeEdit is equal to max_workers.
     def sync_all(self):
+        """
+        Sync events for all configured Canvas groups.
+
+        This function gets all the Canvas groups to sync, and runs through them using a thread pool
+        of size MAX_WORKERS.
+        """
         self.logger.info("Sync job started")
 
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
@@ -142,13 +186,19 @@ class Syncer:
             f"Sync job completed; {len([x for x in res if x])} Canvas groups synced; {len([x for x in res if not x])} skipped"
         )
 
-    # Sync events for one Canvas group. Returns False if the group was skipped due to change
-    # detection OR template error, otherwise True.
-    #
-    # Invariant 1: Events in database is a superset of (our) events on Canvas.
-    # Invariant 2: For every event E in the database, there exists a connection C s.t.
-    #              C.canvas_group = E.canvas_group and C.te_group = E.te_group.
     def sync_one(self, canvas_group: str) -> bool:
+        """
+        Sync events for one Canvas group.
+
+        Invariant 1: Events in the database is a superset of (our) events on Canvas.
+        Invariant 2: For every event E in the database, there exists a connection C s.t.
+                     C.canvas_group = E.canvas_group and C.te_group = E.te_group.
+
+        These invariants should hold at any point before, during, and after the execution of sync_one.
+
+        Returns:
+            False if the group was skipped due to change detection or template error, otherwise True.
+        """
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
             self.logger.info(f"{canvas_group}: Processing")
 
