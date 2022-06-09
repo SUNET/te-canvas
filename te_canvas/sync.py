@@ -286,7 +286,6 @@ class JobScheduler(object):
 
 if __name__ == "__main__":
     syncer = Syncer()
-
     jobs = JobScheduler()
     jobs.add(syncer.sync_all, 10, {})
     jobs.start()
