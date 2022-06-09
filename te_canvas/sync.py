@@ -74,9 +74,6 @@ class Syncer:
     # 7. Tagged Canvas event deleted
     # 8. Template config is edited
     #
-    # TODO:
-    # 8. sync_job not completed, should be retried
-    #
     # Means of detection:
     # 1:   Hash of TE connections not flagged for deletion
     # 2:   Latest modification timestamp in set of TE events
