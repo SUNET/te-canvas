@@ -128,6 +128,8 @@ To start in dev mode, with exposed ports (*not safe in production*) and using lo
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml --profile <sync | api> up
 ```
 
+The two previous commands are written down in `start-prod.sh` and `start-dev.sh` for convenience.
+
 ## Suggested complete project setup
 
 ```
@@ -144,9 +146,11 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml --profile <sync |
 │   └── platforms.json
 ├── back-1
 │   ├── docker-compose.yml -> ../te-canvas/docker-compose.yml
+│   ├── start-prod.sh      -> ../te-canvas/start-prod.sh     
 │   └── .env
 └── back-2
     ├── docker-compose.yml -> ../te-canvas/docker-compose.yml
+    ├── start-prod.sh      -> ../te-canvas/start-prod.sh     
     └── .env
 ```
 
