@@ -16,35 +16,6 @@ from te_canvas.translator import TAG_TITLE, TemplateError, Translator
 from te_canvas.util import State
 
 
-class JobScheduler(object):
-    """
-    Thin wrapper around APScheduler.
-    """
-    def __init__(self):
-        self.scheduler = BlockingScheduler(timezone=utc)
-        self.logger = get_logger()
-
-        def listener(event):
-            self.logger.warning(f"Job raised an Exception: {event.exception.__class__.__name__}: {event.exception}")
-
-        self.scheduler.add_listener(listener, EVENT_JOB_ERROR)
-
-    def get(self):
-        return self.scheduler
-
-    def start(self):
-        self.logger.info("Starting scheduler.")
-        return self.scheduler.start()
-
-    def stop(self):
-        self.logger.info("Stopping scheduler.")
-        return self.scheduler.shutdown()
-
-    def add(self, func, seconds, kwargs):
-        self.logger.info(f"Adding job to scheduler: interval={seconds}")
-        return self.scheduler.add_job(func, "interval", seconds=seconds, kwargs=kwargs, next_run_time=datetime.now(utc))
-
-
 class Syncer:
     """
     Syncs TimeEdit events to Canvas.
@@ -281,6 +252,36 @@ class Syncer:
             self.sync_complete[canvas_group] = True
 
             return True
+
+
+class JobScheduler(object):
+    """
+    Thin wrapper around APScheduler.
+    """
+
+    def __init__(self):
+        self.scheduler = BlockingScheduler(timezone=utc)
+        self.logger = get_logger()
+
+        def listener(event):
+            self.logger.warning(f"Job raised an Exception: {event.exception.__class__.__name__}: {event.exception}")
+
+        self.scheduler.add_listener(listener, EVENT_JOB_ERROR)
+
+    def get(self):
+        return self.scheduler
+
+    def start(self):
+        self.logger.info("Starting scheduler.")
+        return self.scheduler.start()
+
+    def stop(self):
+        self.logger.info("Stopping scheduler.")
+        return self.scheduler.shutdown()
+
+    def add(self, func, seconds, kwargs):
+        self.logger.info(f"Adding job to scheduler: interval={seconds}")
+        return self.scheduler.add_job(func, "interval", seconds=seconds, kwargs=kwargs, next_run_time=datetime.now(utc))
 
 
 if __name__ == "__main__":
