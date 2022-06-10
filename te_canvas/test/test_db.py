@@ -49,6 +49,32 @@ class TestDB(unittest.TestCase):
             "postgresql+psycopg2://test_user:test_password@localhost:5433/test_db",
         )
 
+    def test_init_env_vars_missing(self):
+        """Initalizing database with env vars, some missing."""
+        if "POSTGRES_DB" in os.environ:
+            del os.environ["POSTGRES_DB"]
+
+        with self.assertRaises(SystemExit) as cm:
+            db = DB()
+        self.assertEqual(cm.exception.code, -1)
+
+    def test_init_env_vars_missing_kwargs(self):
+        """Initalizing database with kwargs, some env vars missing."""
+        if "POSTGRES_DB" in os.environ:
+            del os.environ["POSTGRES_DB"]
+
+        db = DB(
+            hostname="localhost",
+            port="5433",
+            username="test_user",
+            password="test_password",
+            database="test_db",
+        )
+        self.assertEqual(
+            db.conn_str,
+            "postgresql+psycopg2://test_user:test_password@localhost:5433/test_db",
+        )
+
     def test_sqla_session(self):
         """Test commit and rollback functionality."""
         # Set up a database with one entry

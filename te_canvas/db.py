@@ -65,13 +65,13 @@ class DB:
             "database": "POSTGRES_DB",
         }
 
-        try:
-            env_vars = {k: os.environ[v] for (k, v) in env_var_mapping.items()}
-        except KeyError as e:
-            logger.critical(f"Missing env var: {e}")
-            sys.exit(-1)
-
+        env_vars = {k: os.environ[v] for (k, v) in env_var_mapping.items() if v in os.environ}
         conn = env_vars | kwargs
+
+        for (k, v) in env_var_mapping.items():
+            if k not in conn:
+                logger.critical(f"Missing env var: {v}")
+                sys.exit(-1)
 
         self.conn_str = "postgresql+psycopg2://{}:{}@{}:{}/{}".format(
             conn["username"],
