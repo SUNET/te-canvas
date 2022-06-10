@@ -15,7 +15,11 @@ from te_canvas.log import get_logger
 from te_canvas.timeedit import TimeEdit
 
 
-def create_app(db: DB = DB(), timeedit: TimeEdit = TimeEdit(), canvas: Canvas = Canvas()) -> Flask:
+def create_app(db: DB = None, timeedit: TimeEdit = None, canvas: Canvas = None) -> Flask:
+    db = db or DB()
+    canvas = canvas or Canvas()
+    timeedit = timeedit or TimeEdit()
+
     flask = Flask(__name__)
     flask.config["SECRET_KEY"] = os.urandom(128)
 
