@@ -34,8 +34,12 @@ class Canvas:
     def create_event(self, event: dict) -> CalendarEvent:
         return self.canvas.create_calendar_event(event)
 
-    # If the event does not exist on Canvas, this is a NOOP and no exception is raised.
     def delete_event(self, id: int):
+        """
+        Delete a Canvas event.
+
+        If the event does not exist on Canvas, this is a NOOP and no exception is raised.
+        """
         # OPTIMIZATION: Can we get rid of this extra GET?
         try:
             event = self.canvas.get_calendar_event(id)
@@ -55,9 +59,12 @@ class Canvas:
 
     # --- NOT USED IN MAIN PROGRAM, JUST FOR UTILITY SCRIPTS ---
 
-    # Recovery method to clear all Canvas events without using the event database. Goes through all
-    # Canvas events and removes all whose description contain translator.EVENT_TAG.
     def clear_events_tagged(self, course: int, max_workers: int):
+        """
+        Recovery method to clear all Canvas events without using the event database.
+
+        Goes through all Canvas events and removes all whose title ends with Translator.EVENT_TAG.
+        """
         events = self.get_events_all(course)
 
         tmp = NamedTemporaryFile(delete=False)
