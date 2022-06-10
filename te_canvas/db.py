@@ -14,6 +14,9 @@ from te_canvas.log import get_logger
 
 
 def flat_list(query):
+    """
+    Utility method to get plain lists from SQLAlchemy's tuple lists.
+    """
     return [r[0] for r in query]
 
 
@@ -21,9 +24,16 @@ Base = declarative_base()
 
 
 class Connection(Base):
-    # NOTE: For a given canvas_group C and te_group T, there can only be one connection. Once a
-    # connection's delete flag has been set the connection can not be modified, and a new connection
-    # (C, T) can not be added until the old one is deleted by App.sync_job().
+    """
+    Connection stores TimeEdit objects "attached" to Canvas courses.
+
+    In the UI one "block" corresponds to one connection.
+
+    NOTE: For a given canvas_group C and te_group T, there can only be one connection. Once a
+    connection's delete flag has been set the connection should not be modified, and a new
+    connection (C, T) can not be added until the old one is deleted by sync.Syncer.
+    """
+
     __tablename__ = "connections"
     canvas_group = Column(String, primary_key=True)
     te_group = Column(String, primary_key=True)
@@ -44,17 +54,30 @@ class Config(Base):
     value = Column(String)
 
 
-# TODO: Can we avoid having this here and do this in test_db, perhaps dynamically in a test case?
-# Not so important. But would be nice if this table is not included in the real database. Not really
-# necessary, right? Since we use a separate test_db we can use any table for simple commit/rollback
-# testing.
 class Test(Base):
+    """
+    TODO: Can we avoid having this here and do this in test_db, perhaps dynamically in a test case?
+    Not so important. But would be nice if this table is not included in the real database. In fact
+    this table should not be necessary – since we use a separate test_db we can use any table for
+    simple commit/rollback testing.
+    """
+
     __tablename__ = "unittest"
     foo = Column(String, primary_key=True, default="bar")
 
 
 class DB:
+    """
+    NOTE: The getters and setters in this class are used by the API but not Syncer. This is because
+    Syncer needs closer control over sessions and error handling.
+    """
+
     def __init__(self, **kwargs):
+        """
+        Open connection and initialize database.
+
+        Database settings can come either from env vars or kwargs, where kwargs have precedence.
+        """
         logger = get_logger()
 
         env_var_mapping = {
@@ -150,13 +173,18 @@ class DB:
             session.query(Config).filter(Config.key == key).delete()
             session.add(Config(key=key, value=value))
 
-    # Raises: NoResultFound
     def get_config(self, key: str) -> str:
+        """
+        Raises:
+            NoResultFound
+        """
         with self.sqla_session() as session:
             return session.query(Config).filter(Config.key == key).one().value
 
-    # No exception raised if not found
     def delete_config(self, key: str):
+        """
+        Does not raise exception if key not found.
+        """
         with self.sqla_session() as session:
             session.query(Config).filter(Config.key == key).delete()
 
