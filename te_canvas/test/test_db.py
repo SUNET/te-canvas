@@ -56,7 +56,7 @@ class TestDB(unittest.TestCase):
 
         with self.assertRaises(SystemExit) as cm:
             db = DB()
-        self.assertEqual(cm.exception.code, -1)
+        self.assertEqual(cm.exception.code, 1)
 
     def test_init_env_vars_missing_kwargs(self):
         """Initalizing database with kwargs, some env vars missing."""

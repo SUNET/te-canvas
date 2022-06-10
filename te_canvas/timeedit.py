@@ -20,7 +20,7 @@ class TimeEdit:
             password = os.environ["TE_PASSWORD"]
         except Exception as e:
             logger.critical(f"Missing env var: {e}")
-            sys.exit(-1)
+            sys.exit(1)
 
         wsdl = f"https://cloud.timeedit.net/soap/3/{self.id}/wsdl"
 
@@ -29,7 +29,7 @@ class TimeEdit:
             key = self.client.service.register(cert).applicationkey
         except Exception:
             logger.critical(f'TimeEdit connection to "{wsdl}" failed, exiting.')
-            sys.exit(-1)
+            sys.exit(1)
 
         self.login = {
             "username": username,

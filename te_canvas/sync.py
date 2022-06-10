@@ -72,7 +72,7 @@ class Syncer:
             self.max_workers = int(os.environ["MAX_WORKERS"])
         except Exception as e:
             self.logger.critical(f"Missing env var: {e}")
-            sys.exit(-1)
+            sys.exit(1)
 
         self.db = db or DB()
         self.canvas = canvas or Canvas()

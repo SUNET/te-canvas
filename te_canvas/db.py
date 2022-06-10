@@ -104,7 +104,7 @@ class DB:
         for (k, v) in env_var_mapping.items():
             if k not in conn:
                 logger.critical(f"Missing env var: {v}")
-                sys.exit(-1)
+                sys.exit(1)
 
         self.conn_str = "postgresql+psycopg2://{}:{}@{}:{}/{}".format(
             conn["username"],
