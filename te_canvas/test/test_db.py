@@ -11,6 +11,12 @@ class UnittestException(Exception):
 
 
 class TestDB(unittest.TestCase):
+    def setUp(self):
+        self.environ_saved = dict(os.environ)
+
+    def tearDown(self):
+        os.environ = self.environ_saved
+
     def test_init_env_vars(self):
         """Initalizing database with env vars."""
         os.environ["POSTGRES_HOSTNAME"] = "localhost"
