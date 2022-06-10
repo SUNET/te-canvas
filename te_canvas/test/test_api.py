@@ -36,9 +36,6 @@ class TestAPI(unittest.TestCase):
 
     ################################################################################################
     # /API/TIMEEDIT
-    #
-    # TODO: Some assertions are dependent on TE data, this seems unavoidable. But perhaps we can
-    # make the data more well defined so that it can be easily recreated on a new instance.
     ################################################################################################
 
     unittest_room = {
