@@ -55,7 +55,7 @@ class TestDB(unittest.TestCase):
             del os.environ["POSTGRES_DB"]
 
         with self.assertRaises(SystemExit) as cm:
-            db = DB()
+            DB()
         self.assertEqual(cm.exception.code, 1)
 
     def test_init_env_vars_missing_kwargs(self):
