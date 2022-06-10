@@ -159,7 +159,6 @@ The front end will access back end services using container names, e.g. `back-1_
 ## Testing
 
 ```
-docker-compose --profile test up
 ./test.sh
 ```
 
