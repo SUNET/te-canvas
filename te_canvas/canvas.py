@@ -72,6 +72,7 @@ class Canvas:
         Returns:
             The deleted event or None.
         """
+        # TODO: Is workflow_state check needed?
         if (not event.title.endswith(TAG_TITLE)) or (event.workflow_state == "deleted"):
             return None
         try:
