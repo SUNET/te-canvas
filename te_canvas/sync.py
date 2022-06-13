@@ -161,12 +161,6 @@ class Syncer:
         """
         Sync events for one Canvas group.
 
-        Invariant 1: Events in the database is a superset of (our) events on Canvas.
-        Invariant 2: For every event E in the database, there exists a connection C s.t.
-                     C.canvas_group = E.canvas_group and C.te_group = E.te_group.
-
-        These invariants should hold at any point before, during, and after the execution of sync_one.
-
         Returns:
             False if the group was skipped due to change detection or template error, otherwise True.
         """
@@ -195,18 +189,8 @@ class Syncer:
             self.sync_complete[canvas_group] = False
 
             # Remove all events previously added by us to this Canvas group
-            # TODO: Should this just use clear_events_tagged instead? Can we avoid storing events locally at all?
-            self.logger.info(
-                f"{canvas_group}: Deleting events ({session.query(Event).filter(Event.canvas_group == canvas_group).count()} events)"
-            )
-            for event in (
-                session.query(Event).filter(Event.canvas_group == canvas_group).order_by(Event.canvas_id, Event.te_id)
-            ):
-                # If this event does not exist on Canvas, this is a NOOP and no exception is raised.
-                self.canvas.delete_event(event.canvas_id)
-
-            # Clear deleted events
-            session.query(Event).filter(Event.canvas_group == canvas_group).delete()
+            self.logger.info(f"{canvas_group}: Deleting events")
+            self.canvas.delete_events(int(canvas_group))
 
             # Delete flagged connections
             session.query(Connection).filter(
@@ -225,19 +209,7 @@ class Syncer:
 
             self.logger.info(f"{canvas_group}: Adding events: {te_groups} ({len(reservations)} events)")
             for r in reservations:
-                # Try/finally ensures invariant 1.
-                try:
-                    canvas_event = self.canvas.create_event(
-                        translator.canvas_event(r) | {"context_code": f"course_{canvas_group}"}
-                    )
-                finally:
-                    session.add(
-                        Event(
-                            te_id=r["id"],
-                            canvas_id=canvas_event.id,
-                            canvas_group=canvas_group,
-                        )
-                    )
+                self.canvas.create_event(translator.canvas_event(r) | {"context_code": f"course_{canvas_group}"})
 
             # Record new Canvas state
             #
