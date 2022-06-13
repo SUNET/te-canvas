@@ -54,8 +54,7 @@ class TestSync(unittest.TestCase):
         cls.sync.logger.setLevel(logging.CRITICAL)
 
         cls.canvas = Canvas()
-        for event in cls.canvas.get_events(CANVAS_GROUP):
-            cls.canvas.delete_event(event.id)
+        cls.canvas.delete_events(CANVAS_GROUP)
 
         logging.disable()
 
@@ -72,21 +71,13 @@ class TestSync(unittest.TestCase):
 
         # Check that...
         with self.sync.db.sqla_session() as session:
-            # There is one event added to the local DB
-            self.assertEqual(session.query(Event).count(), 1)
-            event_local = session.query(Event).one()
-
             # There is one event added to Canvas
             events = self.canvas.get_events(CANVAS_GROUP)
             self.assertEqual(len(events), 1)
             event_canvas = events[0]
 
             # Event data is as expected
-            self.assertEqual(event_local.canvas_group, str(CANVAS_GROUP))
             self.assertEqual(dict_eq(vars(event_canvas), integration_test_event), None)
-
-            # The local DB and Canvas event agree on ID
-            self.assertEqual(event_local.canvas_id, str(event_canvas.id))
 
         # Re-run sync job and see that the event has not been removed and re-added
         event_old = events[0]

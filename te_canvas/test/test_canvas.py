@@ -33,7 +33,7 @@ class TestCanvas(unittest.TestCase):
                 "end_at": "20220314T130000",
             }
         )
-        self.canvas.delete_event(canvas_event.id)
+        self.canvas.delete_event(canvas_event)
 
     def test_create_event_fail(self):
         """Creating an event should fail if the course does not exist."""
@@ -48,18 +48,6 @@ class TestCanvas(unittest.TestCase):
                     "end_at": "20220314T130000",
                 }
             )
-
-    def test_delete_event_non_existing(self):
-        """Deleting a non-existing event should not cause an exception."""
-        id = 0
-
-        # Make sure that the event does not exist
-        with self.assertRaises(canvasapi.exceptions.ResourceDoesNotExist):
-            self.canvas.canvas.get_calendar_event(id)
-
-        # Try to delete it anyway
-        self.canvas.delete_event(id)
-
 
 if __name__ == "__main__":
     unittest.main()
