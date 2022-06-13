@@ -120,13 +120,13 @@ class Syncer:
         canvas_events = self.canvas.get_events_all(int(canvas_group))
 
         # 6,7
-        canvas_event_ids = [str(e.id) for e in canvas_events if e.title.endswith(TAG_TITLE)]
+        canvas_event_ids = [str(e.id) for e in canvas_events]
 
         # 5
         canvas_event_modify_date = (
             ""
             if len(canvas_events) == 0
-            else str(max([e.updated_at for e in canvas_events if e.title.endswith(TAG_TITLE)]))
+            else str(max([e.updated_at for e in canvas_events]))
         )
 
         sep = ":"

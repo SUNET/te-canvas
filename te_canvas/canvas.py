@@ -49,13 +49,15 @@ class Canvas:
             pass
 
     def get_events_all(self, course: int):
-        return list(
-            self.canvas.get_calendar_events(
+        return [
+            e
+            for e in self.canvas.get_calendar_events(
                 context_codes=[f"course_{course}"],
                 start_date="2022-01-01",
                 end_date="2032-01-01",
             )
-        )
+            if e.title.endswith(TAG_TITLE)
+        ]
 
     # --- NOT USED IN MAIN PROGRAM, JUST FOR UTILITY SCRIPTS ---
 
