@@ -1,8 +1,6 @@
 import os
-import pickle
 import sys
 from concurrent.futures import ThreadPoolExecutor
-from tempfile import NamedTemporaryFile
 from typing import Optional
 
 from canvasapi import Canvas as CanvasAPI
@@ -97,23 +95,14 @@ class Canvas:
 
     # ---- Not used in main program, just for utility scripts ------------------
 
-    def clear_events_tagged(self, course: int, max_workers: int):
+    def delete_events_parallel(self, course: int, max_workers: int) -> list[CalendarEvent]:
         """
-        Recovery method to clear all Canvas events without using the event database.
+        Delete all tagged events using concurrent API calls.
 
-        Goes through all Canvas events and removes all whose title ends with Translator.EVENT_TAG.
+        Returns:
+            List of deleted events.
         """
         events = self.get_events(course)
-
-        tmp = NamedTemporaryFile(delete=False)
-        pickle.dump(events, tmp)
-        tmp.close()
-        self.logger.info(f"Events backup pickled to {tmp.name}")
-
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            executor.map(self.__clear_events_tagged_helper, events)
-
-    def __clear_events_tagged_helper(self, event):
-        if event.title.endswith(TAG_TITLE):
-            self.logger.info(f"Deleting {event.id}")
-            self.delete_event(event.id)
+            res = executor.map(self.delete_event, events)
+        return list(filter(None, res)) # Filter out None results (non deleted events)

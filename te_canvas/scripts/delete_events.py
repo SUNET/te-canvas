@@ -6,4 +6,5 @@ import sys
 from te_canvas.canvas import Canvas
 
 if __name__ == "__main__":
-    Canvas().clear_events_tagged(int(sys.argv[1]), int(sys.argv[2]))
+    deleted = Canvas().delete_events_parallel(int(sys.argv[1]), int(sys.argv[2]))
+    print(f"Deleted {len(deleted)} events")
