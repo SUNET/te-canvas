@@ -6,6 +6,7 @@ from tempfile import NamedTemporaryFile
 
 from canvasapi import Canvas as CanvasAPI
 from canvasapi.calendar_event import CalendarEvent
+from canvasapi.course import Course
 from canvasapi.exceptions import ResourceDoesNotExist
 
 from te_canvas.log import get_logger
@@ -24,7 +25,7 @@ class Canvas:
 
         self.canvas = CanvasAPI(url, key)
 
-    def get_courses(self):
+    def get_courses(self) -> list[Course]:
         """
         Get all courses.
         """
@@ -43,7 +44,7 @@ class Canvas:
         """
         return self.canvas.create_calendar_event(event)
 
-    def delete_events(self, course: int):
+    def delete_events(self, course: int) -> None:
         """
         Delete all tagged events.
         """
@@ -51,7 +52,7 @@ class Canvas:
         for e in events:
             self.delete_event(e)
 
-    def delete_event(self, event: CalendarEvent):
+    def delete_event(self, event: CalendarEvent) -> None:
         """
         Delete a tagged Canvas event.
 
@@ -64,7 +65,7 @@ class Canvas:
         except ResourceDoesNotExist:
             pass
 
-    def get_events(self, course: int):
+    def get_events(self, course: int) -> list[CalendarEvent]:
         """
         Get all tagged events for a course.
         """
