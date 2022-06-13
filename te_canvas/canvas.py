@@ -25,7 +25,7 @@ class Canvas:
 
         self.canvas = CanvasAPI(url, key)
 
-    # Courses
+    # ---- Courses -------------------------------------------------------------
 
     def get_courses(self) -> list[Course]:
         """
@@ -37,7 +37,7 @@ class Canvas:
             self.logger.warning("canvas.get_courses() returned 0 courses.")
         return res
 
-    # Events
+    # ---- Events --------------------------------------------------------------
 
     def get_events(self, course: int) -> list[CalendarEvent]:
         """
@@ -83,7 +83,7 @@ class Canvas:
         for e in events:
             self.delete_event(e)
 
-    # --- NOT USED IN MAIN PROGRAM, JUST FOR UTILITY SCRIPTS ---
+    # ---- Not used in main program, just for utility scripts ------------------
 
     def clear_events_tagged(self, course: int, max_workers: int):
         """
