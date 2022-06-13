@@ -25,6 +25,8 @@ class Canvas:
 
         self.canvas = CanvasAPI(url, key)
 
+    # Courses
+
     def get_courses(self) -> list[Course]:
         """
         Get all courses.
@@ -35,35 +37,7 @@ class Canvas:
             self.logger.warning("canvas.get_courses() returned 0 courses.")
         return res
 
-    def create_event(self, event: dict) -> CalendarEvent:
-        """
-        Create a calendar event.
-
-        Returns:
-            The created event.
-        """
-        return self.canvas.create_calendar_event(event)
-
-    def delete_events(self, course: int) -> None:
-        """
-        Delete all tagged events.
-        """
-        events = self.get_events(course)
-        for e in events:
-            self.delete_event(e)
-
-    def delete_event(self, event: CalendarEvent) -> None:
-        """
-        Delete a tagged Canvas event.
-
-        If the event does not exist on Canvas, this is a NOOP and no exception is raised.
-        """
-        if (not event.title.endswith(TAG_TITLE)) or (event.workflow_state == "deleted"):
-            return
-        try:
-            event.delete()
-        except ResourceDoesNotExist:
-            pass
+    # Events
 
     def get_events(self, course: int) -> list[CalendarEvent]:
         """
@@ -78,6 +52,36 @@ class Canvas:
             )
             if e.title.endswith(TAG_TITLE)
         ]
+
+    def create_event(self, event: dict) -> CalendarEvent:
+        """
+        Create a calendar event.
+
+        Returns:
+            The created event.
+        """
+        return self.canvas.create_calendar_event(event)
+
+    def delete_event(self, event: CalendarEvent) -> None:
+        """
+        Delete a tagged Canvas event.
+
+        If the event does not exist on Canvas, this is a NOOP and no exception is raised.
+        """
+        if (not event.title.endswith(TAG_TITLE)) or (event.workflow_state == "deleted"):
+            return
+        try:
+            event.delete()
+        except ResourceDoesNotExist:
+            pass
+
+    def delete_events(self, course: int) -> None:
+        """
+        Delete all tagged events.
+        """
+        events = self.get_events(course)
+        for e in events:
+            self.delete_event(e)
 
     # --- NOT USED IN MAIN PROGRAM, JUST FOR UTILITY SCRIPTS ---
 
