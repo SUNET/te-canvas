@@ -18,5 +18,5 @@ class Courses(Resource):
         self.canvas = kwargs["canvas"]
 
     def get(self):
-        data = self.canvas.get_courses_all()
+        data = self.canvas.get_courses()
         return [c.id for c in data]

@@ -54,14 +54,14 @@ class TestSync(unittest.TestCase):
         cls.sync.logger.setLevel(logging.CRITICAL)
 
         cls.canvas = Canvas()
-        for event in cls.canvas.get_events_all(CANVAS_GROUP):
+        for event in cls.canvas.get_events(CANVAS_GROUP):
             cls.canvas.delete_event(event.id)
 
         logging.disable()
 
     def test_canvas_empty(self):
         """Test setup."""
-        self.assertEqual(self.canvas.get_events_all(CANVAS_GROUP), [])
+        self.assertEqual(self.canvas.get_events(CANVAS_GROUP), [])
 
     def test_sync(self):
         """Test sync job."""
@@ -77,7 +77,7 @@ class TestSync(unittest.TestCase):
             event_local = session.query(Event).one()
 
             # There is one event added to Canvas
-            events = self.canvas.get_events_all(CANVAS_GROUP)
+            events = self.canvas.get_events(CANVAS_GROUP)
             self.assertEqual(len(events), 1)
             event_canvas = events[0]
 
@@ -91,7 +91,7 @@ class TestSync(unittest.TestCase):
         # Re-run sync job and see that the event has not been removed and re-added
         event_old = events[0]
         self.sync.sync_all()
-        events = self.canvas.get_events_all(CANVAS_GROUP)
+        events = self.canvas.get_events(CANVAS_GROUP)
         self.assertEqual(len(events), 1)
         event_new = events[0]
         self.assertEqual(event_old.id, event_new.id)
@@ -109,5 +109,5 @@ class TestSync(unittest.TestCase):
         with self.sync.db.sqla_session() as session:
             self.assertEqual(session.query(Connection).count(), 0)
             self.assertEqual(session.query(Event).count(), 0)
-        events = self.canvas.get_events_all(CANVAS_GROUP)
+        events = self.canvas.get_events(CANVAS_GROUP)
         self.assertEqual(len(events), 0)

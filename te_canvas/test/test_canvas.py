@@ -16,10 +16,10 @@ class TestCanvas(unittest.TestCase):
     def setUpClass(cls):
         cls.canvas = Canvas()
 
-    def test_get_courses_all(self):
+    def test_get_courses(self):
         """Getting all courses should succeed."""
-        courses = self.canvas.get_courses_all()
-        self.assertGreater(len(courses), 0, "get_courses_all should return at least one course.")
+        courses = self.canvas.get_courses()
+        self.assertGreater(len(courses), 0, "get_courses should return at least one course.")
 
     def test_create_event_success(self):
         """Creating an event should succeed."""

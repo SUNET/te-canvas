@@ -117,7 +117,7 @@ class Syncer:
         Get the Canvas state relevant for canvas_group. Number comments reference "modifications to
         detect", see class docstring.
         """
-        canvas_events = self.canvas.get_events_all(int(canvas_group))
+        canvas_events = self.canvas.get_events(int(canvas_group))
 
         # 6,7
         canvas_event_ids = [str(e.id) for e in canvas_events]
