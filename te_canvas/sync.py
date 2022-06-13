@@ -123,11 +123,7 @@ class Syncer:
         canvas_event_ids = [str(e.id) for e in canvas_events]
 
         # 5
-        canvas_event_modify_date = (
-            ""
-            if len(canvas_events) == 0
-            else str(max([e.updated_at for e in canvas_events]))
-        )
+        canvas_event_modify_date = "" if len(canvas_events) == 0 else str(max([e.updated_at for e in canvas_events]))
 
         sep = ":"
         return {
