@@ -3,6 +3,7 @@ import pickle
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from tempfile import NamedTemporaryFile
+from typing import Optional
 
 from canvasapi import Canvas as CanvasAPI
 from canvasapi.calendar_event import CalendarEvent
@@ -62,26 +63,36 @@ class Canvas:
         """
         return self.canvas.create_calendar_event(event)
 
-    def delete_event(self, event: CalendarEvent) -> None:
+    def delete_event(self, event: CalendarEvent) -> Optional[CalendarEvent]:
         """
         Delete a tagged Canvas event.
 
         If the event does not exist on Canvas, this is a NOOP and no exception is raised.
+
+        Returns:
+            The deleted event or None.
         """
         if (not event.title.endswith(TAG_TITLE)) or (event.workflow_state == "deleted"):
-            return
+            return None
         try:
             event.delete()
+            return event
         except ResourceDoesNotExist:
-            pass
+            return None
 
-    def delete_events(self, course: int) -> None:
+    def delete_events(self, course: int) -> list[CalendarEvent]:
         """
         Delete all tagged events.
+
+        Returns:
+            List of deleted events.
         """
         events = self.get_events(course)
+        res = []
         for e in events:
-            self.delete_event(e)
+            if self.delete_event(e) is not None:
+                res.append(e)
+        return res
 
     # ---- Not used in main program, just for utility scripts ------------------
 

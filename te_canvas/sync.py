@@ -190,7 +190,8 @@ class Syncer:
 
             # Remove all events previously added by us to this Canvas group
             self.logger.info(f"{canvas_group}: Deleting events")
-            self.canvas.delete_events(int(canvas_group))
+            deleted = self.canvas.delete_events(int(canvas_group))
+            self.logger.info(f"{canvas_group}: Deleted {len(deleted)} events")
 
             # Delete flagged connections
             session.query(Connection).filter(
