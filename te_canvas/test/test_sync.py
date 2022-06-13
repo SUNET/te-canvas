@@ -3,7 +3,7 @@ import unittest
 from typing import Optional
 
 from te_canvas.canvas import Canvas
-from te_canvas.db import DB, Config, Connection, Event, Test
+from te_canvas.db import DB, Config, Connection, Test
 from te_canvas.sync import Syncer
 from te_canvas.test.common import CANVAS_GROUP
 
@@ -41,7 +41,6 @@ class TestSync(unittest.TestCase):
         )
         with db.sqla_session() as session:
             session.query(Connection).delete()
-            session.query(Event).delete()
             session.query(Test).delete()
             session.query(Config).delete()
 
@@ -99,6 +98,5 @@ class TestSync(unittest.TestCase):
 
         with self.sync.db.sqla_session() as session:
             self.assertEqual(session.query(Connection).count(), 0)
-            self.assertEqual(session.query(Event).count(), 0)
         events = self.canvas.get_events(CANVAS_GROUP)
         self.assertEqual(len(events), 0)

@@ -41,24 +41,13 @@ class Connection(Base):
     delete_flag = Column(Boolean, default=False)
 
 
-class Event(Base):
-    """
-    We use this table to keep track of event added. As mentioned in a TODO in Syncer, this might be
-    deleted in the future since can use Translator.TAG_TITLE to distinguish te-canvas events which
-    is (I think) all we need.
-    """
-    __tablename__ = "events"
-    canvas_id = Column(String, primary_key=True)
-    te_id = Column(String, primary_key=True)
-    canvas_group = Column(String)
-
-
 class Config(Base):
     """
     Arbitrary key-value storage.
 
     Currently only used for event template strings used by Translator.
     """
+
     __tablename__ = "config"
     key = Column(String, primary_key=True)
     value = Column(String)

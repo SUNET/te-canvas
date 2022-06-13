@@ -9,7 +9,7 @@ from apscheduler.schedulers.background import BlockingScheduler
 from pytz import utc
 
 from te_canvas.canvas import Canvas
-from te_canvas.db import DB, Connection, Event, flat_list
+from te_canvas.db import DB, Connection, flat_list
 from te_canvas.log import get_logger
 from te_canvas.timeedit import TimeEdit
 from te_canvas.translator import TemplateError, Translator

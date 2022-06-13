@@ -2,7 +2,7 @@ import typing
 import unittest
 
 from te_canvas.api import create_app
-from te_canvas.db import DB, Connection, Event, Test
+from te_canvas.db import DB, Connection, Test
 
 
 class TestAPI(unittest.TestCase):
@@ -17,7 +17,6 @@ class TestAPI(unittest.TestCase):
         )
         with cls.db.sqla_session() as session:
             session.query(Connection).delete()
-            session.query(Event).delete()
             session.query(Test).delete()
 
         cls.client = create_app(cls.db).test_client()
