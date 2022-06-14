@@ -10,9 +10,9 @@ from sqlalchemy.exc import NoResultFound  # type: ignore
 
 from te_canvas.util import State
 
-# Used to differentiate te-canvas events from manually added Canvas events. These are zero-width
-# spaces, an invisible unicode character. We use 10 because why not, it should reduce the risk of
-# false positive.
+# Used to differentiate te-canvas events from manually added Canvas events, this string is added as
+# a suffix to each event title. These are zero-width spaces, an invisible unicode character. We use
+# 10 because why not, it should reduce the risk of false positive.
 TAG_TITLE = r"​​​​​​​​​​"
 
 
