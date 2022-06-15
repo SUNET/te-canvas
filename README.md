@@ -21,10 +21,6 @@ POSTGRES_DB*
 POSTGRES_USER*
 POSTGRES_PASSWORD
 
-EVENT_TITLE
-EVENT_LOCATION
-EVENT_DESCRIPTION
-
 MAX_WORKERS*
 
 * Predefined in docker-compose file
@@ -56,11 +52,13 @@ python -m te_canvas.sync
 
 ## Configuration
 
-The env vars `EVENT_TITLE`, `EVENT_LOCATION`, and `EVENT_DESCRIPTION` control how calendar events are translated from TimeEdit to Canvas. Each should be set to a string which may contain references to TimeEdit *object types* and their *fields* on the format `${type::field}`.
+Dynamic config is set using the `/api/config` endpoint, which exposes a simple key-value store.
+
+The config keys `title`, `location`, and `description` control how calendar events are translated from TimeEdit to Canvas. Each should be set to a string which may contain references to TimeEdit *object types* and their *fields* on the format `${type::field}`.
 
 For example,
 
-`EVENT_TITLE = '${activity::name} by ${teacher::firstname} ${teacher::lastname}'`
+`title = '${activity::name} by ${teacher::firstname} ${teacher::lastname}'`
 
 and a TimeEdit reservation with the objects
 
@@ -91,10 +89,6 @@ POSTGRES_PORT*
 POSTGRES_DB*
 POSTGRES_USER*
 POSTGRES_PASSWORD
-
-EVENT_TITLE
-EVENT_LOCATION
-EVENT_DESCRIPTION
 
 MAX_WORKERS*
 

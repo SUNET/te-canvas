@@ -76,10 +76,6 @@ services:
       - POSTGRES_USER=te_canvas_user
       - POSTGRES_PASSWORD
 
-      - EVENT_TITLE
-      - EVENT_LOCATION
-      - EVENT_DESCRIPTION
-
       - MAX_WORKERS=1
 
 volumes:
