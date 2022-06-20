@@ -24,12 +24,12 @@ class TimeEdit:
 
         wsdl = f"https://cloud.timeedit.net/soap/3/{self.id}/wsdl"
 
-        try:
-            self.client = zeep.Client(wsdl)  # type: ignore
-            key = self.client.service.register(cert).applicationkey
-        except Exception:
-            logger.critical(f'TimeEdit connection to "{wsdl}" failed, exiting.')
-            sys.exit(1)
+        # try:
+        self.client = zeep.Client(wsdl)  # type: ignore
+        key = self.client.service.register(cert).applicationkey
+        # except Exception:
+        #     logger.critical(f'TimeEdit connection to "{wsdl}" failed, exiting.')
+        #     sys.exit(1)
 
         self.login = {
             "username": username,
