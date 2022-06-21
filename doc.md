@@ -1,4 +1,4 @@
-# Architectural overview
+# Architecture overview
 
 Each platform (Canvas instance) has its own API server. In front of this they all share one single LTI server. The JWTs which accompany browser requests contain information about their source platform. The LTI server uses this information to determine which API server to forward incoming requests to.
 
