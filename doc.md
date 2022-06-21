@@ -56,7 +56,7 @@ Each platform (Canvas instance) has its own API server. In front of this they al
 
 # Suggested setup
 
-This is an easy way you might set up both front and back end to run in Docker containers. The front end will access back end services using container names, e.g. `back-1_api_1` (configure this in [platforms.json](TODO: link)).
+This is an easy way you might set up both front and back end to run in Docker containers. The front end will access back end services using container names, e.g. `back-1_api_1` (configure this in [platforms.json](https://github.com/SUNET/te-canvas-front#platformsjson)).
 
 ```
 .
