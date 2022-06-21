@@ -2,13 +2,11 @@
 
 This README contains information on working with the back end code. For higher level project documentation, see [te-canvas/doc.md](https://github.com/SUNET/te-canvas/blob/main/doc.md).
 
-## Getting started
-
 The back end consists of two parts; a sync engine and an API server to control it. To run either you first need to define the environment variables listed under [Configuration](#configuration).
 
 The main Docker compose file comes with an optional override file `docker-compose.dev.yml`, which exposes ports for all containers and builds images locally. This is convenient to use during development but not safe in production. To use `docker-compose.dev.yml` you need to specify both compose files explicitly using the `-f` flag (`-f docker-compose.yml -f docker-compose.dev.yml`).
 
-### Run without Docker (not for production)
+## Run without Docker (not for production)
 
 Start Postgres:
 
@@ -34,7 +32,7 @@ Start sync engine:
 python -m te_canvas.sync
 ```
 
-### Run with Docker
+## Run with Docker
 
 Start API server (Gunicorn + Nginx):
 
@@ -62,7 +60,7 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml --profile <sync |
 
 The two previous commands are written down in `start-prod.sh` and `start-dev.sh` for convenience.
 
-### Configuration
+## Configuration
 
 te-canvas is configured using the following environment variables.
 
