@@ -1,32 +1,16 @@
 # te-canvas
 
-## Quick start
+This README contains information on working with the back end code. For higher level project documentation, see [te-canvas/doc.md](https://github.com/SUNET/te-canvas/blob/main/doc.md).
 
-Export the following env vars:
+## Getting started
 
-```
-TE_ID
-TE_USERGROUP
+The back end consists of two parts; a sync engine and an API server to control it. To run either you first need to define the environment variables listed under [Configuration](#configuration).
 
-TE_CERT
-TE_USERNAME
-TE_PASSWORD
+The main Docker compose file comes with an optional override file `docker-compose.dev.yml`, which exposes ports for all containers and builds images locally. This is convenient to use during development but not safe in production. To use `docker-compose.dev.yml` you need to specify both compose files explicitly using the `-f` flag (`-f docker-compose.yml -f docker-compose.dev.yml`).
 
-CANVAS_URL
-CANVAS_KEY
+### Run without Docker (not for production)
 
-POSTGRES_HOSTNAME*
-POSTGRES_PORT*
-POSTGRES_DB*
-POSTGRES_USER*
-POSTGRES_PASSWORD
-
-MAX_WORKERS*
-
-* Predefined in docker-compose file
-```
-
-Start PostgreSQL:
+Start Postgres:
 
 ```
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up postgres
@@ -38,7 +22,7 @@ Install the requirements:
 pip install -r requirements/dev.txt
 ```
 
-Start API dev server:
+Start API (Flask development server):
 
 ```
 python -m te_canvas.api
@@ -50,55 +34,9 @@ Start sync engine:
 python -m te_canvas.sync
 ```
 
-## Configuration
+### Run with Docker
 
-Dynamic config is set using the `/api/config` endpoint, which exposes a simple key-value store.
-
-The config keys `title`, `location`, and `description` control how calendar events are translated from TimeEdit to Canvas. Each should be set to a string which may contain references to TimeEdit *object types* and their *fields* on the format `${type::field}`.
-
-For example,
-
-`title = '${activity::name} by ${teacher::firstname} ${teacher::lastname}'`
-
-and a TimeEdit reservation with the objects
-
-```
-activity = { name: 'Lecture' },
-teacher = { firstname: 'Ernst', lastname: 'Widerberg' }
-```
-
-will create a Canvas event titled *Lecture by Ernst Widerberg*.
-
-## Docker
-
-Export the following env vars:
-
-```
-TE_ID
-TE_USERGROUP
-
-TE_CERT
-TE_USERNAME
-TE_PASSWORD
-
-CANVAS_URL
-CANVAS_KEY
-
-POSTGRES_HOSTNAME*
-POSTGRES_PORT*
-POSTGRES_DB*
-POSTGRES_USER*
-POSTGRES_PASSWORD
-
-MAX_WORKERS*
-
-TAG_API*
-TAG_SYNC*
-
-* Predefined in docker-compose file
-```
-
-Start API server:
+Start API server (Gunicorn + Nginx):
 
 ```
 docker-compose --profile api up
@@ -116,7 +54,7 @@ Start both:
 docker-compose --profile api --profile sync up
 ```
 
-To start in dev mode, with exposed ports (*not safe in production*) and using locally built images:
+Start in dev mode, with exposed ports (**not safe in production**) and using locally built images:
 
 ```
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml --profile <sync | api> up
@@ -124,31 +62,32 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml --profile <sync |
 
 The two previous commands are written down in `start-prod.sh` and `start-dev.sh` for convenience.
 
-## Suggested complete project setup
+### Configuration
 
-```
-.
-├── te-canvas       [repo]
-├── te-canvas-front [repo]
-├── front
-│   ├── docker-compose.yml -> ../te-canvas-front/docker-compose.yml
-│   ├── lti.json           -> ../te-canvas-front/lti.json
-│   ├── nginx-docker.conf  -> ../te-canvas-front/nginx-docker.conf
-│   ├── ssl.crt            -> /etc/letsencrypt/live/my-domain.com/fullchain.pem
-│   ├── ssl.key            -> /etc/letsencrypt/live/my-domain.com/privkey.pem
-│   ├── .env
-│   └── platforms.json
-├── back-1
-│   ├── docker-compose.yml -> ../te-canvas/docker-compose.yml
-│   ├── start-prod.sh      -> ../te-canvas/start-prod.sh     
-│   └── .env
-└── back-2
-    ├── docker-compose.yml -> ../te-canvas/docker-compose.yml
-    ├── start-prod.sh      -> ../te-canvas/start-prod.sh     
-    └── .env
-```
+te-canvas is configured using the following environment variables.
 
-The front end will access back end services using container names, e.g. `back-1_api_1`.
+| Environment variable | Description                                      | Predefined in docker-compose file? |
+| -                    | -                                                | -                                  |
+| `TE_ID`              | ID of TimeEdit instance. Find this e.g. in the URL `https://cloud.timeedit.net/<ID>/client/login`. | |
+| `TE_USERGROUP`       | TimeEdit "user group" to be used in links to edit TimeEdit events. Find this by selecting a group with edit permissions at `https://cloud.timeedit.net/<ID>/web`. | |
+| `TE_CERT`            | TimeEdit SOAP API certificate.                   |                                    |
+| `TE_USERNAME`        | TimeEdit username.                               |                                    |
+| `TE_PASSWORD`        | TimeEdit password.                               |                                    |
+|                      |                                                  |                                    |
+| `CANVAS_URL`         | URL of Canvas instance.                          |                                    |
+| `CANVAS_KEY`         | Canvas API key.                                  |                                    |
+|                      |                                                  |                                    |
+| `POSTGRES_HOSTNAME`  | Postgres hostname.                               | ✅                                 |
+| `POSTGRES_PORT`      | Postgres port.                                   | ✅                                 |
+| `POSTGRES_DB`        | Name of database.                                | ✅                                 |
+| `POSTGRES_USER`      | Postgres username.                               | ✅                                 |
+| `POSTGRES_PASSWORD`  | Postgres password.                               |                                    |
+|                      |                                                  |                                    |
+| `MAX_WORKERS`        | Number of threads to use. 1 = fully sequential.  | ✅                                 |
+| `TAG_API`            | Tag to use for `docker.sunet.se/te-canvas-api`.  | ✅                                 |
+| `TAG_SYNC`           | Tag to use for `docker.sunet.se/te-canvas-sync`. | ✅                                 |
+
+Dynamic config is set using the `/api/config` endpoint, which exposes a simple key-value store. This is used only for [event template](#event-template) strings.
 
 ## Testing
 
@@ -174,15 +113,3 @@ TimeEdit reservation:
 - Room: `unittest`
 - Start at: `2022-10-01, 12:00`
 - End at: `2022-10-01, 13:00`
-
-## Terminology
-
-In TimeEdit's data model each calendar event has a set of *objects* attached to it. Each object has a *type*, e.g. teacher, room, course, or course offering. `[1]`
-
-On Canvas, an event belongs to a specific calendar. Calendars we are interested in are generally tied to a particular Canvas *course* but there are also calendars tied to *users* and *groups*.
-
-In our code we have chosen to generalize the word for an "event container" as *group*. So on TimeEdit, a calendar is defined by a set of objects – we call each object a "group", since it contains a set of events. On Canvas, an event belongs to a *course* or *user* or *Canvas group* – likewise we call this entity in general a "group". This is a bit confusing since "group" as we use it is different from (is in fact a superset of) a Canvas group. At the time of writing we only support Canvas courses, but as explained we refer to them as "group" in the general form (sorry). tl;dr: If you see `canvas_group` in the code, you can mentally replace this with `canvas_course`.
-
-We might also mention that TimeEdit calls items in a calendar "reservations", while Canvas refers to these as "events". We prefer to use "event" in our code.
-
-`[1]`: Object types are different for each organization.
