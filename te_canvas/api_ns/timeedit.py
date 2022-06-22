@@ -1,7 +1,6 @@
 from flask_restx import Namespace, Resource, reqparse
 
 import te_canvas.log as log
-from te_canvas.timeedit import TimeEdit
 
 logger = log.get_logger()
 
