@@ -4,14 +4,16 @@ This README contains information on working with the back end code. For higher l
 
 The back end consists of two parts; a sync engine and an API server to control it. To run either you first need to define the environment variables listed under [Configuration](#configuration).
 
-The main Docker compose file comes with an optional override file `docker-compose.dev.yml`, which exposes ports for all containers and builds images locally. This is convenient to use during development but not safe in production. To use `docker-compose.dev.yml` you need to specify both compose files explicitly using the `-f` flag (`-f docker-compose.yml -f docker-compose.dev.yml`).
+The main Docker compose file comes with an override file `docker-compose.dev.yml`, which exposes ports for all containers and builds images locally. This is convenient to use during development but not safe in production. **Note that `docker-compose.override.yml` is enabled by default** and simply doing `docker-compose up` in this repo will start in **unsafe dev mode**.
+
+To use *only* the production-ready `docker-compose.yml`, you can do `docker-compose -f docker-compose.yml up`. But since we use Puppet for all this anyway, `docker-compose.override.yml` should never be near our production environment.
 
 ## Run without Docker (not for production)
 
 Start Postgres:
 
 ```
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up postgres
+docker-compose up postgres
 ```
 
 Install the requirements:
@@ -37,16 +39,14 @@ python -m te_canvas.sync
 Start Postgres, API server (Gunicorn + Nginx), and sync engine:
 
 ```
-docker-compose up
+docker-compose -f docker-compose.yml up
 ```
 
 Start in dev mode, with exposed ports (**not safe in production**) and using locally built images:
 
 ```
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+docker-compose up
 ```
-
-This last command is written down in `start-dev.sh` for convenience.
 
 ## Configuration
 
