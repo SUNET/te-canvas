@@ -3,7 +3,6 @@ services:
   postgres:
     logging:
       driver: local
-    profiles: [ sync, api ]
     image: postgres:12
     volumes:
       - type: volume
@@ -32,7 +31,6 @@ services:
   api:
     logging:
       driver: local
-    profiles: [ api ]
     image: docker.sunet.se/te-canvas-api:${TAG_API-latest}
     depends_on: [ postgres ]
     environment:
@@ -56,7 +54,6 @@ services:
   sync:
     logging:
       driver: local
-    profiles: [ sync ]
     image: docker.sunet.se/te-canvas-sync:${TAG_SYNC-latest}
     depends_on: [ postgres ]
     environment:

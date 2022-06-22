@@ -20,7 +20,7 @@ Install the requirements:
 pip install -r requirements/dev.txt
 ```
 
-Start API (Flask development server):
+Start API server (Flask development server):
 
 ```
 python -m te_canvas.api
@@ -34,31 +34,19 @@ python -m te_canvas.sync
 
 ## Run with Docker
 
-Start API server (Gunicorn + Nginx):
+Start Postgres, API server (Gunicorn + Nginx), and sync engine:
 
 ```
-docker-compose --profile api up
-```
-
-Start sync engine:
-
-```
-docker-compose --profile sync up
-```
-
-Start both:
-
-```
-docker-compose --profile api --profile sync up
+docker-compose up
 ```
 
 Start in dev mode, with exposed ports (**not safe in production**) and using locally built images:
 
 ```
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml --profile <sync | api> up
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
-The two previous commands are written down in `start-prod.sh` and `start-dev.sh` for convenience.
+This last command is written down in `start-dev.sh` for convenience.
 
 ## Configuration
 

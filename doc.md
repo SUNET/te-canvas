@@ -72,11 +72,9 @@ This is an easy way you might set up both front and back end to run in Docker co
 │   └── platforms.json
 ├── back-1
 │   ├── docker-compose.yml -> ../te-canvas/docker-compose.yml
-│   ├── start-prod.sh      -> ../te-canvas/start-prod.sh
 │   └── .env
 └── back-2
     ├── docker-compose.yml -> ../te-canvas/docker-compose.yml
-    ├── start-prod.sh      -> ../te-canvas/start-prod.sh
     └── .env
 ```
 
