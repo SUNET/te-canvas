@@ -16,7 +16,7 @@
     - Go to Course > Settings > Apps > [View App Configurations] > [+ App]
     - Choose "By Client ID" and paste the Client ID from step 4, click Submit.
 
-# Event template strings
+# Event template
 
 In the UI you will find a tab called "Event Template". In this tab you can configure how calendar events are translated from TimeEdit to Canvas. Each field – Title, Location, and Description – should be set to a string which may contain references to TimeEdit *object types* and their *fields* on the format `${type::field}`.
 
