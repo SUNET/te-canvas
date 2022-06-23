@@ -175,7 +175,7 @@ class Syncer:
             # Change detection
             prev_state = self.states.get(canvas_group)
             new_state = self.__state_te(canvas_group) | self.__state_canvas(canvas_group) | translator.state()
-            self.states[canvas_group] = new_state  # TODO: Verify thread safe
+            self.states[canvas_group] = new_state
             self.logger.debug(f"State: {new_state}")
 
             if not self.__has_changed(prev_state, new_state) and self.sync_complete.get(canvas_group, False):

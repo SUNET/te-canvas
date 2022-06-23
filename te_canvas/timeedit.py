@@ -125,7 +125,6 @@ class TimeEdit:
 
         res = []
         for i in range(num_pages):
-            # TODO: Add returnfields (fields on reservation itself)
             page = self.client.service.findReservations(
                 login=self.login,
                 searchobjects={"object": [{"extid": id} for id in extids]},
