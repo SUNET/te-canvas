@@ -99,3 +99,9 @@ TimeEdit reservation:
 - Room: `unittest`
 - Start at: `2022-10-01, 12:00`
 - End at: `2022-10-01, 13:00`
+
+## Dockerfiles and CI
+
+In the repo root we have two Dockerfiles `Dockerfile_api` and `Dockerfile_sync`. These are used when building locally.
+
+There are also two directories `docker-api` and `docker-sync` which contain additional Dockerfiles. These are used for CI builds. This is a workaround for the fact that you can't (currently) specify a Dockerfile to the Jenkins job which starts our CI builds. So we must instead use separate contexts (directories) for API and sync respectively. This also requires us to clone the code instead of copying, since the code is in a parent dir of our context.
