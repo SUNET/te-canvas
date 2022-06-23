@@ -73,7 +73,7 @@ te-canvas is configured using the following environment variables.
 | `TAG_API`            | Tag to use for `docker.sunet.se/te-canvas-api`.  | ✅                                 |
 | `TAG_SYNC`           | Tag to use for `docker.sunet.se/te-canvas-sync`. | ✅                                 |
 
-Dynamic config is set using the `/api/config` endpoint, which exposes a simple key-value store. This is used only for [event template](https://github.com/SUNET/te-canvas/blob/main/doc.md#event-template) strings.
+Dynamic config is set using the `/api/config` endpoint, which exposes a simple key-value store. This is used only for [event template](https://github.com/SUNET/te-canvas/blob/main/canvas-admin.md#event-template) strings.
 
 ## Testing
 
