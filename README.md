@@ -32,7 +32,7 @@ python -m te_canvas.sync
 
 ## Run with Docker
 
-> The main Docker compose file comes with an override file `docker-compose.dev.yml`, which exposes ports for all containers and builds images locally. This is convenient to use during development but not safe in production. **Note that `docker-compose.override.yml` is enabled by default** and simply doing `docker-compose up` in this repo will start in **unsafe dev mode**.
+> The main Docker compose file comes with an [override](https://docs.docker.com/compose/extends/) file, which exposes ports for all containers and builds images locally. This is convenient to use during development but not safe in production. **Note that `docker-compose.override.yml` is enabled by default** and simply doing `docker-compose up` in this repo will start in **unsafe dev mode**.
 >
 > To use *only* the production-ready `docker-compose.yml`, you can do `docker-compose -f docker-compose.yml up`. But since we use Puppet for all this anyway, `docker-compose.override.yml` should never be near our production environment.
 
