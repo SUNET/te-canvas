@@ -86,7 +86,7 @@ class TestSync(unittest.TestCase):
         event_new = events[0]
         self.assertEqual(event_old.id, event_new.id)
 
-        # TODO:
+        # TODO (issue #4):
         # - Edit event on TE, run sync job.
         # - Add event on TE, run sync job.
         # - Remove event on TE, run sync job.
