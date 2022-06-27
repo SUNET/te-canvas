@@ -46,8 +46,7 @@ class Canvas:
             e
             for e in self.canvas.get_calendar_events(
                 context_codes=[f"course_{course}"],
-                start_date="2000-01-01",
-                end_date="2050-01-01",
+                all_events=True,
             )
             if e.title.endswith(TAG_TITLE)
         ]
