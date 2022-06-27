@@ -103,4 +103,4 @@ class Canvas:
         events = self.get_events(course)
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             res = executor.map(self.delete_event, events)
-        return list(filter(None, res)) # Filter out None results (non deleted events)
+        return list(filter(None, res))  # Filter out None results (non deleted events)
