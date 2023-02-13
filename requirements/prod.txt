@@ -1,4 +1,4 @@
-Flask
+Flask==2.1.2
 flask-cors
 flask-restx
 canvasapi
