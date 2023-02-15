@@ -4,6 +4,15 @@ This README contains information on working with the back end code. For higher l
 
 The back end consists of two parts; a sync engine and an API server to control it. To run either you first need to define the environment variables listed under [Configuration](#configuration).
 
+## Docker compose version
+We're using docker-compose specification **V1**.
+docker-compose **1.29.2** recommened.
+The extended shell style features used in docker-compose.yml might not be supported on older versions of docker-compose.
+
+## Python version
+We use features added to Python after **3.8.10**
+**3.10.5** is currently running in production containers and works in local development environment as well.
+
 ## Run without Docker (not for production)
 
 Start Postgres:
@@ -59,6 +68,8 @@ te-canvas is configured using the following environment variables.
 | `TE_CERT`            | TimeEdit SOAP API certificate.                   |                                    |
 | `TE_USERNAME`        | TimeEdit username.                               |                                    |
 | `TE_PASSWORD`        | TimeEdit password.                               |                                    |
+| `TE_GENERAL_ID_FIELD`        | TimeEdit general id field, defaults to `general.id`.                               |          ✅                           |
+| `TE_GENERAL_TITLE_FIELD`        | TimeEdit general title field, defaults to `general.title`.                              |                                  ✅  | 
 |                      |                                                  |                                    |
 | `CANVAS_URL`         | URL of Canvas instance.                          |                                    |
 | `CANVAS_KEY`         | Canvas API key.                                  |                                    |
