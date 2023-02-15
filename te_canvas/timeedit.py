@@ -18,6 +18,10 @@ class TimeEdit:
             cert = os.environ["TE_CERT"]
             username = os.environ["TE_USERNAME"]
             password = os.environ["TE_PASSWORD"]
+
+            # We need this since not all timeedit instances use the same field
+            self.te_general_id_field = os.environ["TE_GENERAL_ID_FIELD"]
+            self.te_general_title_field = os.environ["TE_GENERAL_TITLE_FIELD"]
         except Exception as e:
             logger.critical(f"Missing env var: {e}")
             sys.exit(1)
@@ -59,9 +63,15 @@ class TimeEdit:
             type=type,
             numberofobjects=number_of_objects,
             beginindex=begin_index,
-            generalsearchfields={"field": ["general.id", "general.title"]},
+            generalsearchfields={"field": [
+                self.te_general_id_field,
+                self.te_general_title_field
+            ]},
             generalsearchstring=search_string,
-            returnfields=["general.id", "general.title"],
+            returnfields=[
+                self.te_general_id_field,
+                self.te_general_title_field
+            ],
         )
         if resp.objects is None:
             # Can't really warn about this generally since this endpoint is used for searching.
@@ -75,7 +85,7 @@ class TimeEdit:
             login=self.login,
             type=type,
             numberofobjects=1,
-            generalsearchfields={"field": ["general.id", "general.title"]},
+            generalsearchfields={"field": [self.te_general_id_field, self.te_general_title_field]},
             generalsearchstring=search_string,
         ).totalnumberofobjects
 
