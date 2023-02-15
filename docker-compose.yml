@@ -63,6 +63,8 @@ services:
       - TE_CERT
       - TE_USERNAME
       - TE_PASSWORD
+      - TE_GENERAL_ID_FIELD-general.title
+      - TE_GENERAL_TITLE_FIELD-general.id
 
       - CANVAS_URL
       - CANVAS_KEY
