@@ -41,6 +41,24 @@ class Config(Resource):
         args = self.key_parser.parse_args(strict=True)
         self.db.delete_config(args.key)
 
+class Template(Resource):
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, args, kwargs)
+        self.db = kwargs["db"]
+
+    def get(self):
+        try:
+            templates = {
+                "title": [],
+                "location": [],
+                "description": []
+            }
+            for [n,t,f] in self.db.get_template_config():
+                templates[n].append({"te_type": t, "te_fields": f})
+            return templates 
+        except NoResultFound:
+            return "", 404
+
 
 class Ok(Resource):
     def __init__(self, api=None, *args, **kwargs):

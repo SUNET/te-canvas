@@ -6,7 +6,7 @@ from time import sleep
 from typing import Optional
 
 from psycopg2.errors import UniqueViolation
-from sqlalchemy import Boolean, Column, String, create_engine
+from sqlalchemy import Boolean, Column, String, ARRAY, Integer, create_engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import declarative_base, sessionmaker  # type: ignore
 
@@ -52,6 +52,12 @@ class Config(Base):
     key = Column(String, primary_key=True)
     value = Column(String)
 
+class TemplateConfig(Base):
+    __tablename__ = "template_config"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    te_type = Column(String)
+    te_fields = Column(ARRAY(String))
 
 class Test(Base):
     """
@@ -156,7 +162,7 @@ class DB:
                 raise DeleteFlagAlreadySet
             row.delete_flag = True
 
-    def get_connections(self, canvas_group: Optional[str] = None) -> list[tuple[str, str, str, bool]]:
+    def get_connections(self, canvas_group: Optional[str] = None) -> "list[tuple[str, str, str, bool]]":
         with self.sqla_session() as session:
             # NOTE: We cannot return a list of Connection here, since the Session they are connected
             # to is closed at end of this block.
@@ -186,6 +192,11 @@ class DB:
         """
         with self.sqla_session() as session:
             session.query(Config).filter(Config.key == key).delete()
+
+    def get_template_config(self) -> "list[tuple[str, str, list[str]]]":
+        with self.sqla_session() as session:
+            query = session.query(TemplateConfig)
+            return [[c.name, c.te_type, c.te_fields] for c in query]
 
 
 class DeleteFlagAlreadySet(Exception):
