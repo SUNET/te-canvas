@@ -41,17 +41,6 @@ class Connection(Base):
     delete_flag = Column(Boolean, default=False)
 
 
-class Config(Base):
-    """
-    Arbitrary key-value storage.
-
-    Currently only used for event template strings used by Translator.
-    """
-
-    __tablename__ = "config"
-    key = Column(String, primary_key=True)
-    value = Column(String)
-
 class TemplateConfig(Base):
     __tablename__ = "template_config"
     id = Column(Integer, primary_key=True)
@@ -69,7 +58,6 @@ class Test(Base):
 
     __tablename__ = "unittest"
     foo = Column(String, primary_key=True, default="bar")
-
 
 class DB:
     """
@@ -173,31 +161,18 @@ class DB:
 
             return [(c.canvas_group, c.te_group, c.te_type, c.delete_flag) for c in query]
 
-    def set_config(self, key: str, value: str):
-        with self.sqla_session() as session:
-            session.query(Config).filter(Config.key == key).delete()
-            session.add(Config(key=key, value=value))
 
-    def get_config(self, key: str) -> str:
-        """
-        Raises:
-            NoResultFound
-        """
-        with self.sqla_session() as session:
-            return session.query(Config).filter(Config.key == key).one().value
-
-    def delete_config(self, key: str):
-        """
-        Does not raise exception if key not found.
-        """
-        with self.sqla_session() as session:
-            session.query(Config).filter(Config.key == key).delete()
-
-    def get_template_config(self) -> "list[tuple[str, str, list[str]]]":
+    def get_template_config(self) -> "list[list[int, str, str, list[str]]]":
         with self.sqla_session() as session:
             query = session.query(TemplateConfig)
-            return [[c.name, c.te_type, c.te_fields] for c in query]
+            return [[c.id, c.name, c.te_type, c.te_fields] for c in query]
 
+    def delete_template_config(self, id: str):
+        """
+        Does not raise exception if id not found.
+        """
+        with self.sqla_session() as session:
+            session.query(TemplateConfig).filter(TemplateConfig.id == id).delete()
 
 class DeleteFlagAlreadySet(Exception):
     pass
