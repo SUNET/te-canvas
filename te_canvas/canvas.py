@@ -26,7 +26,7 @@ class Canvas:
 
     # ---- Courses -------------------------------------------------------------
 
-    def get_courses(self) -> list[Course]:
+    def get_courses(self) -> "list[Course]":
         """
         Get all courses.
         """
@@ -38,7 +38,7 @@ class Canvas:
 
     # ---- Events --------------------------------------------------------------
 
-    def get_events(self, course: int) -> list[CalendarEvent]:
+    def get_events(self, course: int) -> "list[CalendarEvent]":
         """
         Get all tagged events for a course.
         """
@@ -77,7 +77,7 @@ class Canvas:
         except ResourceDoesNotExist:
             return None
 
-    def delete_events(self, course: int) -> list[CalendarEvent]:
+    def delete_events(self, course: int) -> "list[CalendarEvent]":
         """
         Delete all tagged events.
 
@@ -93,7 +93,7 @@ class Canvas:
 
     # ---- Not used in main program, just for utility scripts ------------------
 
-    def delete_events_parallel(self, course: int, max_workers: int) -> list[CalendarEvent]:
+    def delete_events_parallel(self, course: int, max_workers: int) -> "list[CalendarEvent]":
         """
         Delete all tagged events using concurrent API calls.
 

@@ -6,7 +6,7 @@ from time import sleep
 from typing import Optional
 
 from psycopg2.errors import UniqueViolation
-from sqlalchemy import Boolean, Column, String, ARRAY, Integer, create_engine
+from sqlalchemy import ARRAY, Boolean, Column, Integer, String, create_engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import declarative_base, sessionmaker  # type: ignore
 
@@ -48,6 +48,7 @@ class TemplateConfig(Base):
     te_type = Column(String)
     te_fields = Column(ARRAY(String))
 
+
 class Test(Base):
     """
     TODO: Can we avoid having this here and do this in test_db, perhaps dynamically in a test case?
@@ -58,6 +59,7 @@ class Test(Base):
 
     __tablename__ = "unittest"
     foo = Column(String, primary_key=True, default="bar")
+
 
 class DB:
     """
@@ -84,7 +86,7 @@ class DB:
         env_vars = {k: os.environ[v] for (k, v) in env_var_mapping.items() if v in os.environ}
         conn = env_vars | kwargs
 
-        for (k, v) in env_var_mapping.items():
+        for k, v in env_var_mapping.items():
             if k not in conn:
                 logger.critical(f"Missing env var: {v}")
                 sys.exit(1)
@@ -161,7 +163,6 @@ class DB:
 
             return [(c.canvas_group, c.te_group, c.te_type, c.delete_flag) for c in query]
 
-
     def get_template_config(self) -> "list[list[int, str, str, list[str]]]":
         with self.sqla_session() as session:
             query = session.query(TemplateConfig)
@@ -173,6 +174,7 @@ class DB:
         """
         with self.sqla_session() as session:
             session.query(TemplateConfig).filter(TemplateConfig.id == id).delete()
+
 
 class DeleteFlagAlreadySet(Exception):
     pass

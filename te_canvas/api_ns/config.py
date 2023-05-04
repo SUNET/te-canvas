@@ -6,6 +6,7 @@ from te_canvas.translator import TemplateError, Translator
 
 ns = Namespace("config", description="Config API", prefix="/api")
 
+
 class Template(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
@@ -13,14 +14,10 @@ class Template(Resource):
 
     def get(self):
         try:
-            templates = {
-                "title": [],
-                "location": [],
-                "description": []
-            }
-            for [i,n,t,f] in self.db.get_template_config():
+            templates = {"title": [], "location": [], "description": []}
+            for [i, n, t, f] in self.db.get_template_config():
                 templates[n].append({"id": i, "te_type": t, "te_fields": f})
-            return templates 
+            return templates
         except NoResultFound:
             return "", 404
 
@@ -37,6 +34,7 @@ class Template(Resource):
             return "", 204
         except NoResultFound:
             return {"message": "Connection not found."}, 404
+
 
 class Ok(Resource):
     def __init__(self, api=None, *args, **kwargs):

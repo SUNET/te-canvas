@@ -12,7 +12,6 @@ ns = Namespace(
 
 
 class Connection(Resource):
-
     # TODO: Is this correct subclassing? We need to know the supertype constructor's signature?
     #       Used for the other APIs as well.
     def __init__(self, api=None, *args, **kwargs):

@@ -45,6 +45,7 @@ def create_app(db: DB = None, timeedit: TimeEdit = None, canvas: Canvas = None) 
     timeedit_api.ns.add_resource(timeedit_api.Objects, "/objects", resource_class_kwargs={"timeedit": timeedit})
     timeedit_api.ns.add_resource(timeedit_api.Object, "/object", resource_class_kwargs={"timeedit": timeedit})
     timeedit_api.ns.add_resource(timeedit_api.Types, "/types", resource_class_kwargs={"timeedit": timeedit})
+    timeedit_api.ns.add_resource(timeedit_api.Fields, "/fields", resource_class_kwargs={"timeedit": timeedit})
     api.add_namespace(timeedit_api.ns)
 
     # --- Canvas ---------------------------------------------------------------
