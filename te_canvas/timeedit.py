@@ -107,7 +107,7 @@ class TimeEdit:
             return None
         return list(map(_unpack_object, resp))[0]
 
-    def find_reservations_all(self, extids: list[str], return_types: dict[str, list[str]]):
+    def find_reservations_all(self, extids: "list[str]", return_types: "dict[str, list[str]]"):
         """Get all reservations for a given set of objects."""
 
         # If extids is empty, findReservations will return *all* reservations, which is never what
