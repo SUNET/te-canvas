@@ -6,7 +6,7 @@ from time import sleep
 from typing import Optional
 
 from psycopg2.errors import UniqueViolation
-from sqlalchemy import ARRAY, Boolean, Column, Integer, String, create_engine
+from sqlalchemy import ARRAY, Boolean, Column, Integer, String, create_engine, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import declarative_base, sessionmaker  # type: ignore
 
@@ -46,7 +46,7 @@ class TemplateConfig(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     te_type = Column(String)
-    te_fields = Column(ARRAY(String))
+    te_field = Column(String)
 
 
 class Test(Base):
@@ -83,7 +83,9 @@ class DB:
             "database": "POSTGRES_DB",
         }
 
-        env_vars = {k: os.environ[v] for (k, v) in env_var_mapping.items() if v in os.environ}
+        env_vars = {
+            k: os.environ[v] for (k, v) in env_var_mapping.items() if v in os.environ
+        }
         conn = env_vars | kwargs
 
         for k, v in env_var_mapping.items():
@@ -132,7 +134,11 @@ class DB:
                 Connection.canvas_group == canvas_group,
             )
             if q.count() == 0:
-                session.add(Connection(canvas_group=canvas_group, te_group=te_group, te_type=te_type))
+                session.add(
+                    Connection(
+                        canvas_group=canvas_group, te_group=te_group, te_type=te_type
+                    )
+                )
             else:
                 if q.one().delete_flag:  # Will throw if q has > 1 row (invalid state)
                     raise DeleteFlagAlreadySet
@@ -152,7 +158,9 @@ class DB:
                 raise DeleteFlagAlreadySet
             row.delete_flag = True
 
-    def get_connections(self, canvas_group: Optional[str] = None) -> "list[tuple[str, str, str, bool]]":
+    def get_connections(
+        self, canvas_group: Optional[str] = None
+    ) -> "list[tuple[str, str, str, bool]]":
         with self.sqla_session() as session:
             # NOTE: We cannot return a list of Connection here, since the Session they are connected
             # to is closed at end of this block.
@@ -161,19 +169,39 @@ class DB:
             if canvas_group is not None:
                 query = query.filter(Connection.canvas_group == canvas_group)
 
-            return [(c.canvas_group, c.te_group, c.te_type, c.delete_flag) for c in query]
+            return [
+                (c.canvas_group, c.te_group, c.te_type, c.delete_flag) for c in query
+            ]
 
     def get_template_config(self) -> "list[list[int, str, str, list[str]]]":
         with self.sqla_session() as session:
             query = session.query(TemplateConfig)
-            return [[c.id, c.name, c.te_type, c.te_fields] for c in query]
+            return [[c.id, c.name, c.te_type, c.te_field] for c in query]
 
-    def delete_template_config(self, id: str):
+    def delete_template_config(self, template_id: str):
         """
         Does not raise exception if id not found.
         """
         with self.sqla_session() as session:
-            session.query(TemplateConfig).filter(TemplateConfig.id == id).delete()
+            session.query(TemplateConfig).filter(
+                TemplateConfig.id == template_id
+            ).delete()
+
+    def add_template_config(self, name: str, te_type: str, te_field: str):
+        with self.sqla_session() as session:
+            existing_row = session.execute(
+                select(TemplateConfig).where(
+                    TemplateConfig.name == name
+                    and TemplateConfig.te_type == te_type
+                    and TemplateConfig.te_field == te_field,
+                )
+            ).first()
+            if existing_row is None:
+                session.add(
+                    TemplateConfig(name=name, te_type=te_type, te_field=te_field)
+                )
+            else:
+                raise UniqueViolation
 
 
 class DeleteFlagAlreadySet(Exception):

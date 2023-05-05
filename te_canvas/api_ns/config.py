@@ -1,6 +1,7 @@
 from flask import make_response
 from flask_restx import Namespace, Resource, reqparse
 from sqlalchemy.exc import NoResultFound  # type: ignore
+from psycopg2.errors import UniqueViolation
 
 from te_canvas.translator import TemplateError, Translator
 
@@ -16,7 +17,7 @@ class Template(Resource):
         try:
             templates = {"title": [], "location": [], "description": []}
             for [i, n, t, f] in self.db.get_template_config():
-                templates[n].append({"id": i, "te_type": t, "te_fields": f})
+                templates[n].append({"id": i, "te_type": t, "te_field": f})
             return templates
         except NoResultFound:
             return "", 404
@@ -34,6 +35,25 @@ class Template(Resource):
             return "", 204
         except NoResultFound:
             return {"message": "Connection not found."}, 404
+
+
+    post_parser = reqparse.RequestParser()
+    post_parser.add_argument("name", type=str, required=True)
+    post_parser.add_argument("te_type", type=str, required=True)
+    post_parser.add_argument("te_field", type=str, required=True)
+
+    @ns.param("name", "title | location | description")
+    @ns.param("te_type", "Timeedit object type")
+    @ns.param("te_field", "Object type field")
+    @ns.response(204, "Config template added")
+    @ns.response(400, "Missing parameters")
+    def post(self):
+        args = self.post_parser.parse_args(strict=True)
+        try:
+            self.db.add_template_config(args.name, args.te_type, args.te_field)
+            return "", 204
+        except UniqueViolation:
+            return {"message": "Type and field combination already exist"}, 400
 
 
 class Ok(Resource):
