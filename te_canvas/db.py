@@ -200,8 +200,6 @@ class DB:
                 .where(TemplateConfig.te_type == te_type)
                 .where(TemplateConfig.te_field == te_field)
             ).first()
-            logger = get_logger()
-            logger.critical(existing_row)
             if existing_row is None:
                 session.add(
                     TemplateConfig(name=name, te_type=te_type, te_field=te_field)
