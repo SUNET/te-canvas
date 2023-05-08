@@ -15,10 +15,7 @@ class Template(Resource):
 
     def get(self):
         try:
-            templates = {"title": [], "location": [], "description": []}
-            for [i, n, t, f] in self.db.get_template_config():
-                templates[n].append({"id": i, "te_type": t, "te_field": f})
-            return templates
+            return self.db.get_template_config()
         except NoResultFound:
             return "", 404
 
@@ -35,7 +32,6 @@ class Template(Resource):
             return "", 204
         except NoResultFound:
             return {"message": "Connection not found."}, 404
-
 
     post_parser = reqparse.RequestParser()
     post_parser.add_argument("name", type=str, required=True)

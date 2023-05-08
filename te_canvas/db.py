@@ -176,7 +176,12 @@ class DB:
     def get_template_config(self) -> "list[list[int, str, str, list[str]]]":
         with self.sqla_session() as session:
             query = session.query(TemplateConfig)
-            return [[c.id, c.name, c.te_type, c.te_field] for c in query]
+            templates = {"title": [], "location": [], "description": []}
+            for row in query:
+                templates[row.name].append(
+                    {"id": row.id, "te_type": row.te_type, "te_field": row.te_field}
+                )
+            return templates
 
     def delete_template_config(self, template_id: str):
         """
@@ -190,12 +195,13 @@ class DB:
     def add_template_config(self, name: str, te_type: str, te_field: str):
         with self.sqla_session() as session:
             existing_row = session.execute(
-                select(TemplateConfig).where(
-                    TemplateConfig.name == name
-                    and TemplateConfig.te_type == te_type
-                    and TemplateConfig.te_field == te_field,
-                )
+                select(TemplateConfig)
+                .where(TemplateConfig.name == name)
+                .where(TemplateConfig.te_type == te_type)
+                .where(TemplateConfig.te_field == te_field)
             ).first()
+            logger = get_logger()
+            logger.critical(existing_row)
             if existing_row is None:
                 session.add(
                     TemplateConfig(name=name, te_type=te_type, te_field=te_field)
