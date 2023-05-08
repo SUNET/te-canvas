@@ -93,7 +93,10 @@ class Syncer:
             # 1
             te_groups = flat_list(
                 session.query(Connection.te_group)
-                .filter(Connection.canvas_group == canvas_group, Connection.delete_flag == False)
+                .filter(
+                    Connection.canvas_group == canvas_group,
+                    Connection.delete_flag == False,
+                )
                 .order_by(Connection.canvas_group, Connection.te_group)
             )
 
@@ -103,7 +106,11 @@ class Syncer:
             te_event_ids = [str(e["id"]) for e in te_events]
 
             # 2
-            te_event_modify_date = "" if len(te_events) == 0 else str(max([e["modified"] for e in te_events]))
+            te_event_modify_date = (
+                ""
+                if len(te_events) == 0
+                else str(max([e["modified"] for e in te_events]))
+            )
 
             sep = ":"
             return {
@@ -123,7 +130,11 @@ class Syncer:
         canvas_event_ids = [str(e.id) for e in canvas_events]
 
         # 5
-        canvas_event_modify_date = "" if len(canvas_events) == 0 else str(max([e.updated_at for e in canvas_events]))
+        canvas_event_modify_date = (
+            ""
+            if len(canvas_events) == 0
+            else str(max([e.updated_at for e in canvas_events]))
+        )
 
         sep = ":"
         return {
@@ -144,7 +155,11 @@ class Syncer:
         self.logger.info("Sync job started")
 
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
-            groups = flat_list(session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group))
+            groups = flat_list(
+                session.query(Connection.canvas_group)
+                .distinct()
+                .order_by(Connection.canvas_group)
+            )
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             res = list(executor.map(self.sync_one, groups))
@@ -174,11 +189,17 @@ class Syncer:
 
             # Change detection
             prev_state = self.states.get(canvas_group)
-            new_state = self.__state_te(canvas_group) | self.__state_canvas(canvas_group) | translator.state()
+            new_state = (
+                self.__state_te(canvas_group)
+                | self.__state_canvas(canvas_group)
+                | translator.state()
+            )
             self.states[canvas_group] = new_state
             self.logger.debug(f"State: {new_state}")
 
-            if not self.__has_changed(prev_state, new_state) and self.sync_complete.get(canvas_group, False):
+            if not self.__has_changed(prev_state, new_state) and self.sync_complete.get(
+                canvas_group, False
+            ):
                 self.logger.info(f"{canvas_group}: Nothing changed, skipping")
                 return False
 
@@ -202,11 +223,18 @@ class Syncer:
                 .order_by(Connection.canvas_group, Connection.te_group)
             )
 
-            reservations = self.timeedit.find_reservations_all(te_groups, translator.return_types)
+            reservations = self.timeedit.find_reservations_all(
+                te_groups, translator.return_types
+            )
 
-            self.logger.info(f"{canvas_group}: Adding events: {te_groups} ({len(reservations)} events)")
+            self.logger.info(
+                f"{canvas_group}: Adding events: {te_groups} ({len(reservations)} events)"
+            )
             for r in reservations:
-                self.canvas.create_event(translator.canvas_event(r) | {"context_code": f"course_{canvas_group}"})
+                self.canvas.create_event(
+                    translator.canvas_event(r)
+                    | {"context_code": f"course_{canvas_group}"}
+                )
 
             # Record new Canvas state
             #
@@ -214,7 +242,9 @@ class Syncer:
             # us and this state get, it will not be detected. Can be fixed by building state
             # from the calls to Canvas.create_event instead of doing a state get afterwards.
             #
-            prev_state = self.states[canvas_group]  # Implicit assert that this is not None
+            prev_state = self.states[
+                canvas_group
+            ]  # Implicit assert that this is not None
             new_state = prev_state | self.__state_canvas(canvas_group)
             self.states[canvas_group] = new_state
 
@@ -233,7 +263,9 @@ class JobScheduler(object):
         self.logger = get_logger()
 
         def listener(event):
-            self.logger.warning(f"Job raised an Exception: {event.exception.__class__.__name__}: {event.exception}")
+            self.logger.warning(
+                f"Job raised an Exception: {event.exception.__class__.__name__}: {event.exception}"
+            )
 
         self.scheduler.add_listener(listener, EVENT_JOB_ERROR)
 
@@ -250,7 +282,13 @@ class JobScheduler(object):
 
     def add(self, func, seconds, kwargs):
         self.logger.info(f"Adding job to scheduler: interval={seconds}")
-        return self.scheduler.add_job(func, "interval", seconds=seconds, kwargs=kwargs, next_run_time=datetime.now(utc))
+        return self.scheduler.add_job(
+            func,
+            "interval",
+            seconds=seconds,
+            kwargs=kwargs,
+            next_run_time=datetime.now(utc),
+        )
 
 
 if __name__ == "__main__":
