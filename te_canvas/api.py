@@ -60,7 +60,6 @@ def create_app(db: DB = None, timeedit: TimeEdit = None, canvas: Canvas = None) 
 
     # --- Config ---------------------------------------------------------------
 
-    config_api.ns.add_resource(config_api.Ok, "/ok", resource_class_kwargs={"db": db, "timeedit": timeedit})
     config_api.ns.add_resource(config_api.Template, "/template", resource_class_kwargs={"db": db})
     api.add_namespace(config_api.ns)
 

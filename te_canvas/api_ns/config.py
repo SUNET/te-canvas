@@ -1,9 +1,7 @@
 from flask import make_response
 from flask_restx import Namespace, Resource, reqparse
-from sqlalchemy.exc import NoResultFound  # type: ignore
 from psycopg2.errors import UniqueViolation
-
-from te_canvas.translator import TemplateError, Translator
+from sqlalchemy.exc import NoResultFound  # type: ignore
 
 ns = Namespace("config", description="Config API", prefix="/api")
 
@@ -15,7 +13,10 @@ class Template(Resource):
 
     def get(self):
         try:
-            return self.db.get_template_config()
+            template_config = {"title": [], "location": [], "description": []}
+            for [i, n, t, f, c] in self.db.get_template_config():
+                template_config[n].append({"id": i, "te_type": t, "te_field": f, "canvas_group": c})
+            return template_config
         except NoResultFound:
             return "", 404
 
@@ -37,34 +38,18 @@ class Template(Resource):
     post_parser.add_argument("name", type=str, required=True)
     post_parser.add_argument("te_type", type=str, required=True)
     post_parser.add_argument("te_field", type=str, required=True)
+    post_parser.add_argument("canvas_group", type=str, required=False)
 
-    @ns.param("name", "title | location | description")
+    @ns.param("name", "title | location | description |")
     @ns.param("te_type", "Timeedit object type")
     @ns.param("te_field", "Object type field")
+    @ns.param("canvas_group", "Canvas group")
     @ns.response(204, "Config template added")
     @ns.response(400, "Missing parameters")
     def post(self):
         args = self.post_parser.parse_args(strict=True)
         try:
-            self.db.add_template_config(args.name, args.te_type, args.te_field)
+            self.db.add_template_config(args.name, args.te_type, args.te_field, args.canvas_group)
             return "", 204
         except UniqueViolation:
             return {"message": "Type and field combination already exist"}, 400
-
-
-class Ok(Resource):
-    def __init__(self, api=None, *args, **kwargs):
-        super().__init__(api, args, kwargs)
-        self.db = kwargs["db"]
-        self.timeedit = kwargs["timeedit"]
-
-    @ns.produces(["text/plain"])
-    def get(self):
-        status = True
-        try:
-            Translator(self.db, self.timeedit)
-        except TemplateError:
-            status = False
-        resp = make_response(str(status))
-        resp.mimetype = "text/plain"
-        return resp
