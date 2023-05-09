@@ -6,6 +6,23 @@ from sqlalchemy.exc import NoResultFound  # type: ignore
 ns = Namespace("config", description="Config API", prefix="/api")
 
 
+class Ok(Resource):
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, args, kwargs)
+        self.db = kwargs["db"]
+
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument("canvas_group", type=str, required=True)
+
+    @ns.param("canvas_group", "Canvas group")
+    def get(self):
+        args = self.get_parser.parse_args(strict=True)
+        res = self.db.get_template_config()
+        default = set(n for [_, n, _, _, c] in res if c == "default")
+        group = set(n for [_, n, _, _, c] in res if c == args.canvas_group)
+        return {"group": [n for n in group], "default": [n for n in default]}
+
+
 class Template(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
