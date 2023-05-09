@@ -3,17 +3,18 @@ This module gathers functionality for "translating" a TimeEdit event into a Canv
 with templates related to this.
 """
 
-import re
-from string import Template
-
-from sqlalchemy.exc import NoResultFound  # type: ignore
-
-from te_canvas.util import State
+from te_canvas.db import DB
+from te_canvas.util import TemplateConfigState
 
 # Used to differentiate te-canvas events from manually added Canvas events, this string is added as
 # a suffix to each event title. These are zero-width spaces, an invisible unicode character. We use
 # 10 because why not, it should reduce the risk of false positive.
 TAG_TITLE = r"​​​​​​​​​​"
+
+# Separators used when joining fields in Translator.__translate_fields()
+LOCATION_SEPARATOR = " - "
+TITLE_SEPARATOR = " - "
+DESCRIPTION_SEPARATOR = "<br>"
 
 
 class TemplateError(Exception):
@@ -28,14 +29,7 @@ class Translator:
     Translator instance t, t.canvas_event is a pure function.
     """
 
-    def __init__(
-        self,
-        db,
-        timeedit,
-        title=None,
-        location=None,
-        description=None,
-    ):
+    def __init__(self, db: DB, timeedit):
         """
         Read template strings from the database and extract fields (used for template functionality)
         and return types (used as arguments in TimeEdit API calls).
@@ -46,29 +40,43 @@ class Translator:
         """
         self.db = db
         self.timeedit = timeedit
-        self.template_title = title or self.template("title")
-        self.template_location = location or self.template("location")
-        self.template_description = description or self.template("description")
+        template = self.__get_template_config()
+        self.template_title = self.__extract_template(template, "title")
+        self.template_location = self.__extract_template(template, "location")
+        self.template_description = self.__extract_template(template, "description")
+        self.return_types = self.__extract_return_types(template)
 
-        self.fields = (
-            _extract_fields(self.template_title)
-            + _extract_fields(self.template_location)
-            + _extract_fields(self.template_description)
-        )
+    def __extract_template(self, template, name: str) -> "list[dict[str, str]]":
+        """
+        Extract template from db query.
 
-        self.return_types = _return_types(self.fields)
+        Used for translating timeedit reservations.
+        """
+        return [{t: f} for (_, n, t, f, _) in template if n == name]
 
-    def canvas_event(self, timeedit_reservation):
+    def __extract_return_types(self, template) -> "dict[str, list[str]]":
+        """
+        Extract return types from db query.
+
+        Used in API call to timeedit when getting reservations.
+        """
+        te_types = set(t for (_, _, t, _, _) in template)
+        return {te_type: [f for (_, _, t, f, _) in template if t == te_type] for te_type in te_types}
+
+    def canvas_event(self, timeedit_reservation: dict) -> "dict[str,str]":
+        """
+        Create canvas event from timeedit reservations.
+        """
         return {
-            "title":         _string(self.template_title,       self.fields, timeedit_reservation["objects"]) + TAG_TITLE,
-            "location_name": _string(self.template_location,    self.fields, timeedit_reservation["objects"]),
-            "description":   _string(self.template_description, self.fields, timeedit_reservation["objects"])
+            "title":         self.__translate_fields(self.template_title, timeedit_reservation["objects"], TITLE_SEPARATOR) + TAG_TITLE,
+            "location_name": self.__translate_fields(self.template_location, timeedit_reservation["objects"], LOCATION_SEPARATOR),
+            "description":   self.__translate_fields(self.template_description, timeedit_reservation["objects"], DESCRIPTION_SEPARATOR)
                 + f'<br><br><a href="{self.timeedit.reservation_url(timeedit_reservation["id"])}">Edit on TimeEdit</a>',
             "start_at": timeedit_reservation["start_at"],
             "end_at":   timeedit_reservation["end_at"],
             }  # fmt: skip
 
-    def state(self) -> State:
+    def state(self) -> TemplateConfigState:
         """
         Return an object allowing instances of Translator to be compared.
 
@@ -80,74 +88,27 @@ class Translator:
             "description": self.template_description,
         }
 
-    def template_config_ok(self) -> bool:
+    def __get_template_config(self):
         """
-        Check if we have a complete event template definition.
-        """
-        try:
-            for k in ["title", "location", "description"]:
-                self.template(k)
-        except TemplateError:
-            return False
-        return True
+        Get a template config.
 
-    def template(self, key: str) -> str:
+        We need atleast one field for each name.
+        Else we raise TemplateError.
         """
-        Get a template string, raise TemplateError if missing or empty.
-        """
-        try:
-            res = self.db.get_config(key)
-        except NoResultFound:
-            raise TemplateError
-        if res == "":
+        res = self.db.get_template_config()
+        name_count = set(name for (_, name, _, _, _) in res)
+        if len(name_count) < 3:
             raise TemplateError
         return res
 
-
-# ---- Helper functions --------------------------------------------------------
-
-SEPARATOR = "::"
-
-
-class MyTemplate(Template):
-    """
-    We use a custom subclass of Template to allow any characters in braced identifiers.
-
-    We consider only braced identifiers.
-    """
-
-    braceidpattern = r"[^}]*"
-
-
-def _string(template, fields, objects):
-    """
-    Produce a string with variables substituted.
-
-    Variables of the form ${foo::bar} are substituted for the field bar on object foo.
-    """
-    s = MyTemplate(template)
-    return s.substitute(_encode_fields(fields, objects))
-
-
-def _encode_fields(tuples, objects):
-    return {
-        SEPARATOR.join([type, field]): ", ".join([o["fields"][field] for o in objects if o["type"] == type])
-        for (type, field) in tuples
-    }
-
-
-def _extract_fields(template: str) -> list[tuple[str, str]]:
-    """
-    Extract (type, field)-tuples from a template string.
-    """
-    return [tuple(pat.split(SEPARATOR)) for pat in re.findall(r"(?<=\${).*?(?=})", template)]
-
-
-def _return_types(tuples):
-    """
-    Extract return types from a list of (type, field)-tuples.
-    Returns:
-        A dict { T: F[] }, meaning that for objects of type T we want to get fields F.
-    """
-    types = set([type for (type, _) in tuples])
-    return {type: [field for (type_, field) in tuples if type_ == type] for type in types}
+    def __translate_fields(self, template: "list[dict[str,str]]", objects: "list[dict]", separator: str) -> str:
+        """
+        Used for translating fields from te reservations according to template.
+        """
+        selected_fields = []
+        for o in objects:
+            te_type = o["type"]
+            for te_field, content in o["fields"].items():
+                if {te_type: te_field} in template:
+                    selected_fields.append(content)
+        return separator.join(selected_fields)

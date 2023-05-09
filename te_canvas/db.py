@@ -6,7 +6,7 @@ from time import sleep
 from typing import Optional
 
 from psycopg2.errors import UniqueViolation
-from sqlalchemy import Boolean, Column, String, create_engine
+from sqlalchemy import ARRAY, Boolean, Column, Integer, String, create_engine, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import declarative_base, sessionmaker  # type: ignore
 
@@ -41,16 +41,13 @@ class Connection(Base):
     delete_flag = Column(Boolean, default=False)
 
 
-class Config(Base):
-    """
-    Arbitrary key-value storage.
-
-    Currently only used for event template strings used by Translator.
-    """
-
-    __tablename__ = "config"
-    key = Column(String, primary_key=True)
-    value = Column(String)
+class TemplateConfig(Base):
+    __tablename__ = "template_config"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    te_type = Column(String)
+    te_field = Column(String)
+    canvas_group = Column(String)
 
 
 class Test(Base):
@@ -90,7 +87,7 @@ class DB:
         env_vars = {k: os.environ[v] for (k, v) in env_var_mapping.items() if v in os.environ}
         conn = env_vars | kwargs
 
-        for (k, v) in env_var_mapping.items():
+        for k, v in env_var_mapping.items():
             if k not in conn:
                 logger.critical(f"Missing env var: {v}")
                 sys.exit(1)
@@ -156,7 +153,7 @@ class DB:
                 raise DeleteFlagAlreadySet
             row.delete_flag = True
 
-    def get_connections(self, canvas_group: Optional[str] = None) -> list[tuple[str, str, str, bool]]:
+    def get_connections(self, canvas_group: Optional[str] = None) -> "list[tuple[str, str, str, bool]]":
         with self.sqla_session() as session:
             # NOTE: We cannot return a list of Connection here, since the Session they are connected
             # to is closed at end of this block.
@@ -167,25 +164,46 @@ class DB:
 
             return [(c.canvas_group, c.te_group, c.te_type, c.delete_flag) for c in query]
 
-    def set_config(self, key: str, value: str):
+    def get_template_config(self) -> "list[tuple[int, str, str, str, Optional[str]]]":
         with self.sqla_session() as session:
-            session.query(Config).filter(Config.key == key).delete()
-            session.add(Config(key=key, value=value))
+            query = session.query(TemplateConfig)
+            return [
+                (
+                    r.id,
+                    r.name,
+                    r.te_type,
+                    r.te_field,
+                    r.canvas_group,
+                )
+                for r in query
+            ]
 
-    def get_config(self, key: str) -> str:
+    def delete_template_config(self, template_id: str):
         """
-        Raises:
-            NoResultFound
+        Does not raise exception if id not found.
         """
         with self.sqla_session() as session:
-            return session.query(Config).filter(Config.key == key).one().value
+            session.query(TemplateConfig).filter(TemplateConfig.id == template_id).delete()
 
-    def delete_config(self, key: str):
-        """
-        Does not raise exception if key not found.
-        """
+    def add_template_config(self, name: str, te_type: str, te_field: str, canvas_group: Optional[str]):
         with self.sqla_session() as session:
-            session.query(Config).filter(Config.key == key).delete()
+            existing_row = session.execute(
+                select(TemplateConfig)
+                .where(TemplateConfig.name == name)
+                .where(TemplateConfig.te_type == te_type)
+                .where(TemplateConfig.te_field == te_field)
+            ).first()
+            if existing_row is None:
+                session.add(
+                    TemplateConfig(
+                        name=name,
+                        te_type=te_type,
+                        te_field=te_field,
+                        canvas_group=canvas_group,
+                    )
+                )
+            else:
+                raise UniqueViolation
 
 
 class DeleteFlagAlreadySet(Exception):

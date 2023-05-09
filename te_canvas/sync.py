@@ -13,7 +13,7 @@ from te_canvas.db import DB, Connection, flat_list
 from te_canvas.log import get_logger
 from te_canvas.timeedit import TimeEdit
 from te_canvas.translator import TemplateError, Translator
-from te_canvas.util import State
+from te_canvas.util import TemplateConfigState
 
 
 class Syncer:
@@ -79,12 +79,12 @@ class Syncer:
         self.timeedit = timeedit or TimeEdit()
 
         # Mapping canvas_group to in-memory State:s
-        self.states: dict[str, State] = {}
+        self.states: dict[str, TemplateConfigState] = {}
 
         # Set to false at start of each sync, set to true at completion
         self.sync_complete: dict[str, bool] = {}
 
-    def __state_te(self, canvas_group: str) -> State:
+    def __state_te(self, canvas_group: str) -> TemplateConfigState:
         """
         Get the TimeEdit state relevant for canvas_group. Number comments reference "modifications
         to detect", see class docstring.
@@ -93,7 +93,10 @@ class Syncer:
             # 1
             te_groups = flat_list(
                 session.query(Connection.te_group)
-                .filter(Connection.canvas_group == canvas_group, Connection.delete_flag == False)
+                .filter(
+                    Connection.canvas_group == canvas_group,
+                    Connection.delete_flag == False,
+                )
                 .order_by(Connection.canvas_group, Connection.te_group)
             )
 
@@ -112,7 +115,7 @@ class Syncer:
                 "te_event_modify_date": te_event_modify_date,
             }
 
-    def __state_canvas(self, canvas_group: str) -> State:
+    def __state_canvas(self, canvas_group: str) -> TemplateConfigState:
         """
         Get the Canvas state relevant for canvas_group. Number comments reference "modifications to
         detect", see class docstring.
@@ -131,7 +134,7 @@ class Syncer:
             "canvas_event_modify_date": canvas_event_modify_date,
         }
 
-    def __has_changed(self, prev_state: Optional[State], state: State) -> bool:
+    def __has_changed(self, prev_state: Optional[TemplateConfigState], state: TemplateConfigState) -> bool:
         return state != prev_state
 
     def sync_all(self):
@@ -161,7 +164,7 @@ class Syncer:
             False if the group was skipped due to change detection or template error, otherwise True.
         """
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
-            self.logger.info(f"{canvas_group}: Processing")
+            self.logger.info("%s: Processing", canvas_group)
 
             # When a Translator is instantiated it reads template config from the DB and is after
             # this static. So we initiate a new one for each sync, and diff for change detection
@@ -169,14 +172,14 @@ class Syncer:
             try:
                 translator = Translator(self.db, self.timeedit)
             except TemplateError:
-                self.logger.warning(f"{canvas_group}: Template error, skipping")
+                self.logger.warning("%s: Template error, skipping", canvas_group)
                 return False
 
             # Change detection
             prev_state = self.states.get(canvas_group)
             new_state = self.__state_te(canvas_group) | self.__state_canvas(canvas_group) | translator.state()
             self.states[canvas_group] = new_state
-            self.logger.debug(f"State: {new_state}")
+            self.logger.debug("State: %s", new_state)
 
             if not self.__has_changed(prev_state, new_state) and self.sync_complete.get(canvas_group, False):
                 self.logger.info(f"{canvas_group}: Nothing changed, skipping")
@@ -250,7 +253,13 @@ class JobScheduler(object):
 
     def add(self, func, seconds, kwargs):
         self.logger.info(f"Adding job to scheduler: interval={seconds}")
-        return self.scheduler.add_job(func, "interval", seconds=seconds, kwargs=kwargs, next_run_time=datetime.now(utc))
+        return self.scheduler.add_job(
+            func,
+            "interval",
+            seconds=seconds,
+            kwargs=kwargs,
+            next_run_time=datetime.now(utc),
+        )
 
 
 if __name__ == "__main__":

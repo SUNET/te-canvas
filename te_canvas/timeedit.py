@@ -63,15 +63,9 @@ class TimeEdit:
             type=type,
             numberofobjects=number_of_objects,
             beginindex=begin_index,
-            generalsearchfields={"field": [
-                self.te_general_id_field,
-                self.te_general_title_field
-            ]},
+            generalsearchfields={"field": [self.te_general_id_field, self.te_general_title_field]},
             generalsearchstring=search_string,
-            returnfields=[
-                self.te_general_id_field,
-                self.te_general_title_field
-            ],
+            returnfields=[self.te_general_id_field, self.te_general_title_field],
         )
         if resp.objects is None:
             # Can't really warn about this generally since this endpoint is used for searching.
@@ -97,6 +91,11 @@ class TimeEdit:
             res += page
         return res
 
+    def find_object_fields(self, extid: "str"):
+        """Get fields specification of type"""
+        res = self.client.service.findObjectFields(login=self.login, types=[extid])
+        return res
+
     def get_object(self, extid: str) -> Optional[dict]:
         """Get a specific object based on external id."""
         resp = self.client.service.getObjects(
@@ -107,7 +106,7 @@ class TimeEdit:
             return None
         return list(map(_unpack_object, resp))[0]
 
-    def find_reservations_all(self, extids: list[str], return_types: dict[str, list[str]]):
+    def find_reservations_all(self, extids: "list[str]", return_types: "dict[str, list[str]]"):
         """Get all reservations for a given set of objects."""
 
         # If extids is empty, findReservations will return *all* reservations, which is never what

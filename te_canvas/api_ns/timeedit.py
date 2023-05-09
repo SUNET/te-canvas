@@ -64,3 +64,21 @@ class Types(Resource):
 
     def get(self):
         return self.timeedit.find_types_all()
+
+
+class Fields(Resource):
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, args, kwargs)
+        self.timeedit = kwargs["timeedit"]
+
+    parser = reqparse.RequestParser()
+    parser.add_argument("extid", type=str, required=True)
+
+    @ns.param("extid", "External id.")
+    def get(self):
+        args = self.parser.parse_args(strict=True)
+        extid = args["extid"]
+        res = self.timeedit.find_object_fields(extid)
+        if res is None:
+            return {"message": f"Object {extid} not found"}, 404
+        return res
