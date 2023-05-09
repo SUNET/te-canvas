@@ -11,6 +11,11 @@ from te_canvas.util import TemplateConfigState
 # 10 because why not, it should reduce the risk of false positive.
 TAG_TITLE = r"​​​​​​​​​​"
 
+# Separators used when joining fields in Translator.__translate_fields()
+LOCATION_SEPARATOR = " - "
+TITLE_SEPARATOR = " - "
+DESCRIPTION_SEPARATOR = "<br>"
+
 
 class TemplateError(Exception):
     pass
@@ -63,9 +68,9 @@ class Translator:
         Create canvas event from timeedit reservations.
         """
         return {
-            "title":         self.__translate_fields(self.template_title, timeedit_reservation["objects"]) + TAG_TITLE,
-            "location_name": self.__translate_fields(self.template_location, timeedit_reservation["objects"]),
-            "description":   self.__translate_fields(self.template_description, timeedit_reservation["objects"])
+            "title":         self.__translate_fields(self.template_title, timeedit_reservation["objects"], TITLE_SEPARATOR) + TAG_TITLE,
+            "location_name": self.__translate_fields(self.template_location, timeedit_reservation["objects"], LOCATION_SEPARATOR),
+            "description":   self.__translate_fields(self.template_description, timeedit_reservation["objects"], DESCRIPTION_SEPARATOR)
                 + f'<br><br><a href="{self.timeedit.reservation_url(timeedit_reservation["id"])}">Edit on TimeEdit</a>',
             "start_at": timeedit_reservation["start_at"],
             "end_at":   timeedit_reservation["end_at"],
@@ -96,7 +101,7 @@ class Translator:
             raise TemplateError
         return res
 
-    def __translate_fields(self, template: "list[dict[str,str]]", objects: "list[dict]") -> str:
+    def __translate_fields(self, template: "list[dict[str,str]]", objects: "list[dict]", separator: str) -> str:
         """
         Used for translating fields from te reservations according to template.
         """
@@ -106,4 +111,4 @@ class Translator:
             for te_field, content in o["fields"].items():
                 if {te_type: te_field} in template:
                     selected_fields.append(content)
-        return " ".join(selected_fields)
+        return separator.join(selected_fields)
