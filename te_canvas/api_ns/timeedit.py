@@ -1,6 +1,7 @@
 from flask_restx import Namespace, Resource, reqparse
 
 import te_canvas.log as log
+from te_canvas.timeedit import TimeEdit
 
 logger = log.get_logger()
 
@@ -69,7 +70,7 @@ class Types(Resource):
 class Fields(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
-        self.timeedit = kwargs["timeedit"]
+        self.timeedit: TimeEdit = kwargs["timeedit"]
 
     parser = reqparse.RequestParser()
     parser.add_argument("extid", type=str, required=True)
@@ -77,8 +78,7 @@ class Fields(Resource):
     @ns.param("extid", "External id.")
     def get(self):
         args = self.parser.parse_args(strict=True)
-        extid = args["extid"]
-        res = self.timeedit.find_object_fields(extid)
+        res = self.timeedit.find_object_fields(args["extid"])
         if res is None:
-            return {"message": f"Object {extid} not found"}, 404
+            return {"message": f"Object {args['extid']} not found"}, 404
         return res

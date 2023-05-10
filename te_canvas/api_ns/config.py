@@ -1,7 +1,9 @@
-from flask import make_response
 from flask_restx import Namespace, Resource, reqparse
 from psycopg2.errors import UniqueViolation
-from sqlalchemy.exc import NoResultFound  # type: ignore
+from sqlalchemy.exc import NoResultFound
+
+from te_canvas.db import DB
+from te_canvas.types.config_type import ConfigType  # type: ignore
 
 ns = Namespace("config", description="Config API", prefix="/api")
 
@@ -9,7 +11,7 @@ ns = Namespace("config", description="Config API", prefix="/api")
 class Ok(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
-        self.db = kwargs["db"]
+        self.db: DB = kwargs["db"]
 
     get_parser = reqparse.RequestParser()
     get_parser.add_argument("canvas_group", type=str, required=True)
@@ -17,10 +19,9 @@ class Ok(Resource):
     @ns.param("canvas_group", "Canvas group")
     def get(self):
         args = self.get_parser.parse_args(strict=True)
-        res = self.db.get_template_config()
-        default = set(n for [_, n, _, _, c] in res if c == "default")
-        group = set(n for [_, n, _, _, c] in res if c == args.canvas_group)
-        return {"group": [n for n in group], "default": [n for n in default]}
+        default = set(ct for [_, ct, _, _, _] in self.db.get_template_config("default"))
+        group = set(ct for [_, ct, _, _, _] in self.db.get_template_config(args.canvas_group))
+        return {"group": [ct for ct in group], "default": [ct for ct in default]}
 
 
 class Template(Resource):
@@ -28,19 +29,33 @@ class Template(Resource):
         super().__init__(api, args, kwargs)
         self.db = kwargs["db"]
 
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument("canvas_group", type=str, required=True)
+    get_parser.add_argument("default", type=str, required=True)
+
+    @ns.param("default", "Should we get default template?")
+    @ns.param("canvas_group", "Canvas group")
     def get(self):
+        args = self.get_parser.parse_args(strict=True)
+        canvas_group = "default" if args.default == "true" else args.canvas_group
         try:
-            template_config = {"title": [], "location": [], "description": []}
-            for [i, n, t, f, c] in self.db.get_template_config():
-                template_config[n].append({"id": i, "te_type": t, "te_field": f, "canvas_group": c})
+            template_config = {
+                ConfigType.TITLE.value: [],
+                ConfigType.LOCATION.value: [],
+                ConfigType.DESCRIPTION.value: [],
+            }
+            for [i, ct, t, f, cg] in self.db.get_template_config(canvas_group):
+                template_config[ct].append({"id": i, "te_type": t, "te_field": f, "canvas_group": cg})
             return template_config
         except NoResultFound:
             return "", 404
 
     delete_parser = reqparse.RequestParser()
     delete_parser.add_argument("id", type=str, required=True)
+    delete_parser.add_argument("canvas_group", type=str, required=True)
 
     @ns.param("id", "Config template id")
+    @ns.param("canvas_group", "Canvas group")
     @ns.response(204, "Config template deleted")
     @ns.response(404, "Config template not found")
     def delete(self):
@@ -52,21 +67,24 @@ class Template(Resource):
             return {"message": "Connection not found."}, 404
 
     post_parser = reqparse.RequestParser()
-    post_parser.add_argument("name", type=str, required=True)
+    post_parser.add_argument("config_type", type=str, required=True)
     post_parser.add_argument("te_type", type=str, required=True)
     post_parser.add_argument("te_field", type=str, required=True)
-    post_parser.add_argument("canvas_group", type=str, required=False)
+    post_parser.add_argument("canvas_group", type=str, required=True)
+    post_parser.add_argument("default", type=str, required=True)
 
-    @ns.param("name", "title | location | description |")
+    @ns.param("config_type", "title | location | description")
     @ns.param("te_type", "Timeedit object type")
     @ns.param("te_field", "Object type field")
     @ns.param("canvas_group", "Canvas group")
+    @ns.param("default", "Add to default template")
     @ns.response(204, "Config template added")
     @ns.response(400, "Missing parameters")
     def post(self):
         args = self.post_parser.parse_args(strict=True)
+        canvas_group = "default" if args.default == "true" else args.canvas_group
         try:
-            self.db.add_template_config(args.name, args.te_type, args.te_field, args.canvas_group)
+            self.db.add_template_config(args.config_type, args.te_type, args.te_field, canvas_group)
             return "", 204
         except UniqueViolation:
             return {"message": "Type and field combination already exist"}, 400
