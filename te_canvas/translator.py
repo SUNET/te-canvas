@@ -65,9 +65,7 @@ class Translator:
         for _, ct, t, f, cg in template:
             groups[cg][ct].append({t: f})
         # Filter out groups without valid config.
-        return {
-            key: groups[key] for key in groups.keys() if self.__is_valid(groups[key])
-        }
+        return {key: groups[key] for key in groups.keys() if self.__is_valid(groups[key])}
 
     def __is_valid(self, template: TemplateConfig) -> bool:
         """
@@ -95,26 +93,12 @@ class Translator:
         Extract unique te_type:te_field combinations.
         Disregard config_type since it's not a timeedit concept.
         """
-        te_types = set(
-            te_type
-            for ct in template.values()
-            for entry in ct
-            for te_type, _ in entry.items()
-        )
+        te_types = set(te_type for ct in template.values() for entry in ct for te_type, _ in entry.items())
         return_types = {
-            te_type: [
-                f
-                for entries in template.values()
-                for e in entries
-                for t, f in e.items()
-                if t == te_type
-            ]
+            te_type: [f for entries in template.values() for e in entries for t, f in e.items() if t == te_type]
             for te_type in te_types
         }
-        return {
-            te_type: list(dict.fromkeys(te_fields))
-            for te_type, te_fields in return_types.items()
-        }
+        return {te_type: list(dict.fromkeys(te_fields)) for te_type, te_fields in return_types.items()}
 
     def get_return_types(self, canvas_group: str) -> TemplateReturnTypes:
         if canvas_group in self.return_types:
@@ -123,9 +107,7 @@ class Translator:
             return self.return_types["default"]
         raise TemplateError
 
-    def canvas_event(
-        self, timeedit_reservation: dict, canvas_group: str
-    ) -> "dict[str,str]":
+    def canvas_event(self, timeedit_reservation: dict, canvas_group: str) -> "dict[str,str]":
         """
         Create canvas event from timeedit reservations.
         """
@@ -179,16 +161,12 @@ class Translator:
             raise TemplateError
         return res
 
-    def __translate_fields(
-        self, canvas_group: str, config_type: str, objects: "list[dict]", separator: str
-    ) -> str:
+    def __translate_fields(self, canvas_group: str, config_type: str, objects: "list[dict]", separator: str) -> str:
         """
         Used for translating fields from te reservations according to template.
         """
         template_config = (
-            self.templates[canvas_group]
-            if canvas_group in self.templates.keys()
-            else self.templates["default"]
+            self.templates[canvas_group] if canvas_group in self.templates.keys() else self.templates["default"]
         )
         selected_fields = []
         for o in objects:

@@ -13,20 +13,23 @@ logger = get_logger()
 class TimeEdit:
     def __init__(self):
         try:
-            self.id = os.environ["TE_ID"]
-            self.usergroup = os.environ["TE_USERGROUP"]
             cert = os.environ["TE_CERT"]
             username = os.environ["TE_USERNAME"]
             password = os.environ["TE_PASSWORD"]
+            self.ID = os.environ["TE_ID"]
+            self.USERGROUP = os.environ["TE_USERGROUP"]
 
-            # We need this since not all timeedit instances use the same field
-            self.te_general_id_field = os.environ["TE_GENERAL_ID_FIELD"]
-            self.te_general_title_field = os.environ["TE_GENERAL_TITLE_FIELD"]
+            # These fields must exist.
+            # What fields exist varies across TE instances.
+            self.SEARCH_FIELDS = os.environ["TE_SEARCH_FIELDS"].split(",")
+            # If found, must be mandatory for sorting.
+            # Mandatory fields varies across TE instances.
+            self.RETURN_FIELDS = os.environ["TE_RETURN_FIELDS"].split(",")
         except Exception as e:
             logger.critical(f"Missing env var: {e}")
             sys.exit(1)
 
-        wsdl = f"https://cloud.timeedit.net/soap/3/{self.id}/wsdl"
+        wsdl = f"https://cloud.timeedit.net/soap/3/{self.ID}/wsdl"
 
         try:
             self.client = zeep.Client(wsdl)  # type: ignore
@@ -45,7 +48,7 @@ class TimeEdit:
         # These query args are not understood in detail, taken blindly from the URL we get when
         # navigating to an event detail page in web view
         static_args = "h=t&sid=4&types=0&fe=0&fr=t&step=0&ef=2&nocache=2"
-        return f"https://cloud.timeedit.net/{self.id}/web/{self.usergroup}/ri.html?id={id}&{static_args}"
+        return f"https://cloud.timeedit.net/{self.ID}/web/{self.USERGROUP}/ri.html?id={id}&{static_args}"
 
     def find_types_all(self):
         res = self.client.service.findTypes(
@@ -63,9 +66,9 @@ class TimeEdit:
             type=type,
             numberofobjects=number_of_objects,
             beginindex=begin_index,
-            generalsearchfields={"field": [self.te_general_id_field, self.te_general_title_field]},
+            generalsearchfields={"field": self.SEARCH_FIELDS},
             generalsearchstring=search_string,
-            returnfields=[self.te_general_id_field, self.te_general_title_field],
+            returnfields=self.RETURN_FIELDS,
         )
         if resp.objects is None:
             # Can't really warn about this generally since this endpoint is used for searching.
@@ -79,7 +82,7 @@ class TimeEdit:
             login=self.login,
             type=type,
             numberofobjects=1,
-            generalsearchfields={"field": [self.te_general_id_field, self.te_general_title_field]},
+            generalsearchfields={"field": self.SEARCH_FIELDS},
             generalsearchstring=search_string,
         ).totalnumberofobjects
 
@@ -143,7 +146,7 @@ class TimeEdit:
             )["reservations"]["reservation"]
             res += page
         if len(res) == 0:
-            logger.warning(f"te.find_reservations_all({extids}) returned 0 reservations.")
+            logger.warning("te.find_reservations_all(%s) returned 0 reservations.", extids)
 
         return list(map(_unpack_reservation, res))
 
