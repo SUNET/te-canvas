@@ -197,10 +197,19 @@ class Syncer:
             self.logger.info("%s: Deleted %s events", canvas_group, len(deleted))
 
             # Delete flagged connections
-            session.query(Connection).filter(
-                Connection.canvas_group == canvas_group,
-                Connection.delete_flag is True,
-            ).delete()
+            deleted_flagged_count = (
+                session.query(Connection)
+                .filter(
+                    Connection.canvas_group == canvas_group,
+                    Connection.delete_flag == "t",
+                )
+                .delete()
+            )
+            self.logger.info(
+                "%s: Deleted %s flagged connections",
+                canvas_group,
+                deleted_flagged_count,
+            )
 
             # Push to Canvas and add to database
             te_groups = flat_list(
