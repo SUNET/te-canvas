@@ -24,7 +24,6 @@ te_canvas.test.test_timeedit \
 te_canvas.test.test_translator \
 te_canvas.timeedit \
 te_canvas.translator \
-te_canvas.util
 
 mkdir -p docs
 mv te_canvas*.html docs

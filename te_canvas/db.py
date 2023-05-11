@@ -44,7 +44,7 @@ class Connection(Base):
 class TemplateConfig(Base):
     __tablename__ = "template_config"
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    config_type = Column(String)
     te_type = Column(String)
     te_field = Column(String)
     canvas_group = Column(String)
@@ -164,13 +164,16 @@ class DB:
 
             return [(c.canvas_group, c.te_group, c.te_type, c.delete_flag) for c in query]
 
-    def get_template_config(self) -> "list[tuple[int, str, str, str, Optional[str]]]":
+    def get_template_config(self, canvas_group="") -> "list[tuple[int, str, str, str, str]]":
         with self.sqla_session() as session:
-            query = session.query(TemplateConfig)
+            if not canvas_group:
+                query = session.query(TemplateConfig)
+            else:
+                query = session.query(TemplateConfig).where(TemplateConfig.canvas_group == canvas_group)
             return [
                 (
                     r.id,
-                    r.name,
+                    r.config_type,
                     r.te_type,
                     r.te_field,
                     r.canvas_group,
@@ -185,18 +188,19 @@ class DB:
         with self.sqla_session() as session:
             session.query(TemplateConfig).filter(TemplateConfig.id == template_id).delete()
 
-    def add_template_config(self, name: str, te_type: str, te_field: str, canvas_group: Optional[str]):
+    def add_template_config(self, config_type: str, te_type: str, te_field: str, canvas_group: Optional[str]):
         with self.sqla_session() as session:
             existing_row = session.execute(
                 select(TemplateConfig)
-                .where(TemplateConfig.name == name)
+                .where(TemplateConfig.config_type == config_type)
                 .where(TemplateConfig.te_type == te_type)
                 .where(TemplateConfig.te_field == te_field)
+                .where(TemplateConfig.canvas_group == canvas_group)
             ).first()
             if existing_row is None:
                 session.add(
                     TemplateConfig(
-                        name=name,
+                        config_type=config_type,
                         te_type=te_type,
                         te_field=te_field,
                         canvas_group=canvas_group,

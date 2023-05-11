@@ -13,7 +13,7 @@ from te_canvas.db import DB, Connection, flat_list
 from te_canvas.log import get_logger
 from te_canvas.timeedit import TimeEdit
 from te_canvas.translator import TemplateError, Translator
-from te_canvas.util import TemplateConfigState
+from te_canvas.types.sync_state import SyncState
 
 
 class Syncer:
@@ -71,7 +71,7 @@ class Syncer:
         try:
             self.max_workers = int(os.environ["MAX_WORKERS"])
         except Exception as e:
-            self.logger.critical(f"Missing env var: {e}")
+            self.logger.critical("Missing env var: %s", e)
             sys.exit(1)
 
         self.db = db or DB()
@@ -79,12 +79,12 @@ class Syncer:
         self.timeedit = timeedit or TimeEdit()
 
         # Mapping canvas_group to in-memory State:s
-        self.states: dict[str, TemplateConfigState] = {}
+        self.states: dict[str, SyncState] = {}
 
         # Set to false at start of each sync, set to true at completion
         self.sync_complete: dict[str, bool] = {}
 
-    def __state_te(self, canvas_group: str) -> TemplateConfigState:
+    def __state_te(self, canvas_group: str) -> SyncState:
         """
         Get the TimeEdit state relevant for canvas_group. Number comments reference "modifications
         to detect", see class docstring.
@@ -115,7 +115,7 @@ class Syncer:
                 "te_event_modify_date": te_event_modify_date,
             }
 
-    def __state_canvas(self, canvas_group: str) -> TemplateConfigState:
+    def __state_canvas(self, canvas_group: str) -> SyncState:
         """
         Get the Canvas state relevant for canvas_group. Number comments reference "modifications to
         detect", see class docstring.
@@ -134,7 +134,7 @@ class Syncer:
             "canvas_event_modify_date": canvas_event_modify_date,
         }
 
-    def __has_changed(self, prev_state: Optional[TemplateConfigState], state: TemplateConfigState) -> bool:
+    def __has_changed(self, prev_state: Optional[SyncState], state: SyncState) -> bool:
         return state != prev_state
 
     def sync_all(self):
@@ -153,7 +153,9 @@ class Syncer:
             res = list(executor.map(self.sync_one, groups))
 
         self.logger.info(
-            f"Sync job completed; {len([x for x in res if x])} Canvas groups synced; {len([x for x in res if not x])} skipped"
+            "Sync job completed: %s Canvas groups synced:  %s skipped",
+            len([x for x in res if x]),
+            len([x for x in res if not x]),
         )
 
     def sync_one(self, canvas_group: str) -> bool:
@@ -177,26 +179,37 @@ class Syncer:
 
             # Change detection
             prev_state = self.states.get(canvas_group)
-            new_state = self.__state_te(canvas_group) | self.__state_canvas(canvas_group) | translator.state()
+            new_state = (
+                self.__state_te(canvas_group) | self.__state_canvas(canvas_group) | translator.get_state(canvas_group)
+            )
             self.states[canvas_group] = new_state
             self.logger.debug("State: %s", new_state)
 
             if not self.__has_changed(prev_state, new_state) and self.sync_complete.get(canvas_group, False):
-                self.logger.info(f"{canvas_group}: Nothing changed, skipping")
+                self.logger.info("%s: Nothing changed, skipping", canvas_group)
                 return False
 
             self.sync_complete[canvas_group] = False
 
             # Remove all events previously added by us to this Canvas group
-            self.logger.info(f"{canvas_group}: Deleting events")
+            self.logger.info("%s: Deleting events", canvas_group)
             deleted = self.canvas.delete_events(int(canvas_group))
-            self.logger.info(f"{canvas_group}: Deleted {len(deleted)} events")
+            self.logger.info("%s: Deleted %s events", canvas_group, len(deleted))
 
             # Delete flagged connections
-            session.query(Connection).filter(
-                Connection.canvas_group == canvas_group,
-                Connection.delete_flag == True,
-            ).delete()
+            deleted_flagged_count = (
+                session.query(Connection)
+                .filter(
+                    Connection.canvas_group == canvas_group,
+                    Connection.delete_flag == "t",
+                )
+                .delete()
+            )
+            self.logger.info(
+                "%s: Deleted %s flagged connections",
+                canvas_group,
+                deleted_flagged_count,
+            )
 
             # Push to Canvas and add to database
             te_groups = flat_list(
@@ -205,11 +218,18 @@ class Syncer:
                 .order_by(Connection.canvas_group, Connection.te_group)
             )
 
-            reservations = self.timeedit.find_reservations_all(te_groups, translator.return_types)
+            reservations = self.timeedit.find_reservations_all(te_groups, translator.get_return_types(canvas_group))
 
-            self.logger.info(f"{canvas_group}: Adding events: {te_groups} ({len(reservations)} events)")
+            self.logger.info(
+                "%s: Adding events: %s (%s events)",
+                canvas_group,
+                te_groups,
+                len(reservations),
+            )
             for r in reservations:
-                self.canvas.create_event(translator.canvas_event(r) | {"context_code": f"course_{canvas_group}"})
+                self.canvas.create_event(
+                    translator.canvas_event(r, canvas_group) | {"context_code": f"course_{canvas_group}"}
+                )
 
             # Record new Canvas state
             #
@@ -252,7 +272,7 @@ class JobScheduler(object):
         return self.scheduler.shutdown()
 
     def add(self, func, seconds, kwargs):
-        self.logger.info(f"Adding job to scheduler: interval={seconds}")
+        self.logger.info("Adding job to scheduler: interval=%s", seconds)
         return self.scheduler.add_job(
             func,
             "interval",
