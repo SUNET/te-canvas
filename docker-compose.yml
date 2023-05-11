@@ -36,8 +36,8 @@ services:
     environment:
       - TE_ID
       - TE_USERGROUP
-      - TE_GENERAL_ID_FIELD=${TE_GENERAL_ID_FIELD-general.title}
-      - TE_GENERAL_TITLE_FIELD=${TE_GENERAL_TITLE_FIELD-general.id}
+      - TE_RETURN_FIELDS=${TE_RETURN_FIELDS-general.id,general.title}
+      - TE_SEARCH_FIELDS=${TE_RETURN_FIELDS-general.id,general.title}
 
       - TE_CERT
       - TE_USERNAME
@@ -65,8 +65,8 @@ services:
       - TE_CERT
       - TE_USERNAME
       - TE_PASSWORD
-      - TE_GENERAL_ID_FIELD=${TE_GENERAL_ID_FIELD-general.title}
-      - TE_GENERAL_TITLE_FIELD=${TE_GENERAL_TITLE_FIELD-general.id}
+      - TE_RETURN_FIELDS=${TE_RETURN_FIELDS-general.id,general.title}
+      - TE_SEARCH_FIELDS=${TE_RETURN_FIELDS-general.id,general.title}
 
       - CANVAS_URL
       - CANVAS_KEY
