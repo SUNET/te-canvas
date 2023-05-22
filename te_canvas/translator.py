@@ -111,8 +111,11 @@ class Translator:
         """
         Create canvas event from timeedit reservations.
         """
+
+        # There's a 256 character limit on title length in Canvas API.
+        # We truncate to 230 and then add our TAG_TITLE.
         return {
-            "title":         self.__translate_fields(canvas_group, ConfigType.TITLE.value,timeedit_reservation["objects"], TITLE_SEPARATOR) + TAG_TITLE,
+            "title":         self.__translate_fields(canvas_group, ConfigType.TITLE.value,timeedit_reservation["objects"], TITLE_SEPARATOR)[0:230] + TAG_TITLE,
             "location_name": self.__translate_fields(canvas_group, ConfigType.LOCATION.value, timeedit_reservation["objects"], LOCATION_SEPARATOR),
             "description":   self.__translate_fields(canvas_group, ConfigType.DESCRIPTION.value, timeedit_reservation["objects"], DESCRIPTION_SEPARATOR)
                 + f'<br><br><a href="{self.timeedit.reservation_url(timeedit_reservation["id"])}">Edit on TimeEdit</a>',

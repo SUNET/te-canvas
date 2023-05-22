@@ -190,14 +190,24 @@ class DB:
 
     def add_template_config(self, config_type: str, te_type: str, te_field: str, canvas_group: Optional[str]):
         with self.sqla_session() as session:
-            existing_row = session.execute(
-                select(TemplateConfig)
-                .where(TemplateConfig.config_type == config_type)
-                .where(TemplateConfig.te_type == te_type)
-                .where(TemplateConfig.te_field == te_field)
-                .where(TemplateConfig.canvas_group == canvas_group)
-            ).first()
-            if existing_row is None:
+            duplicate_check = (
+                session.execute(
+                    select(TemplateConfig)
+                    .where(TemplateConfig.config_type == config_type)
+                    .where(TemplateConfig.te_type == te_type)
+                    .where(TemplateConfig.te_field == te_field)
+                    .where(TemplateConfig.canvas_group == canvas_group)
+                ).first()
+                is None
+            )
+            te_type_count = len(
+                session.execute(
+                    select(TemplateConfig)
+                    .where(TemplateConfig.config_type == config_type)
+                    .where(TemplateConfig.canvas_group == canvas_group)
+                ).all()
+            )
+            if duplicate_check is True and te_type_count < 3:
                 session.add(
                     TemplateConfig(
                         config_type=config_type,
