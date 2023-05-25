@@ -97,7 +97,15 @@ class TimeEdit:
     def find_object_fields(self, extid: "str"):
         """Get fields specification of type"""
         res = self.client.service.findObjectFields(login=self.login, types=[extid])
-        return res
+        return list(res)
+
+    def get_field_defs(self, extids):
+        res = self.client.service.getFieldDefs(login=self.login, fields=extids)
+        return [
+            {r["extid"]: r["name"]}
+            for r in res
+            if r["extid"] not in self.SEARCH_FIELDS + self.RETURN_FIELDS
+        ]
 
     def get_object(self, extid: str) -> Optional[dict]:
         """Get a specific object based on external id."""
@@ -109,7 +117,9 @@ class TimeEdit:
             return None
         return list(map(_unpack_object, resp))[0]
 
-    def find_reservations_all(self, extids: "list[str]", return_types: "dict[str, list[str]]"):
+    def find_reservations_all(
+        self, extids: "list[str]", return_types: "dict[str, list[str]]"
+    ):
         """Get all reservations for a given set of objects."""
 
         # If extids is empty, findReservations will return *all* reservations, which is never what
@@ -146,7 +156,9 @@ class TimeEdit:
             )["reservations"]["reservation"]
             res += page
         if len(res) == 0:
-            logger.warning("te.find_reservations_all(%s) returned 0 reservations.", extids)
+            logger.warning(
+                "te.find_reservations_all(%s) returned 0 reservations.", extids
+            )
 
         return list(map(_unpack_reservation, res))
 
