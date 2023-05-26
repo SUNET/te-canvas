@@ -61,7 +61,8 @@ class TimeEdit:
 
     def get_type(self, extid: str):
         res = self.client.service.getTypes(login=self.login, ignorealias=False, types=[extid])
-        return res[0] if len(res) > 0 else []
+
+        return res[0] if len(res) > 0 else {"extid": extid, "name": ""}
 
     def find_objects(self, type, number_of_objects, begin_index, search_string):
         """Get max 1000 objects of a given type."""
@@ -105,14 +106,11 @@ class TimeEdit:
 
     def get_field_defs(self, extid: str) -> dict:
         res = self.client.service.getFieldDefs(login=self.login, fields=[extid])
-        logger = get_logger()
-        logger.info(extid)
         defs = [
             {"extid": r["extid"], "name": r["name"]}
             for r in res
             if r["extid"] not in self.SEARCH_FIELDS + self.RETURN_FIELDS
         ]
-        logger.info(defs)
         return defs[0] if len(defs) > 0 else {}
 
     def get_object(self, extid: str) -> Optional[dict]:
