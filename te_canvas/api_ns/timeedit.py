@@ -81,8 +81,5 @@ class Fields(Resource):
         fields = self.timeedit.find_object_fields(args["extid"])
         if fields is None:
             return {"message": f"Object {args['extid']} not found"}, 404
-        return [
-            field_def
-            for field in fields
-            for field_def in self.timeedit.get_field_defs(field)
-        ]
+        field_defs = [self.timeedit.get_field_defs(field) for field in fields]
+        return list(filter(lambda field_def: field_def != {}, field_defs))

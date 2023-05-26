@@ -3,6 +3,7 @@ from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import NoResultFound
 
 from te_canvas.db import DB
+from te_canvas.timeedit import TimeEdit
 from te_canvas.types.config_type import ConfigType  # type: ignore
 
 ns = Namespace("config", description="Config API", prefix="/api")
@@ -27,7 +28,8 @@ class Ok(Resource):
 class Template(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
-        self.db = kwargs["db"]
+        self.db: DB = kwargs["db"]
+        self.timeedit: TimeEdit = kwargs["timeedit"]
 
     get_parser = reqparse.RequestParser()
     get_parser.add_argument("canvas_group", type=str, required=True)
@@ -45,7 +47,17 @@ class Template(Resource):
                 ConfigType.DESCRIPTION.value: [],
             }
             for [i, ct, t, f, cg] in self.db.get_template_config(canvas_group):
-                template_config[ct].append({"id": i, "te_type": t, "te_field": f, "canvas_group": cg})
+                template_config[ct].append(
+                    {
+                        "id": i,
+                        "te_type": t,
+                        "te_field": f,
+                        "te_type_name": self.timeedit.get_type(t)["name"],
+                        "te_field_name": self.timeedit.get_field_defs(f)["name"],
+                        "canvas_group": cg,
+                    }
+                )
+
             return template_config
         except NoResultFound:
             return "", 404
