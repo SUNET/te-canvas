@@ -59,6 +59,10 @@ class TimeEdit:
             logger.warning("te.find_types_all() returned 0 types.")
         return {t["extid"]: t["name"] for t in res}
 
+    def get_type(self, extid: str):
+        res = self.client.service.getTypes(login=self.login, ignorealias=False, types=[extid])
+        return res[0] if len(res) > 0 else []
+
     def find_objects(self, type, number_of_objects, begin_index, search_string):
         """Get max 1000 objects of a given type."""
         resp = self.client.service.findObjects(
@@ -94,10 +98,22 @@ class TimeEdit:
             res += page
         return res
 
-    def find_object_fields(self, extid: "str"):
+    def find_object_fields(self, extid: "str") -> list:
         """Get fields specification of type"""
         res = self.client.service.findObjectFields(login=self.login, types=[extid])
-        return res
+        return list(res)
+
+    def get_field_defs(self, extid: str) -> dict:
+        res = self.client.service.getFieldDefs(login=self.login, fields=[extid])
+        logger = get_logger()
+        logger.info(extid)
+        defs = [
+            {"extid": r["extid"], "name": r["name"]}
+            for r in res
+            if r["extid"] not in self.SEARCH_FIELDS + self.RETURN_FIELDS
+        ]
+        logger.info(defs)
+        return defs[0] if len(defs) > 0 else {}
 
     def get_object(self, extid: str) -> Optional[dict]:
         """Get a specific object based on external id."""
