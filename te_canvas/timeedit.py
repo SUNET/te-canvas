@@ -57,9 +57,11 @@ class TimeEdit:
         )
         if len(res) == 0:
             logger.warning("te.find_types_all() returned 0 types.")
-        return {t["extid"]: t["name"] for t in res}
+        return {t["extid"]: t["name"] for t in res + [{"extid": "reservation", "name": "Reservation"}]}
 
     def get_type(self, extid: str):
+        if extid == "reservation":
+            return {"name": "Reservation"}
         res = self.client.service.getTypes(login=self.login, ignorealias=False, types=[extid])
 
         return res[0] if len(res) > 0 else {"extid": extid, "name": ""}
@@ -123,6 +125,10 @@ class TimeEdit:
             return None
         return list(map(_unpack_object, resp))[0]
 
+    def find_reservation_fields(self):
+        field_defs = self.client.service.findReservationFields(login=self.login)
+        return list(filter(lambda field_def: field_def.split(".")[0] == "res", field_defs))
+
     def find_reservations_all(self, extids: "list[str]", return_types: "dict[str, list[str]]"):
         """Get all reservations for a given set of objects."""
 
@@ -131,13 +137,18 @@ class TimeEdit:
         if len(extids) == 0:
             return []
 
+        res_return_fields = []
+        if "reservation" in return_types:
+            res_return_fields = return_types["reservation"]
+            return_types.pop("reservation")
+
         return_types_packed = {
             "typefield": [
                 {
-                    "type": type,
-                    "field": fields,
+                    "type": te_type,
+                    "field": te_fields,
                 }
-                for type, fields in return_types.items()
+                for te_type, te_fields in return_types.items()
             ]
         }
 
@@ -157,12 +168,16 @@ class TimeEdit:
                 numberofreservations=1000,
                 beginindex=i * 1000,
                 returntypes=return_types_packed,
+                returnfields=res_return_fields,
             )["reservations"]["reservation"]
             res += page
         if len(res) == 0:
             logger.warning("te.find_reservations_all(%s) returned 0 reservations.", extids)
 
-        return list(map(_unpack_reservation, res))
+        unpacked_reservations = []
+        for r in res:
+            unpacked_reservations.append(_unpack_reservation(r, res_return_fields))
+        return unpacked_reservations
 
 
 # ---- Helper functions --------------------------------------------------------
@@ -175,7 +190,7 @@ def _unpack_object(o):
     return res
 
 
-def _unpack_reservation(r):
+def _unpack_reservation(r, res_return_fields):
     date_format = "%Y%m%dT%H%M%S"
 
     if r["objects"] is None:
@@ -183,7 +198,7 @@ def _unpack_reservation(r):
     else:
         objects = [_unpack_reservation_object(o) for o in r["objects"]["object"]]
 
-    return {
+    unpacked_res = {
         "id": r["id"],
         "start_at": datetime.strptime(r["begin"], date_format),
         "end_at": datetime.strptime(r["end"], date_format),
@@ -191,6 +206,18 @@ def _unpack_reservation(r):
         "modified": datetime.strptime(r["modified"], date_format),
         "objects": objects,
     }
+
+    # We may need to add fields from the reservation object.
+    if r["fields"]:
+        unpacked_res.update(
+            {
+                res_field: field["value"][0]
+                for res_field in res_return_fields
+                for field in r["fields"]["field"]
+                if res_field == field["extid"]
+            }
+        )
+    return unpacked_res
 
 
 def _unpack_reservation_object(object: dict) -> dict:

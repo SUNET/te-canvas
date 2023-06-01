@@ -4,6 +4,7 @@ with templates related to this.
 """
 
 from te_canvas.db import DB
+from te_canvas.log import get_logger
 from te_canvas.types.config_type import ConfigType
 from te_canvas.types.sync_state import SyncState
 from te_canvas.types.template_config import TemplateConfig
@@ -107,7 +108,7 @@ class Translator:
             return self.return_types["default"]
         raise TemplateError
 
-    def canvas_event(self, timeedit_reservation: dict, canvas_group: str) -> "dict[str,str]":
+    def canvas_event(self, te_reservation: dict, canvas_group: str) -> "dict[str,str]":
         """
         Create canvas event from timeedit reservations.
         """
@@ -115,12 +116,12 @@ class Translator:
         # There's a 256 character limit on title length in Canvas API.
         # We truncate to 230 and then add our TAG_TITLE.
         return {
-            "title":         self.__translate_fields(canvas_group, ConfigType.TITLE.value,timeedit_reservation["objects"], TITLE_SEPARATOR)[0:230] + TAG_TITLE,
-            "location_name": self.__translate_fields(canvas_group, ConfigType.LOCATION.value, timeedit_reservation["objects"], LOCATION_SEPARATOR),
-            "description":   self.__translate_fields(canvas_group, ConfigType.DESCRIPTION.value, timeedit_reservation["objects"], DESCRIPTION_SEPARATOR)
-                + f'<br><br><a href="{self.timeedit.reservation_url(timeedit_reservation["id"])}">Edit on TimeEdit</a>',
-            "start_at": timeedit_reservation["start_at"],
-            "end_at":   timeedit_reservation["end_at"],
+            "title":         self.__translate_fields(canvas_group, ConfigType.TITLE.value,te_reservation, TITLE_SEPARATOR)[0:230] + TAG_TITLE,
+            "location_name": self.__translate_fields(canvas_group, ConfigType.LOCATION.value, te_reservation, LOCATION_SEPARATOR),
+            "description":   self.__translate_fields(canvas_group, ConfigType.DESCRIPTION.value, te_reservation, DESCRIPTION_SEPARATOR)
+                + f'<br><br><a href="{self.timeedit.reservation_url(te_reservation["id"])}">Edit on TimeEdit</a>',
+            "start_at": te_reservation["start_at"],
+            "end_at":   te_reservation["end_at"],
             }  # fmt: skip
 
     def get_state(self, canvas_group: str) -> SyncState:
@@ -164,17 +165,23 @@ class Translator:
             raise TemplateError
         return res
 
-    def __translate_fields(self, canvas_group: str, config_type: str, objects: "list[dict]", separator: str) -> str:
+    def __translate_fields(self, canvas_group: str, config_type: str, te_reservation, separator: str) -> str:
         """
         Used for translating fields from te reservations according to template.
         """
         template_config = (
             self.templates[canvas_group] if canvas_group in self.templates.keys() else self.templates["default"]
         )
-        selected_fields = []
-        for o in objects:
+        # First we may add fields from the reservation itself.
+        selected_fields = [
+            content
+            for extid, content in te_reservation.items()
+            if {"reservation": extid} in template_config[config_type]
+        ]
+        # Then iterate over objects in reservation.
+        for o in te_reservation["objects"]:
             te_type = o["type"]
             for te_field, content in o["fields"].items():
-                if {te_type: te_field} in template_config[config_type]:
+                if {te_type: te_field} in template_config[config_type] and content not in selected_fields:
                     selected_fields.append(content)
         return separator.join(selected_fields)

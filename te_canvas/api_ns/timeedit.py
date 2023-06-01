@@ -78,6 +78,8 @@ class Fields(Resource):
     @ns.param("extid", "External id.")
     def get(self):
         args = self.parser.parse_args(strict=True)
+        if args["extid"] == "reservation":
+            return [self.timeedit.get_field_defs(field) for field in self.timeedit.find_reservation_fields()]
         fields = self.timeedit.find_object_fields(args["extid"])
         if fields is None:
             return {"message": f"Object {args['extid']} not found"}, 404
