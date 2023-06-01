@@ -57,17 +57,12 @@ class TimeEdit:
         )
         if len(res) == 0:
             logger.warning("te.find_types_all() returned 0 types.")
-        return {
-            t["extid"]: t["name"]
-            for t in res + [{"extid": "reservation", "name": "Reservation"}]
-        }
+        return {t["extid"]: t["name"] for t in res + [{"extid": "reservation", "name": "Reservation"}]}
 
     def get_type(self, extid: str):
         if extid == "reservation":
             return {"name": "Reservation"}
-        res = self.client.service.getTypes(
-            login=self.login, ignorealias=False, types=[extid]
-        )
+        res = self.client.service.getTypes(login=self.login, ignorealias=False, types=[extid])
 
         return res[0] if len(res) > 0 else {"extid": extid, "name": ""}
 
@@ -131,11 +126,10 @@ class TimeEdit:
         return list(map(_unpack_object, resp))[0]
 
     def find_reservation_fields(self):
-        return self.client.service.findReservationFields(login=self.login)
+        field_defs = self.client.service.findReservationFields(login=self.login)
+        return list(filter(lambda field_def: field_def.split(".")[0] == "res", field_defs))
 
-    def find_reservations_all(
-        self, extids: "list[str]", return_types: "dict[str, list[str]]"
-    ):
+    def find_reservations_all(self, extids: "list[str]", return_types: "dict[str, list[str]]"):
         """Get all reservations for a given set of objects."""
 
         # If extids is empty, findReservations will return *all* reservations, which is never what
@@ -178,9 +172,7 @@ class TimeEdit:
             )["reservations"]["reservation"]
             res += page
         if len(res) == 0:
-            logger.warning(
-                "te.find_reservations_all(%s) returned 0 reservations.", extids
-            )
+            logger.warning("te.find_reservations_all(%s) returned 0 reservations.", extids)
 
         unpacked_reservations = []
         for r in res:
