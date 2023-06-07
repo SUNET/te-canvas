@@ -27,6 +27,24 @@ class Ok(Resource):
         return {"group": [ct for ct in group], "default": [ct for ct in default]}
 
 
+class WhitelistTypes(Resource):
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, args, kwargs)
+        self.db: DB = kwargs["db"]
+
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument("X-LTI-ROLES", location="headers")
+
+    def get(self):
+        args = self.get_parser.parse_args(strict=True)
+        if LTI_ADMIN not in args["X-LTI-ROLES"]:
+            return "", 403
+        try:
+            return self.db.get_whitelist_types()
+        except NoResultFound:
+            return {"message": "No whitelist type config found"}, 404
+
+
 class Template(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)

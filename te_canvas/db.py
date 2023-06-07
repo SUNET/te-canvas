@@ -50,6 +50,11 @@ class TemplateConfig(Base):
     canvas_group = Column(String)
 
 
+class WhitelistTypes(Base):
+    __tablename__ = "whitelist_types"
+    extid = Column(String, primary_key=True)
+
+
 class Test(Base):
     """
     TODO: Can we avoid having this here and do this in test_db, perhaps dynamically in a test case?
@@ -163,6 +168,11 @@ class DB:
                 query = query.filter(Connection.canvas_group == canvas_group)
 
             return [(c.canvas_group, c.te_group, c.te_type, c.delete_flag) for c in query]
+
+    def get_whitelist_types(self):
+        with self.sqla_session() as session:
+            query = session.query(WhitelistTypes).all()
+            return [wt.extid for wt in query]
 
     def get_template_config(self, canvas_group="") -> "list[tuple[int, str, str, str, str]]":
         with self.sqla_session() as session:
