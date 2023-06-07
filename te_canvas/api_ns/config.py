@@ -8,6 +8,8 @@ from te_canvas.types.config_type import ConfigType  # type: ignore
 
 ns = Namespace("config", description="Config API", prefix="/api")
 
+LTI_ADMIN = "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator"
+
 
 class Ok(Resource):
     def __init__(self, api=None, *args, **kwargs):
@@ -34,11 +36,14 @@ class Template(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument("canvas_group", type=str, required=True)
     get_parser.add_argument("default", type=str, required=True)
+    get_parser.add_argument("X-LTI-ROLES", location="headers")
 
     @ns.param("default", "Should we get default template?")
     @ns.param("canvas_group", "Canvas group")
     def get(self):
         args = self.get_parser.parse_args(strict=True)
+        if args.default == "true" and LTI_ADMIN not in args["X-LTI-ROLES"]:
+            return "", 403
         canvas_group = "default" if args.default == "true" else args.canvas_group
         try:
             template_config = {
@@ -65,6 +70,7 @@ class Template(Resource):
     delete_parser = reqparse.RequestParser()
     delete_parser.add_argument("id", type=str, required=True)
     delete_parser.add_argument("canvas_group", type=str, required=True)
+    delete_parser.add_argument("X-LTI-ROLES", location="headers")
 
     @ns.param("id", "Config template id")
     @ns.param("canvas_group", "Canvas group")
@@ -72,6 +78,8 @@ class Template(Resource):
     @ns.response(404, "Config template not found")
     def delete(self):
         args = self.delete_parser.parse_args(strict=True)
+        if args.id == "default" and LTI_ADMIN not in args["X-LTI-ROLES"]:
+            return "", 403
         try:
             self.db.delete_template_config(args.id)
             return "", 204
@@ -84,6 +92,7 @@ class Template(Resource):
     post_parser.add_argument("te_field", type=str, required=True)
     post_parser.add_argument("canvas_group", type=str, required=True)
     post_parser.add_argument("default", type=str, required=True)
+    post_parser.add_argument("X-LTI-ROLES", location="headers")
 
     @ns.param("config_type", "title | location | description")
     @ns.param("te_type", "Timeedit object type")
@@ -94,6 +103,8 @@ class Template(Resource):
     @ns.response(400, "Missing parameters")
     def post(self):
         args = self.post_parser.parse_args(strict=True)
+        if args.default == "true" and LTI_ADMIN not in args["X-LTI-ROLES"]:
+            return "", 403
         canvas_group = "default" if args.default == "true" else args.canvas_group
         try:
             self.db.add_template_config(args.config_type, args.te_type, args.te_field, canvas_group)
