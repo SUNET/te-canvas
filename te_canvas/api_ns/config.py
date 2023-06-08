@@ -1,6 +1,5 @@
 from flask_restx import Namespace, Resource, reqparse
-from psycopg2.errors import UniqueViolation
-from sqlalchemy.exc import NoResultFound
+from psycopg2.errors import NoDataFound, UniqueViolation
 
 from te_canvas.db import DB
 from te_canvas.timeedit import TimeEdit
@@ -41,8 +40,42 @@ class WhitelistTypes(Resource):
             return "", 403
         try:
             return self.db.get_whitelist_types()
-        except NoResultFound:
+        except NoDataFound:
             return {"message": "No whitelist type config found"}, 404
+
+    post_parser = reqparse.RequestParser()
+    post_parser.add_argument("te_type", type=str, required=True)
+    post_parser.add_argument("X-LTI-ROLES", location="headers")
+
+    @ns.param("te_type", "Timeedit object type")
+    @ns.response(204, "Whitelist type added")
+    @ns.response(400, "Missing parameters")
+    def post(self):
+        args = self.post_parser.parse_args(strict=True)
+        if LTI_ADMIN not in args["X-LTI-ROLES"]:
+            return "", 403
+        try:
+            self.db.add_whitelist_type(args.te_type)
+            return "", 204
+        except UniqueViolation:
+            return {"message": "Type already whitelisted"}, 400
+
+    delete_parser = reqparse.RequestParser()
+    delete_parser.add_argument("te_type", type=str, required=True)
+    delete_parser.add_argument("X-LTI-ROLES", location="headers")
+
+    @ns.param("te_type", "Timeedit object type")
+    @ns.response(204, "Whitelist type deleted")
+    @ns.response(400, "Missing parameters")
+    def delete(self):
+        args = self.post_parser.parse_args(strict=True)
+        if LTI_ADMIN not in args["X-LTI-ROLES"]:
+            return "", 403
+        try:
+            self.db.delete_whitelist_type(args.te_type)
+            return "", 204
+        except NoDataFound:
+            return {"message": "Type already whitelisted"}, 400
 
 
 class Template(Resource):
@@ -82,7 +115,7 @@ class Template(Resource):
                 )
 
             return template_config
-        except NoResultFound:
+        except NoDataFound:
             return "", 404
 
     delete_parser = reqparse.RequestParser()
@@ -101,7 +134,7 @@ class Template(Resource):
         try:
             self.db.delete_template_config(args.id)
             return "", 204
-        except NoResultFound:
+        except NoDataFound:
             return {"message": "Connection not found."}, 404
 
     post_parser = reqparse.RequestParser()

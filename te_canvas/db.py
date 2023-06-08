@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from time import sleep
 from typing import Optional
 
-from psycopg2.errors import UniqueViolation
+from psycopg2.errors import NoDataFound, UniqueViolation
 from sqlalchemy import ARRAY, Boolean, Column, Integer, String, create_engine, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import declarative_base, sessionmaker  # type: ignore
@@ -174,6 +174,24 @@ class DB:
             query = session.query(WhitelistTypes).all()
             return [wt.extid for wt in query]
 
+    def add_whitelist_type(self, extid: str):
+        with self.sqla_session() as session:
+            duplicate_check = (
+                session.execute(select(WhitelistTypes).where(WhitelistTypes.extid == extid)).first() is None
+            )
+            if duplicate_check:
+                session.add(WhitelistTypes(extid=extid))
+            else:
+                raise UniqueViolation
+
+    def delete_whitelist_type(self, extid: str):
+        with self.sqla_session() as session:
+            q = session.query(WhitelistTypes).filter(WhitelistTypes.extid == extid)
+            if q.count() == 0:
+                raise NoDataFound
+            else:
+                session.query(WhitelistTypes).filter(WhitelistTypes.extid == extid).delete()
+
     def get_template_config(self, canvas_group="") -> "list[tuple[int, str, str, str, str]]":
         with self.sqla_session() as session:
             if not canvas_group:
@@ -192,11 +210,12 @@ class DB:
             ]
 
     def delete_template_config(self, template_id: str):
-        """
-        Does not raise exception if id not found.
-        """
         with self.sqla_session() as session:
-            session.query(TemplateConfig).filter(TemplateConfig.id == template_id).delete()
+            q = session.query(TemplateConfig).filter(TemplateConfig.id == int(template_id))
+            if q.count() == 0:
+                raise NoDataFound
+            else:
+                session.query(TemplateConfig).filter(TemplateConfig.id == template_id).delete()
 
     def add_template_config(self, config_type: str, te_type: str, te_field: str, canvas_group: Optional[str]):
         with self.sqla_session() as session:
