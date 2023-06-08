@@ -62,9 +62,18 @@ class Types(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
         self.timeedit = kwargs["timeedit"]
+        self.db = kwargs["db"]
+
+    parser = reqparse.RequestParser()
+    parser.add_argument("whitelisted", type=str)
 
     def get(self):
-        return self.timeedit.find_types_all()
+        args = self.parser.parse_args(strict=True)
+        all_types = self.timeedit.find_types_all()
+        if args["whitelisted"] != "true":
+            return all_types
+        whitelist_types = self.db.get_whitelist_types()
+        return dict(filter(lambda pair: pair[0] in whitelist_types, all_types.items()))
 
 
 class Fields(Resource):

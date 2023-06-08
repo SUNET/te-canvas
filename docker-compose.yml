@@ -32,7 +32,7 @@ services:
     logging:
       driver: local
     image: docker.sunet.se/te-canvas-api:${TAG_API-latest}
-    depends_on: [ postgres ]
+    depends_on: [ postgres, sync ]
     environment:
       - TE_ID
       - TE_USERGROUP
