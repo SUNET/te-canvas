@@ -2,7 +2,7 @@ from flask_restx import Namespace, Resource, reqparse
 from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import NoResultFound  # type: ignore
 
-from te_canvas.db import DeleteFlagAlreadySet
+from te_canvas.db import DB, DeleteFlagAlreadySet, NoDataFound
 
 ns = Namespace(
     "connection",
@@ -11,12 +11,30 @@ ns = Namespace(
 )
 
 
+class Status(Resource):
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, args, kwargs)
+        self.db: DB = kwargs["db"]
+
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument("canvas_group", type=str, required=True)
+
+    @ns.param("canvas_group", "Canvas group ID")
+    @ns.response(404, "No status available")
+    def get(self):
+        args = self.get_parser.parse_args(strict=True)
+        try:
+            return self.db.get_sync_status(args["canvas_group"])
+        except NoDataFound:
+            return {"message" "no status found"}, 404
+
+
 class Connection(Resource):
     # TODO: Is this correct subclassing? We need to know the supertype constructor's signature?
     #       Used for the other APIs as well.
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
-        self.db = kwargs["db"]
+        self.db: DB = kwargs["db"]
 
     # --- POST ----
     #
@@ -42,6 +60,7 @@ class Connection(Resource):
         args = self.post_parser.parse_args(strict=True)
         try:
             self.db.add_connection(args.canvas_group, args.te_group, args.te_type)
+            self.db.update_sync_status(args.canvas_group, "")
             return "", 204
         except UniqueViolation:
             return {
@@ -71,6 +90,7 @@ class Connection(Resource):
         args = self.delete_parser.parse_args(strict=True)
         try:
             self.db.delete_connection(args.canvas_group, args.te_group)
+            self.db.update_sync_status(args.canvas_group, "")
             return "", 204
         except NoResultFound:
             return {"message": "Connection not found."}, 404

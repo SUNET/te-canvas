@@ -60,6 +60,7 @@ def create_app(db: DB = None, timeedit: TimeEdit = None, canvas: Canvas = None) 
     # --- Connection -----------------------------------------------------------
 
     connection_api.ns.add_resource(connection_api.Connection, "", resource_class_kwargs={"db": db})
+    connection_api.ns.add_resource(connection_api.Status, "/status", resource_class_kwargs={"db": db})
     api.add_namespace(connection_api.ns)
 
     # --- Config ---------------------------------------------------------------

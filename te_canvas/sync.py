@@ -74,7 +74,7 @@ class Syncer:
             self.logger.critical("Missing env var: %s", e)
             sys.exit(1)
 
-        self.db = db or DB()
+        self.db: DB = db or DB()
         self.canvas = canvas or Canvas()
         self.timeedit = timeedit or TimeEdit()
 
@@ -175,6 +175,7 @@ class Syncer:
                 translator = Translator(self.db, self.timeedit)
             except TemplateError:
                 self.logger.warning("%s: Template error, skipping", canvas_group)
+                self.db.update_sync_status(canvas_group, "error")
                 return False
 
             # Change detection
@@ -187,9 +188,14 @@ class Syncer:
 
             if not self.__has_changed(prev_state, new_state) and self.sync_complete.get(canvas_group, False):
                 self.logger.info("%s: Nothing changed, skipping", canvas_group)
+                self.db.update_sync_status(canvas_group, "success")
                 return False
 
             self.sync_complete[canvas_group] = False
+
+            # Update sync status.
+            self.logger.info("Updating sync state to in_progress for %s", canvas_group)
+            self.db.update_sync_status(canvas_group, "in_progress")
 
             # Remove all events previously added by us to this Canvas group
             self.logger.info("%s: Deleting events", canvas_group)
@@ -211,7 +217,7 @@ class Syncer:
                 deleted_flagged_count,
             )
 
-            # Push to Canvas and add to database
+            # Get te_groups
             te_groups = flat_list(
                 session.query(Connection.te_group)
                 .filter(Connection.canvas_group == canvas_group)
@@ -242,6 +248,10 @@ class Syncer:
             self.states[canvas_group] = new_state
 
             self.sync_complete[canvas_group] = True
+
+            # Update sync status.
+            self.logger.info("Updating sync state to success for %s", canvas_group)
+            self.db.update_sync_status(canvas_group, "success")
 
             return True
 

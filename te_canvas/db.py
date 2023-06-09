@@ -55,6 +55,12 @@ class WhitelistTypes(Base):
     extid = Column(String, primary_key=True)
 
 
+class SyncStatus(Base):
+    __tablename__ = "sync_status"
+    canvas_group = Column(String, primary_key=True)
+    status = Column(String)
+
+
 class Test(Base):
     """
     TODO: Can we avoid having this here and do this in test_db, perhaps dynamically in a test case?
@@ -138,7 +144,13 @@ class DB:
                 Connection.canvas_group == canvas_group,
             )
             if q.count() == 0:
-                session.add(Connection(canvas_group=canvas_group, te_group=te_group, te_type=te_type))
+                session.add(
+                    Connection(
+                        canvas_group=canvas_group,
+                        te_group=te_group,
+                        te_type=te_type,
+                    )
+                )
             else:
                 if q.one().delete_flag:  # Will throw if q has > 1 row (invalid state)
                     raise DeleteFlagAlreadySet
@@ -168,6 +180,24 @@ class DB:
                 query = query.filter(Connection.canvas_group == canvas_group)
 
             return [(c.canvas_group, c.te_group, c.te_type, c.delete_flag) for c in query]
+
+    def get_sync_status(self, canvas_group):
+        with self.sqla_session() as session:
+            query = session.query(SyncStatus).where(SyncStatus.canvas_group == canvas_group)
+            if query.count() != 1:
+                session.add(SyncStatus(canvas_group=canvas_group, status=""))
+                return ""
+            return query.one().status
+
+    def update_sync_status(self, canvas_group, status: str):
+        with self.sqla_session() as session:
+            query = session.query(SyncStatus).filter(
+                SyncStatus.canvas_group == canvas_group,
+            )
+            if query.count() != 1:
+                session.add(SyncStatus(canvas_group=canvas_group, status=status))
+                return
+            query.one().status = status
 
     def get_whitelist_types(self):
         with self.sqla_session() as session:
@@ -214,8 +244,7 @@ class DB:
             q = session.query(TemplateConfig).filter(TemplateConfig.id == int(template_id))
             if q.count() == 0:
                 raise NoDataFound
-            else:
-                session.query(TemplateConfig).filter(TemplateConfig.id == template_id).delete()
+            session.query(TemplateConfig).filter(TemplateConfig.id == template_id).delete()
 
     def add_template_config(self, config_type: str, te_type: str, te_field: str, canvas_group: Optional[str]):
         with self.sqla_session() as session:
