@@ -22,27 +22,24 @@ _Documentation for Canvas admins_
    - Go to Course > Settings > Apps > [View App Configurations] > [+ App]
    - Choose "By Client ID" and paste the Client ID from step 4, click Submit.
 
-   <img width="600px" src="img/canvas_create_app.png" />
+   <img width="700px" src="img/canvas_create_app.png" />
 
-# Event template
+# Event templates
 
-In the UI you will find a tab called "Event Template". In this tab you can configure how calendar events are translated from TimeEdit to Canvas. Each field – Title, Location, and Description – should be set to a string which may contain references to TimeEdit _object types_ and their _fields_ on the format `${type::field}`.
+In the UI you will find two tab called "Course Event Template" and "Default Event Template". In these tabs you can configure how calendar events are translated from TimeEdit to Canvas. Each section – Title, Location, and Description – should be configured with the desired TimeEdit _object types_ and their _fields_.
 
-For example:
+<img width="700px" src="img/event_template_tabs.png" />
 
-```
-${activity::name} by ${teacher::firstname} ${teacher::lastname}
-```
+## Default Event Template
 
-and a TimeEdit reservation with the objects:
+This template will be used for all courses which have not configured an event template. Only Canvas administrators can update this template.
 
-```
-activity = { name: 'Lecture' },
-teacher = { firstname: 'Ernst', lastname: 'Widerberg' }
-```
+## Course Event Template
 
-will create the string _Lecture by Ernst Widerberg_.
+This template will control how events are translated for a single course. Canvas administrators and teachers can update this template.
 
-If there is no object of the specified type on a particular event, the variable will be substituted by an empty string.
+## Valid Event Template
 
-Note that these settings are **global**, i.e. they are shared among all courses in your Canvas instance. In general they should only be changed by the Canvas admin at your institution.
+A valid event template must have atleast one field added to each Canvas event section: Title, Location and Description. If there is no valid event, syncing will be suspended. This an example of a valid Event Template. Note that the maximum number of fields is 3.
+
+<img width="700px" src="img/event_template_valid.png" />
