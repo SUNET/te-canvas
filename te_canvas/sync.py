@@ -6,6 +6,7 @@ from typing import Optional
 
 from apscheduler.events import EVENT_JOB_ERROR
 from apscheduler.schedulers.background import BlockingScheduler
+from canvasapi.exceptions import CanvasException
 from pytz import utc
 
 from te_canvas.canvas import Canvas
@@ -199,8 +200,12 @@ class Syncer:
 
             # Remove all events previously added by us to this Canvas group
             self.logger.info("%s: Deleting events", canvas_group)
-            deleted = self.canvas.delete_events(int(canvas_group))
-            self.logger.info("%s: Deleted %s events", canvas_group, len(deleted))
+            try:
+                deleted = self.canvas.delete_events(int(canvas_group))
+                self.logger.info("%s: Deleted %s events", canvas_group, len(deleted))
+            except CanvasException:
+                self.db.update_sync_status(canvas_group, "error")
+                return False
 
             # Delete flagged connections
             deleted_flagged_count = (
@@ -232,10 +237,15 @@ class Syncer:
                 te_groups,
                 len(reservations),
             )
-            for r in reservations:
-                self.canvas.create_event(
-                    translator.canvas_event(r, canvas_group) | {"context_code": f"course_{canvas_group}"}
-                )
+
+            try:
+                for r in reservations:
+                    self.canvas.create_event(
+                        translator.canvas_event(r, canvas_group) | {"context_code": f"course_{canvas_group}"}
+                    )
+            except CanvasException:
+                self.db.update_sync_status(canvas_group, "error")
+                return False
 
             # Record new Canvas state
             #
