@@ -203,7 +203,12 @@ class Syncer:
             try:
                 deleted = self.canvas.delete_events(int(canvas_group))
                 self.logger.info("%s: Deleted %s events", canvas_group, len(deleted))
-            except CanvasException:
+            except CanvasException as e:
+                self.logger.error("Canvas API error: %s", e.message)
+                self.db.update_sync_status(canvas_group, "error")
+                return False
+            except Exception as e:
+                self.logger.error("Non-defined Canvas API error")
                 self.db.update_sync_status(canvas_group, "error")
                 return False
 
@@ -243,7 +248,12 @@ class Syncer:
                     self.canvas.create_event(
                         translator.canvas_event(r, canvas_group) | {"context_code": f"course_{canvas_group}"}
                     )
-            except CanvasException:
+            except CanvasException as e:
+                self.logger.error("Canvas API error: %s", e.message)
+                self.db.update_sync_status(canvas_group, "error")
+                return False
+            except Exception as e:
+                self.logger.error("Non-defined Canvas API error")
                 self.db.update_sync_status(canvas_group, "error")
                 return False
 
