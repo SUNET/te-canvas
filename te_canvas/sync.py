@@ -181,15 +181,26 @@ class Syncer:
 
             # Change detection
             prev_state = self.states.get(canvas_group)
-            new_state = (
-                self.__state_te(canvas_group) | self.__state_canvas(canvas_group) | translator.get_state(canvas_group)
-            )
-            self.states[canvas_group] = new_state
-            self.logger.debug("State: %s", new_state)
+            try:
+                new_state = (
+                    self.__state_te(canvas_group)
+                    | self.__state_canvas(canvas_group)
+                    | translator.get_state(canvas_group)
+                )
+                self.states[canvas_group] = new_state
+                self.logger.debug("State: %s", new_state)
 
-            if not self.__has_changed(prev_state, new_state) and self.sync_complete.get(canvas_group, False):
-                self.logger.info("%s: Nothing changed, skipping", canvas_group)
-                self.db.update_sync_status(canvas_group, "success")
+                if not self.__has_changed(prev_state, new_state) and self.sync_complete.get(canvas_group, False):
+                    self.logger.info("%s: Nothing changed, skipping", canvas_group)
+                    self.db.update_sync_status(canvas_group, "success")
+                    return False
+            except CanvasException as e:
+                self.logger.error("Canvas API error while getting state: %s", e.message)
+                self.db.update_sync_status(canvas_group, "error")
+                return False
+            except Exception as e:
+                self.logger.error("Error while getting state")
+                self.db.update_sync_status(canvas_group, "error")
                 return False
 
             self.sync_complete[canvas_group] = False
