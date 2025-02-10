@@ -146,7 +146,8 @@ class Syncer:
         of size MAX_WORKERS.
         """
         self.logger.info("Sync job started")
-        self.logger.info("[=== In sync_all() ===]")
+        self.logger.info("1. [=== In sync_all() ===]")
+        self.logger.info("db=", self.db)
 
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
             groups = flat_list(session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group))
@@ -167,6 +168,7 @@ class Syncer:
         Returns:
             False if the group was skipped due to change detection or template error, otherwise True.
         """
+        self.logger.info(f"** inside sync_one() [canvas_group:{canvas_group}]**")
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
             self.logger.info("%s: Processing", canvas_group)
 

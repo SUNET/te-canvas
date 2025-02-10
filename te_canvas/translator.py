@@ -41,6 +41,10 @@ class Translator:
         Raises:
             TemplateError, if no valid group or default template config.
         """
+        self.logger = get_logger()
+        self.logger.info("===== [Translator] =====")
+        self.logger.info("db=", db)
+        self.logger.info("timeedit=", timeedit)
         self.db = db
         self.timeedit = timeedit
         template_data = self.__get_template_config()
@@ -53,6 +57,7 @@ class Translator:
 
         Used for translating timeedit reservations.
         """
+        self.logger.info("== [__create_templates] ==")
         groups_with_config = set(cg for (_, _, _, _, cg) in template)
         # All groups with atleast one config entry.
         groups = {
@@ -84,6 +89,7 @@ class Translator:
 
         Used in API call to timeedit when getting reservations.
         """
+        self.logger.info("== [__create_return_types()] ==")
         return_types = {}
         for key in templates.keys():
             return_types[key] = self.__extract_fields(templates[key])
@@ -159,9 +165,15 @@ class Translator:
         We need atleast one field for each name.
         Else we raise TemplateError.
         """
+        self.logger.info("== [__get_template_config()] ==")
         res = self.db.get_template_config()
+        self.logger.info("res=>", res)
         name_count = set(name for (_, name, _, _, _) in res)
+        self.logger.info("name_count=>", name_count)
+        self.logger.info("len(name_count)=>", len(name_count))
+        
         if len(name_count) < 3:
+            self.logger.info("== [__get_template_config()].TemplateError ==")
             raise TemplateError
         return res
 
