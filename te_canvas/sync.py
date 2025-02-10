@@ -147,7 +147,7 @@ class Syncer:
         """
         self.logger.info("Sync job started")
         self.logger.info("1. [=== In sync_all() ===]")
-        self.logger.info("db=", self.db)
+        self.logger.info(f"db={self.db}")
 
         with self.db.sqla_session() as session:  # Any exception -> session.rollback()
             groups = flat_list(session.query(Connection.canvas_group).distinct().order_by(Connection.canvas_group))
