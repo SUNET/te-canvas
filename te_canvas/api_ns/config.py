@@ -93,7 +93,9 @@ class Template(Resource):
     @ns.param("canvas_group", "Canvas group")
     def get(self):
         args = self.get_parser.parse_args(strict=True)
-        if args.default == "true" and LTI_ADMIN not in args["X-LTI-ROLES"]:
+        print((f"Template->args: {args}"))
+        # if args.default == "true" and LTI_ADMIN not in args["X-LTI-ROLES"]:
+        if args.get("default") == "true" and LTI_ADMIN not in (args.get("X-LTI-ROLES") or []):
             return "", 403
         canvas_group = "default" if args.default == "true" else args.canvas_group
         try:
