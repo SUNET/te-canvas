@@ -1,10 +1,12 @@
 from flask_restx import Namespace, Resource, reqparse
 from psycopg2.errors import NoDataFound, UniqueViolation
 
+from te_canvas.log import get_logger
 from te_canvas.db import DB
 from te_canvas.timeedit import TimeEdit
 from te_canvas.types.config_type import ConfigType  # type: ignore
 
+logger = get_logger()
 ns = Namespace("config", description="Config API", prefix="/api")
 
 LTI_ADMIN = "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator"
@@ -96,7 +98,10 @@ class Template(Resource):
     @ns.param("canvas_group", "Canvas group")
     def get(self):
         args = self.get_parser.parse_args(strict=True)
-        print((f"Template->args: {args}"))
+        logger.info("===============  config.Template(Resource) ====================")
+        logger.info(f"Template->args: {args}")
+        logger.info(f"Template->args.canvas_group: {args.canvas_group}")
+
         # if args.default == "true" and LTI_ADMIN not in args["X-LTI-ROLES"]:
         if args.get("default") == "true" and LTI_ADMIN not in (args.get("X-LTI-ROLES") or []):
             return "", 403
