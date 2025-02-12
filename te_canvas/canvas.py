@@ -58,6 +58,9 @@ class Canvas:
         Returns:
             The created event.
         """
+        self.logger.info("================== [CANVAS.create_event] ==================")
+        self.logger.info(event)
+        self.logger.info("===========================================================")
         return self.canvas.create_calendar_event(event)
 
     def delete_event(self, event: CalendarEvent) -> Optional[CalendarEvent]:

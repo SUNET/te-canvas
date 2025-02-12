@@ -1,0 +1,150 @@
+te-canvas.sunet.se:
+  sunet::dockerhost:
+    docker_version: '5:20.10.17~3-0~ubuntu-focal'
+    compose_version: '1.29.2'
+    docker_package_name: 'docker-ce'
+  sunet::certbot::acmed:
+  nunoc::te_canvas_back_multi:
+    back_ends:
+    # Back end 1: SLU TimeEdit, Sunet Canvas
+    - tag_api: 'git-2e093b2f6'
+      tag_sync: 'git-2e093b2f6'
+      customer: 'sunet'
+      te_id: 'slu_test'
+      te_usergroup: 'staff2'
+      canvas_url: 'https://sunet-sandbox.instructure.com'
+    # Back end 1: Södertörn TimeEdit, Sunet Canvas
+    - tag_api: 'latest'
+      tag_sync: 'latest'
+      customer: 'sunet_sh'
+      te_id: 'sh_test'
+      te_usergroup: '1'
+      te_return_fields: 'f_id_reference,f_name_reference'
+      te_search_fields: 'f_id_reference,f_name_reference'
+      canvas_url: 'https://sunet-sandbox.instructure.com'
+    # Back end 1.5: Södertörn TimeEdit, Sunet Canvas 
+    - tag_api: 'latest'
+      tag_sync: 'latest'
+      customer: 'sh'
+      te_id: 'sh_test'
+      te_usergroup: '1'
+      canvas_url: 'https://sh-se.test.instructure.com'
+    # Back end 2: SLU
+    - tag_api: 'git-2e093b2f6'
+      tag_sync: 'git-2e093b2f6'
+      customer: 'slu'
+      te_id: 'slu_test'
+      te_usergroup: 'staff2'
+      canvas_url: 'https://slu-se.test.instructure.com'
+    # Back end 3: FHS
+    - tag_api: 'latest'
+      tag_sync: 'latest'
+      customer: 'fhs'
+      te_id: 'fhs_se'
+      te_usergroup: 'staff1'
+      canvas_url: 'https://fhs.test.instructure.com/'
+    # Back end 4: KTH TimeEdit, RKH Canvas
+    - tag_api: 'latest'
+      tag_sync: 'latest'
+      customer: 'rkh'
+      te_id: 'kth'
+      te_usergroup: 'rkhstaff'
+      te_return_fields: 'general.id_ref,general.title_ref'
+      te_search_fields: 'general.id_ref,general.title_ref'
+      canvas_url: 'https://rkh.test.instructure.com/'
+    # Back end 5: BTH
+    - tag_api: 'latest'
+      tag_sync: 'latest'
+      customer: 'bth'
+      te_id: 'bth_test2'
+      te_usergroup: 'emp1'
+      te_return_fields: 'general.title,general.id'
+      canvas_url: 'https://bth.test.instructure.com/'
+    # Back end 6: Chalmers TimeEdit/Canvas
+    - tag_api: 'latest'
+      tag_sync: 'latest'
+      customer: 'chalmers'
+      te_id: 'chalmers_test'
+      te_usergroup: 'staff1'
+      canvas_url: 'https://canvas.test.instructure.com/'
+  nunoc::te_canvas_front:
+    tag_node: 'latest'
+    lti_url: 'https://te-canvas.sunet.se'
+    platforms:
+    # Sunet Canvas
+    - name: 'sunet-sandbox'
+      api_url: 'http://sunet_api_1:5000'
+      client_id: '160410000000000237'
+      canvas_url: 'https://canvas.instructure.com'
+      canvas_auth: 'https://canvas.instructure.com/api/lti/authorize_redirect'
+      canvas_jwk: 'https://canvas.instructure.com/api/lti/security/jwks'
+      canvas_token: 'https://canvas.instructure.com/login/oauth2/token'
+      authorized_roles:
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator'
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor'
+    # Södertörn-sunet Canvas
+    - name: 'sunet-sh-sandbox'
+      api_url: 'http://sunet_sh_api_1:5000'
+      client_id: '160410000000000236'
+      canvas_url: 'https://canvas.instructure.com'
+      canvas_auth: 'https://canvas.instructure.com/api/lti/authorize_redirect'
+      canvas_jwk: 'https://canvas.instructure.com/api/lti/security/jwks'
+      canvas_token: 'https://canvas.instructure.com/login/oauth2/token'
+      authorized_roles:
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator'
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor'
+    # SLU Canvas
+    - name: 'slu-se.test'
+      api_url: 'http://slu_api_1:5000'
+      client_id: '160410000000000237'
+      canvas_url: 'https://canvas.test.instructure.com'
+      canvas_auth: 'https://canvas.test.instructure.com/api/lti/authorize_redirect'
+      canvas_jwk: 'https://canvas.test.instructure.com/api/lti/security/jwks'
+      canvas_token: 'https://canvas.test.instructure.com/login/oauth2/token'
+      authorized_roles:
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator'
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor'
+    # FHS Canvas
+    - name: 'fhs.test'
+      api_url: 'http://fhs_api_1:5000'
+      client_id: '140540000000000205'
+      canvas_url: 'https://canvas.test.instructure.com'
+      canvas_auth: 'https://canvas.test.instructure.com/api/lti/authorize_redirect'
+      canvas_jwk: 'https://canvas.test.instructure.com/api/lti/security/jwks'
+      canvas_token: 'https://canvas.test.instructure.com/login/oauth2/token'
+      authorized_roles:
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator'
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor'
+    # RKH Canvas
+    - name: 'rkh.test'
+      api_url: 'http://rkh_api_1:5000'
+      client_id: '121510000000000214'
+      canvas_url: 'https://canvas.test.instructure.com'
+      canvas_auth: 'https://canvas.test.instructure.com/api/lti/authorize_redirect'
+      canvas_jwk: 'https://canvas.test.instructure.com/api/lti/security/jwks'
+      canvas_token: 'https://canvas.test.instructure.com/login/oauth2/token'
+      authorized_roles:
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator'
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor'
+    # BTH Canvas
+    - name: 'bth.test'
+      api_url: 'http://bth_api_1:5000'
+      client_id: '121330000000000211'
+      canvas_url: 'https://canvas.test.instructure.com'
+      canvas_auth: 'https://canvas.test.instructure.com/api/lti/authorize_redirect'
+      canvas_jwk: 'https://canvas.test.instructure.com/api/lti/security/jwks'
+      canvas_token: 'https://canvas.test.instructure.com/login/oauth2/token'
+      authorized_roles:
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator'
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor'
+    # Chalmers Canvas
+    - name: 'chalmers.test'
+      api_url: 'http://chalmers_api_1:5000'
+      client_id: '125230000000000194'
+      canvas_url: 'https://canvas.test.instructure.com'
+      canvas_auth: 'https://canvas.test.instructure.com/api/lti/authorize_redirect'
+      canvas_jwk: 'https://canvas.test.instructure.com/api/lti/security/jwks'
+      canvas_token: 'https://canvas.test.instructure.com/login/oauth2/token'
+      authorized_roles:
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator'
+      - 'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Instructor'

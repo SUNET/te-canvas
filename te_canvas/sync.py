@@ -258,10 +258,12 @@ class Syncer:
             )
 
             try:
+                self.logger.info("************** [Sync.one.Reservations] ***************")
+                self.logger.info(reservations)
+                self.logger.info("*-----------------------------------------------------")
                 for r in reservations:
-                    self.canvas.create_event(
-                        translator.canvas_event(r, canvas_group) | {"context_code": f"course_{canvas_group}"}
-                    )
+                    new_events = translator.canvas_event(r, canvas_group) | {"context_code": f"course_{canvas_group}"}
+                    self.canvas.create_event(new_events)
             except CanvasException as e:
                 self.logger.error("Canvas API error: %s", e.message)
                 self.db.update_sync_status(canvas_group, "error")

@@ -48,7 +48,11 @@ class TimeEdit:
         # These query args are not understood in detail, taken blindly from the URL we get when
         # navigating to an event detail page in web view
         static_args = "h=t&sid=4&types=0&fe=0&fr=t&step=0&ef=2&nocache=2"
-        return f"https://cloud.timeedit.net/{self.ID}/web/{self.USERGROUP}/ri.html?id={id}&{static_args}"
+        result = f"https://cloud.timeedit.net/{self.ID}/web/{self.USERGROUP}/ri.html?id={id}&{static_args}"
+        logger.info("******************* [TimeEdit.reservation_url] *******************")
+        logger.info(f"{result}")
+        logger.info("==================================================================")
+        return result
 
     def find_types_all(self):
         res = self.client.service.findTypes(
@@ -57,13 +61,18 @@ class TimeEdit:
         )
         if len(res) == 0:
             logger.warning("te.find_types_all() returned 0 types.")
+        logger.info("******************* [TimeEdit.find_types_all] *******************")
+        logger.info(f"{res}")
+        logger.info("==================================================================")
         return {t["extid"]: t["name"] for t in res + [{"extid": "reservation", "name": "Reservation"}]}
 
     def get_type(self, extid: str):
         if extid == "reservation":
             return {"name": "Reservation"}
         res = self.client.service.getTypes(login=self.login, ignorealias=False, types=[extid])
-
+        logger.info("******************* [TimeEdit.get_type] *******************")
+        logger.info(f"{res}")
+        logger.info("==================================================================")
         return res[0] if len(res) > 0 else {"extid": extid, "name": ""}
 
     def find_objects(self, type, number_of_objects, begin_index, search_string):
@@ -81,6 +90,9 @@ class TimeEdit:
             # Can't really warn about this generally since this endpoint is used for searching.
             # logger.warning("te.find_objects(${type}, ${number_of_objects}, ${begin_index}, ${search_string}) returned 0 objects.")
             return []
+        logger.info("******************* [TimeEdit.find_objects] *******************")
+        logger.info(f"{resp}")
+        logger.info("==================================================================")
         return list(map(_unpack_object, resp["objects"]["object"]))
 
     def find_objects_all(self, type, search_string):
@@ -99,11 +111,17 @@ class TimeEdit:
         for i in range(num_pages):
             page = self.find_objects(type, 1000, i * 1000, search_string)
             res += page
+        logger.info("******************* [TimeEdit.find_objects_all] *******************")
+        logger.info(f"{res}")
+        logger.info("==================================================================")
         return res
 
     def find_object_fields(self, extid: "str") -> list:
         """Get fields specification of type"""
         res = self.client.service.findObjectFields(login=self.login, types=[extid])
+        logger.info("******************* [TimeEdit.find_object_fields] *******************")
+        logger.info(f"{res}")
+        logger.info("==================================================================")
         return list(res)
 
     def get_field_defs(self, extid: str) -> dict:
@@ -113,6 +131,9 @@ class TimeEdit:
             for r in res
             if r["extid"] not in self.SEARCH_FIELDS + self.RETURN_FIELDS
         ]
+        logger.info("******************* [TimeEdit.get_field_defs] *******************")
+        logger.info(f"{defs}")
+        logger.info("==================================================================")
         return defs[0] if len(defs) > 0 else {}
 
     def get_object(self, extid: str) -> Optional[dict]:
@@ -123,11 +144,19 @@ class TimeEdit:
         )
         if resp is None:
             return None
+        logger.info("******************* [TimeEdit.get_object] *******************")
+        logger.info(f"{resp}")
+        logger.info("==================================================================")
         return list(map(_unpack_object, resp))[0]
 
     def find_reservation_fields(self):
         field_defs = self.client.service.findReservationFields(login=self.login)
-        return list(filter(lambda field_def: field_def.split(".")[0] == "res", field_defs))
+
+        resp =  list(filter(lambda field_def: field_def.split(".")[0] == "res", field_defs))
+        logger.info("******************* [TimeEdit.find_reservation_fields] *******************")
+        logger.info(f"{resp}")
+        logger.info("==================================================================")
+        return resp
 
     def find_reservations_all(self, extids: "list[str]", return_types: "dict[str, list[str]]"):
         """Get all reservations for a given set of objects."""
@@ -177,6 +206,9 @@ class TimeEdit:
         unpacked_reservations = []
         for r in res:
             unpacked_reservations.append(_unpack_reservation(r, res_return_fields))
+        logger.info("******************* [TimeEdit.find_reservations_all] *******************")
+        logger.info(f"{unpacked_reservations}")
+        logger.info("==================================================================")
         return unpacked_reservations
 
 
