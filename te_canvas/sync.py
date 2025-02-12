@@ -192,7 +192,11 @@ class Syncer:
                 )
                 self.states[canvas_group] = new_state
                 self.logger.debug("State: %s", new_state)
-
+                self.logger.info("************** [Sync.one.prev_state] ***************")
+                self.logger.info(prev_state)
+                self.logger.info("************** [Sync.one.new_state] ***************")
+                self.logger.info(new_state)
+                self.logger.info("*-----------------------------------------------------")
                 if not self.__has_changed(prev_state, new_state) and self.sync_complete.get(canvas_group, False):
                     self.logger.info("%s: Nothing changed, skipping", canvas_group)
                     self.db.update_sync_status(canvas_group, "success")
@@ -249,7 +253,13 @@ class Syncer:
             )
 
             reservations = self.timeedit.find_reservations_all(te_groups, translator.get_return_types(canvas_group))
-
+            self.logger.info("************** [Sync.one.canvas_group] ***************")
+            self.logger.info(canvas_group)
+            self.logger.info("************** [Sync.one.te_groups] ***************")
+            self.logger.info(te_groups)
+            self.logger.info("************** [Sync.one.te_groups] ***************")
+            self.logger.info(translator.get_return_types(canvas_group))
+            self.logger.info("*-----------------------------------------------------")
             self.logger.info(
                 "%s: Adding events: %s (%s events)",
                 canvas_group,

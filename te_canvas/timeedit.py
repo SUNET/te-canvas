@@ -160,7 +160,10 @@ class TimeEdit:
 
     def find_reservations_all(self, extids: "list[str]", return_types: "dict[str, list[str]]"):
         """Get all reservations for a given set of objects."""
-
+        logger.info("******************* [TimeEdit.find_reservations_all.params] *******************")
+        logger.info(f"{extids}")
+        logger.info(f"{return_types}")
+        logger.info("==================================================================")
         # If extids is empty, findReservations will return *all* reservations, which is never what
         # we want
         if len(extids) == 0:

@@ -42,15 +42,21 @@ class Translator:
             TemplateError, if no valid group or default template config.
         """
         self.logger = get_logger()
-        self.logger.info("===== [Translator] =====")
-        self.logger.info(f"db= {db}")
-        self.logger.info(f"timeedit= {timeedit}")
         self.db = db
         self.timeedit = timeedit
         template_data = self.__get_template_config()
         self.templates = self.__create_templates(template_data)
         self.return_types = self.__create_return_types(self.templates)
+        self.logger.info("===== [Translator] =====")
+        self.logger.info(f"db= {db}")
+        self.logger.info(f"timeedit= {timeedit}")
+        self.logger.info(f"template_data= {template_data}")
+        self.logger.info(f"self.templates = {self.templates }")
+        self.logger.info(f"self.return_types= {self.return_types}")
+        self.logger.info("*********************************************")
 
+        
+        
     def __create_templates(self, template) -> dict[str, TemplateConfig]:
         """
         Create templates from db query.
