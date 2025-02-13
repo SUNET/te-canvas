@@ -246,33 +246,35 @@ def _parse_datetime(date_str: str, date_format: str = "%Y%m%dT%H%M%S") -> dateti
         return datetime.strptime(date_str, date_format)
     except (ValueError, TypeError):
         return None
-
+    
 def _unpack_reservation_object(obj: dict[str, Any]) -> dict[str, Any]:
     """Extracts a structured representation of a reservation object."""
     return {
-        "type": obj.get("type", ""),
-        "extid": obj.get("extid", ""),
-        "fields": {f["extid"]: f["value"][0] for f in obj.get("fields", {}).get("field", []) if "value" in f}
+        "type": getattr(obj, "type", ""),
+        "extid": getattr(obj, "extid", ""),
+        "fields": {f["extid"]: f["value"][0] for f in getattr(getattr(obj, "fields", {}), "field", []) if "value" in f}
     }
     
 def _unpack_reservation(reservation, res_return_fields):
             
     # Extract reservation objects safely
-    objects = [_unpack_reservation_object(o) for o in reservation.get("objects", {}).get("object", [])]
+    objects_attr = getattr(reservation, "objects", {})
+    objects = [_unpack_reservation_object(o) for o in getattr(objects_attr, "object", [])]
     
     unpacked_res = {
-        "id": reservation.get("id"),
-        "start_at": _parse_datetime(reservation.get("begin")),
-        "end_at": _parse_datetime(reservation.get("end")),
-        "length": reservation.get("length"),
-        "modified": _parse_datetime(reservation.get("modified")),
+        "id": getattr(reservation, "id", None),
+        "start_at": _parse_datetime(getattr(reservation, "begin", None)),
+        "end_at": _parse_datetime(getattr(reservation, "end", None)),
+        "length": getattr(reservation, "length", None),
+        "modified": _parse_datetime(getattr(reservation, "modified", None)),
         "objects": objects,
     }
 
     # We may need to add fields from the reservation object.
     res_return_fields = set(res_return_fields) 
     # Ensure 'fields' and 'field' exist and are iterable
-    fields = reservation.get("fields", {}).get("field", [])
+    fields_attr = getattr(reservation, "fields", {})
+    fields = getattr(fields_attr, "field", [])
     if fields:
         field_mapping = {field["extid"]: field["value"][0] for field in fields if "value" in field}
         unpacked_res.update({res_field: field_mapping[res_field] for res_field in res_return_fields if res_field in field_mapping})

@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Optional
@@ -207,6 +208,7 @@ class Syncer:
                 return False
             except Exception as e:
                 self.logger.info(f"ERROR=>{e}")
+                self.logger.error(traceback.format_exc())
                 self.logger.error("Error while getting state", stack_info=True)
                 self.db.update_sync_status(canvas_group, "error")
                 return False
