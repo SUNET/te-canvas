@@ -1,7 +1,8 @@
 import os
 import sys
+import itertools
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
 
 import zeep
 
@@ -160,10 +161,6 @@ class TimeEdit:
 
     def find_reservations_all(self, extids: "list[str]", return_types: "dict[str, list[str]]"):
         """Get all reservations for a given set of objects."""
-        logger.info("******************* [TimeEdit.find_reservations_all.params] *******************")
-        logger.info(f"{extids}")
-        logger.info(f"{return_types}")
-        logger.info("==================================================================")
         # If extids is empty, findReservations will return *all* reservations, which is never what
         # we want
         if len(extids) == 0:
@@ -183,7 +180,15 @@ class TimeEdit:
                 for te_type, te_fields in return_types.items()
             ]
         }
-
+        logger.info("******************* [TimeEdit.find_reservations_all.params] *******************")
+        logger.info(f"{extids}")
+        logger.info(f"{return_types}")
+        logger.info("res_return_fields")
+        logger.info(f"{res_return_fields}")
+        logger.info("return_types_packed")
+        logger.info(f"{return_types_packed}")
+        logger.info("==================================================================")
+        
         n = self.client.service.findReservations(
             login=self.login,
             searchobjects={"object": [{"extid": id} for id in extids]},
@@ -192,22 +197,32 @@ class TimeEdit:
 
         num_pages = -(-n // 1000)
 
-        res = []
-        for i in range(num_pages):
-            page = self.client.service.findReservations(
-                login=self.login,
-                searchobjects={"object": [{"extid": id} for id in extids]},
-                numberofreservations=1000,
-                beginindex=i * 1000,
-                returntypes=return_types_packed,
-                returnfields=res_return_fields,
-            )["reservations"]["reservation"]
-            res += page
-        if len(res) == 0:
-            logger.warning("te.find_reservations_all(%s) returned 0 reservations.", extids)
+        reservations = []
+        
+        try:
+            pages = [
+                self.client.service.findReservations(
+                    login=self.login,
+                    searchobjects={"object": [{"extid": ext_id} for ext_id in extids]},
+                    numberofreservations=1000,
+                    beginindex=i * 1000,
+                    returntypes=return_types_packed,
+                    returnfields= {"field": res_return_fields},
+                ).get("reservations", {}).get("reservation", [])
+                for i in range(num_pages)
+            ]
+            
+            reservations = list(itertools.chain.from_iterable(pages))
 
+        except Exception as e:
+            logger.error("Error in find_reservations_all(%s): %s", extids, e, stack_info=True)
+            return []
+        
+        if not reservations:
+            logger.warning("find_reservations_all(%s) returned 0 reservations.", extids)
+        
         unpacked_reservations = []
-        for r in res:
+        for r in reservations:
             unpacked_reservations.append(_unpack_reservation(r, res_return_fields))
         logger.info("******************* [TimeEdit.find_reservations_all] *******************")
         logger.info(f"{unpacked_reservations}")
@@ -225,39 +240,41 @@ def _unpack_object(o):
     return res
 
 
-def _unpack_reservation(r, res_return_fields):
-    date_format = "%Y%m%dT%H%M%S"
+def _parse_datetime(date_str: str, date_format: str = "%Y%m%dT%H%M%S") -> datetime | None:
+    """Parses a datetime string safely, returning None if parsing fails."""
+    try:
+        return datetime.strptime(date_str, date_format)
+    except (ValueError, TypeError):
+        return None
 
-    if r["objects"] is None:
-        objects = []
-    else:
-        objects = [_unpack_reservation_object(o) for o in r["objects"]["object"]]
-
+def _unpack_reservation_object(obj: dict[str, Any]) -> dict[str, Any]:
+    """Extracts a structured representation of a reservation object."""
+    return {
+        "type": obj.get("type", ""),
+        "extid": obj.get("extid", ""),
+        "fields": {f["extid"]: f["value"][0] for f in obj.get("fields", {}).get("field", []) if "value" in f}
+    }
+    
+def _unpack_reservation(reservation, res_return_fields):
+            
+    # Extract reservation objects safely
+    objects = [_unpack_reservation_object(o) for o in reservation.get("objects", {}).get("object", [])]
+    
     unpacked_res = {
-        "id": r["id"],
-        "start_at": datetime.strptime(r["begin"], date_format),
-        "end_at": datetime.strptime(r["end"], date_format),
-        "length": r["length"],
-        "modified": datetime.strptime(r["modified"], date_format),
+        "id": reservation.get("id"),
+        "start_at": _parse_datetime(reservation.get("begin")),
+        "end_at": _parse_datetime(reservation.get("end")),
+        "length": reservation.get("length"),
+        "modified": _parse_datetime(reservation.get("modified")),
         "objects": objects,
     }
 
     # We may need to add fields from the reservation object.
-    if r["fields"]:
-        unpacked_res.update(
-            {
-                res_field: field["value"][0]
-                for res_field in res_return_fields
-                for field in r["fields"]["field"]
-                if res_field == field["extid"]
-            }
-        )
+    res_return_fields = set(res_return_fields) 
+    # Ensure 'fields' and 'field' exist and are iterable
+    fields = reservation.get("fields", {}).get("field", [])
+    if fields:
+        field_mapping = {field["extid"]: field["value"][0] for field in fields if "value" in field}
+        unpacked_res.update({res_field: field_mapping[res_field] for res_field in res_return_fields if res_field in field_mapping})
+
     return unpacked_res
-
-
-def _unpack_reservation_object(object: dict) -> dict:
-    return {
-        "type": object["type"],
-        "extid": object["extid"],
-        "fields": {f["extid"]: f["value"][0] for f in object["fields"]["field"]},
-    }

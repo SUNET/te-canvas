@@ -257,7 +257,9 @@ class Syncer:
             self.logger.info(canvas_group)
             self.logger.info("************** [Sync.one.te_groups] ***************")
             self.logger.info(te_groups)
-            self.logger.info("************** [Sync.one.te_groups] ***************")
+            self.logger.info("************** [Sync.one.return_types] ***************")
+            self.logger.info(translator.return_types)
+            self.logger.info("************** [Sync.one.get_return_types] ***************")
             self.logger.info(translator.get_return_types(canvas_group))
             self.logger.info("*-----------------------------------------------------")
             self.logger.info(
