@@ -206,7 +206,8 @@ class Syncer:
                 self.db.update_sync_status(canvas_group, "error")
                 return False
             except Exception as e:
-                self.logger.error("Error while getting state")
+                self.logger.info(f"ERROR=>{e}")
+                self.logger.error("Error while getting state", stack_info=True)
                 self.db.update_sync_status(canvas_group, "error")
                 return False
 
