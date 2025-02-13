@@ -196,6 +196,16 @@ class Translator:
             for extid, content in te_reservation.items()
             if {"reservation": extid} in template_config[config_type]
         ]
+        
+        self.logger.info("============ __translate_fields ============")
+        self.logger.info(f"canvas_group={canvas_group}")
+        self.logger.info(f"config_type={config_type}")
+        self.logger.info(f"te_reservation={te_reservation}")
+        self.logger.info(f"template_config={template_config}")
+        self.logger.info(f"template_config[config_type]={template_config[config_type]}")
+        self.logger.info(f"te_reservation[objects]={te_reservation["objects"]}")      
+        self.logger.info("********************************************")
+        
         # Then iterate over objects in reservation.
         for o in te_reservation["objects"]:
             te_type = o["type"]
