@@ -208,7 +208,7 @@ class TimeEdit:
                     beginindex=i * 1000,
                     returntypes=return_types_packed,
                     returnfields= {"field": res_return_fields},
-                ).get("reservations", {}).get("reservation", [])
+                )["reservations"]["reservation"]
                 for i in range(num_pages)
             ]
             
