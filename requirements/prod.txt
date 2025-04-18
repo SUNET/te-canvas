@@ -11,4 +11,4 @@ SQLAlchemy
 SQLAlchemy-Utils
 APScheduler
 gunicorn
-Werkzeug==2.3.3
+Werkzeug==3.0.1
