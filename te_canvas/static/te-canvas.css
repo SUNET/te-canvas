@@ -1,0 +1,14 @@
+.teEvent {
+    background-image: linear-gradient(to bottom right, #fff, #eee);
+    border: 1px dashed;
+}
+
+.teAgendaEvent {
+    border: none;
+    border-left: 3px dashed var(--ic-brand-primary);
+}
+
+.teAgendaEvent:hover, .teAgendaEvent:focus {
+    box-shadow: none !important;
+    border-left: 3px solid var(--ic-brand-primary);
+}

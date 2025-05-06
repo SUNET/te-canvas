@@ -4,6 +4,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_restx import Api
 
+from te_canvas.db import DB
 import te_canvas.api_ns.canvas as canvas_api
 import te_canvas.api_ns.config as config_api
 import te_canvas.api_ns.connection as connection_api
@@ -19,8 +20,7 @@ def create_app(db: DB = None, timeedit: TimeEdit = None, canvas: Canvas = None) 
     db = db or DB()
     canvas = canvas or Canvas()
     timeedit = timeedit or TimeEdit()
-    
-    STATIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+    STATIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "te_canvas", "static")
     flask = Flask(__name__, static_folder=STATIC_PATH)
     flask.config["SECRET_KEY"] = os.urandom(128)
 
@@ -28,19 +28,21 @@ def create_app(db: DB = None, timeedit: TimeEdit = None, canvas: Canvas = None) 
 
     # TODO: More standard option for logging request, e.g. werkzeug logger?
     logger = get_logger()
-
+    
     @flask.after_request
     def log_request(response):
         logger.info("[API] Method: {}, Status: {}, URL: {}".format(request.method, response.status_code, request.url))
         return response
 
     api = Api(flask, prefix="/api")
+    
+
 
     # --- Version --------------------------------------------------------------
 
     version_api.ns.add_resource(version_api.Version, "")
     api.add_namespace(version_api.ns)
-
+    
     # --- TimeEdit -------------------------------------------------------------
 
     timeedit_api.ns.add_resource(timeedit_api.Objects, "/objects", resource_class_kwargs={"timeedit": timeedit})

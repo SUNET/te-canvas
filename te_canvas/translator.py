@@ -203,7 +203,7 @@ class Translator:
         self.logger.info(f"te_reservation={te_reservation}")
         self.logger.info(f"template_config={template_config}")
         self.logger.info(f"template_config[config_type]={template_config[config_type]}")
-        self.logger.info(f"te_reservation[objects]={te_reservation["objects"]}")      
+        self.logger.info(f"te_reservation[objects]={te_reservation['objects']}")      
         self.logger.info("********************************************")
         
         # Then iterate over objects in reservation.
