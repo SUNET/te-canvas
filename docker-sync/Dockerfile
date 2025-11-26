@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.13.3
 
 RUN git clone https://github.com/SUNET/te-canvas.git /usr/src/app
 WORKDIR /usr/src/app
