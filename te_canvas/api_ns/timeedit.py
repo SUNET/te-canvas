@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, reqparse
-
+import zeep
 import te_canvas.log as log
 from te_canvas.timeedit import TimeEdit
 
@@ -68,12 +68,21 @@ class Types(Resource):
     parser.add_argument("whitelisted", type=str)
 
     def get(self):
-        args = self.parser.parse_args(strict=True)
-        all_types = self.timeedit.find_types_all()
-        if args["whitelisted"] != "true":
-            return all_types
-        whitelist_types = self.db.get_whitelist_types()
-        return dict(filter(lambda pair: pair[0] in whitelist_types, all_types.items()))
+        try:
+            args = self.parser.parse_args(strict=True)
+            all_types = self.timeedit.find_types_all()
+
+            if args.get("whitelisted") != "true":
+                return all_types, 200
+
+            whitelist_types = self.db.get_whitelist_types()
+            filtered = dict(filter(lambda pair: pair[0] in whitelist_types, all_types.items()))
+            return filtered, 200
+
+        except zeep.exceptions.Fault as e:
+            return {"error": str(e)}, 401
+        except Exception as e:
+            return {"error": str(e)}, 500
 
 
 class Fields(Resource):

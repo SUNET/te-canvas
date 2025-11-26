@@ -144,3 +144,7 @@ dmypy.json
 
 # VSCode
 .vscode
+postgres-data-sunet
+./postgres-data-sunet
+docker-compose.test.yml
+FLASK-RESTX.md
