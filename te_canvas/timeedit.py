@@ -2,10 +2,9 @@ import os
 import sys
 import itertools
 from datetime import datetime
-from typing import Optional, Any
-
+from typing import Optional, Any, List, Dict
 import zeep
-
+from zeep.helpers import serialize_object
 from te_canvas.log import get_logger
 
 logger = get_logger()
@@ -76,16 +75,50 @@ class TimeEdit:
         logger.info("==================================================================")
         return res[0] if len(res) > 0 else {"extid": extid, "name": ""}
 
+
+    def get_sortable_fields(self, type_name: str) -> List[str]:
+        """
+        Retrieve the external IDs of all sortable fields for a given object type.
+
+        This function queries the TimeEdit API to get all field definitions for a 
+        specific object type and filters them to include only fields that are sortable.
+        It uses the walrus operator to serialize each field and check its 'sortable' 
+        property in a single step.
+
+        Args:
+            client (Client): Zeep SOAP client connected to the TimeEdit API.
+            login (object): Login object containing credentials and API keys.
+            type_name (str): The external ID of the object type (e.g., "Kurstillfälle").
+
+        Returns:
+            List[str]: A list of external IDs (`extid`) of fields that are sortable.
+        """
+        # Get all field names for the object type
+        all_fields = self.client.service.getAllFields(login=self.login, type=type_name)
+        
+        # Get detailed field definitions
+        field_defs = self.client.service.getFieldDefs(login=self.login, fields={"field": all_fields})
+        
+        # Filter fields to include only those that are sortable
+        SEARCH_FIELDS = [
+            p["extid"]  # Extract the external ID
+            for k in field_defs
+            if (p := serialize_object(k)).get("sortable")  # Serialize and check sortable in one step
+        ]
+        return SEARCH_FIELDS
+
+
     def find_objects(self, type, number_of_objects, begin_index, search_string):
         """Get max 1000 objects of a given type."""
+        SEARCH_FIELDS = self.get_sortable_fields(type_name=type)
         resp = self.client.service.findObjects(
             login=self.login,
             type=type,
             numberofobjects=number_of_objects,
             beginindex=begin_index,
-            generalsearchfields={"field": self.SEARCH_FIELDS},
+            generalsearchfields={"field": SEARCH_FIELDS},
             generalsearchstring=search_string,
-            returnfields=self.RETURN_FIELDS,
+            returnfields=SEARCH_FIELDS,
         )
         if resp.objects is None:
             # Can't really warn about this generally since this endpoint is used for searching.

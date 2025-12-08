@@ -33,6 +33,7 @@ class Objects(Resource):
         n = args["number_of_objects"]
         i = args["begin_index"]
         s = args["search_string"]
+        logger.info(f"objects.search->[type: {type}, #objects: {n}, index: {i}, s_string: {s}]")
         if n or i:
             data = self.timeedit.find_objects(type, n or 1000, i or 0, s)
         else:
