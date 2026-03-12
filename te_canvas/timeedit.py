@@ -1,9 +1,10 @@
 import os
 import sys
+import zeep
+import base64
 import itertools
 from datetime import datetime
 from typing import Optional, Any, List, Dict
-import zeep
 from zeep.helpers import serialize_object
 from te_canvas.log import get_logger
 
@@ -33,9 +34,15 @@ class TimeEdit:
 
         try:
             self.client = zeep.Client(wsdl)  # type: ignore
-            key = self.client.service.register(cert).applicationkey
-        except Exception:
-            logger.critical(f'TimeEdit connection to "{wsdl}" failed, exiting.')
+        except Exception as e:
+            logger.critical(f'Failed to load TimeEdit WSDL from "{wsdl}": {e}')
+            sys.exit(1)
+
+        try:
+            cert_encoded = base64.b64encode(cert.encode("utf-8")).decode("ascii")
+            key = self.client.service.register(cert_encoded).applicationkey
+        except Exception as e:
+            logger.critical(f'TimeEdit register() call failed for "{wsdl}" (check TE_CERT): {e}')
             sys.exit(1)
 
         self.login = {
@@ -108,9 +115,21 @@ class TimeEdit:
         return SEARCH_FIELDS
 
 
+    def get_search_fields(self, type_name):
+        fields = self.client.service.getPrimaryFields(
+            login=self.login,
+            type=type_name
+        )
+
+        if not fields:
+            fields = self.get_sortable_fields(type_name)
+
+        return fields
+
     def find_objects(self, type, number_of_objects, begin_index, search_string):
         """Get max 1000 objects of a given type."""
-        SEARCH_FIELDS = self.get_sortable_fields(type_name=type)
+        # SEARCH_FIELDS = self.get_sortable_fields(type_name=type)
+        SEARCH_FIELDS = self.get_search_fields(type_name=type)
         resp = self.client.service.findObjects(
             login=self.login,
             type=type,

@@ -148,3 +148,6 @@ postgres-data-sunet
 ./postgres-data-sunet
 docker-compose.test.yml
 FLASK-RESTX.md
+summary
+summary/*
+AGENTS.md
