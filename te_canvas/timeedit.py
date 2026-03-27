@@ -40,7 +40,7 @@ class TimeEdit:
 
         try:
             cert_encoded = base64.b64encode(cert.encode("utf-8")).decode("ascii")
-            key = self.client.service.register(cert_encoded).applicationkey
+            key = self.client.service.register(cert).applicationkey
         except Exception as e:
             logger.critical(f'TimeEdit register() call failed for "{wsdl}" (check TE_CERT): {e}')
             sys.exit(1)
