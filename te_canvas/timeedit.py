@@ -50,8 +50,9 @@ class TimeEdit:
             "password": password,
             "applicationkey": key,
         }
-        # TimeEdit SOAP API caps generalsearchfields at 20 entries per call (error -302).
-        self.MAX_GENERAL_SEARCH_FIELDS = 20
+        # TimeEdit SOAP API caps both generalsearchfields and returnfields at 20 entries
+        # per call (error -302).
+        self.MAX_FIELDS_PER_CALL = 20
 
     def reservation_url(self, id: str) -> str:
         # These query args are not understood in detail, taken blindly from the URL we get when
@@ -132,26 +133,28 @@ class TimeEdit:
     def find_objects(self, type, number_of_objects, begin_index, search_string):
         """Get max `number_of_objects` objects of a given type.
 
-        TimeEdit's findObjects accepts at most 20 GeneralSearchFields per call. When the
-        configured search field list exceeds that limit we issue one call per chunk of 20
-        and merge the results, de-duplicating by `extid` while preserving order.
+        TimeEdit's findObjects accepts at most 20 GeneralSearchFields and 20 ReturnFields
+        per call. When the configured field list exceeds that limit we issue one call per
+        chunk of 20 (using the chunk as both search and return fields) and merge the
+        results, de-duplicating by `extid` and combining each object's field dicts across
+        chunks.
         """
         SEARCH_FIELDS = self.get_search_fields(type_name=type)
 
-        # Split SEARCH_FIELDS into chunks of at most MAX_GENERAL_SEARCH_FIELDS.
-        chunk_size = self.MAX_GENERAL_SEARCH_FIELDS
+        chunk_size = self.MAX_FIELDS_PER_CALL
         field_chunks = [SEARCH_FIELDS[i : i + chunk_size] for i in range(0, len(SEARCH_FIELDS), chunk_size)] or [[]]
 
         if len(field_chunks) > 1:
             logger.info(
-                "find_objects(type=%s): %d search fields exceed API limit of %d; issuing %d calls.",
+                "find_objects(type=%s): %d fields exceed API limit of %d; issuing %d calls.",
                 type,
                 len(SEARCH_FIELDS),
                 chunk_size,
                 len(field_chunks),
             )
+            logger.info(f"Field chunks: {field_chunks}")
 
-        merged: Dict[str, Any] = {}
+        merged: Dict[str, Dict[str, Any]] = {}
         for chunk in field_chunks:
             resp = self.client.service.findObjects(
                 login=self.login,
@@ -160,14 +163,20 @@ class TimeEdit:
                 beginindex=begin_index,
                 generalsearchfields={"field": chunk},
                 generalsearchstring=search_string,
-                returnfields=SEARCH_FIELDS,
+                returnfields=chunk,
             )
             if resp.objects is None:
                 continue
             for obj in resp["objects"]["object"]:
                 unpacked = _unpack_object(obj)
-                # De-duplicate across chunks; first occurrence wins to keep result order stable.
-                merged.setdefault(unpacked["extid"], unpacked)
+                extid = unpacked["extid"]
+                if extid in merged:
+                    # Combine field data from this chunk into the existing object.
+                    for k, v in unpacked.items():
+                        if k != "extid":
+                            merged[extid][k] = v
+                else:
+                    merged[extid] = unpacked
 
         if not merged:
             # Can't really warn about this generally since this endpoint is used for searching.
