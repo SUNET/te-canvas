@@ -112,7 +112,9 @@ class Template(Resource):
     get_parser.add_argument("canvas_group", type=str, required=True)
     get_parser.add_argument("default", type=str, required=True)
     get_parser.add_argument("X-LTI-ROLES", location="headers")
-
+    
+    
+    # GET is open to everyone (non-admins see read-only). Mutations remain admin-only.
     @ns.param("default", "Should we get default template?")
     @ns.param("canvas_group", "Canvas group")
     def get(self):
@@ -121,9 +123,6 @@ class Template(Resource):
         logger.info(f"Template->args: {args}")
         logger.info(f"Template->args.canvas_group: {args.canvas_group}")
 
-        # if args.default == "true" and LTI_ADMIN not in args["X-LTI-ROLES"]:
-        if args.get("default") == "true" and not _is_admin(args.get("X-LTI-ROLES")):
-            return "", 403
         canvas_group = "default" if args.default == "true" else args.canvas_group
         try:
             template_config = {
