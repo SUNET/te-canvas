@@ -54,6 +54,23 @@ class TimeEdit:
         # per call (error -302).
         self.MAX_FIELDS_PER_CALL = 20
 
+        # Optional overrides for ID/title field detection (comma-separated).
+        # When set, these win over auto-detection.
+        self._override_id_fields = [
+            f.strip() for f in (os.environ.get("TE_ID_FIELDS") or "").split(",") if f.strip()
+        ] or None
+        self._override_title_fields = [
+            f.strip() for f in (os.environ.get("TE_TITLE_FIELDS") or "").split(",") if f.strip()
+        ] or None
+
+        # Cache: type_name -> (id_fields, title_fields)
+        self._id_title_cache: Dict[str, tuple[list[str], list[str]]] = {}
+
+        # Hints used to recognise identifier-like field names when TimeEdit metadata
+        # marks several fields as "primary" (display-in-list) without distinguishing
+        # the title from identifier columns. Lower-case substring match on extid.
+        self._ID_HINTS = ("kod", "code", "id", "nummer", "number", "ref")
+
     def reservation_url(self, id: str) -> str:
         # These query args are not understood in detail, taken blindly from the URL we get when
         # navigating to an event detail page in web view
@@ -155,6 +172,7 @@ class TimeEdit:
             logger.info(f"Field chunks: {field_chunks}")
 
         merged: Dict[str, Dict[str, Any]] = {}
+        id_fields, title_fields = self.get_id_title_fields(type)
         for chunk in field_chunks:
             resp = self.client.service.findObjects(
                 login=self.login,
@@ -168,7 +186,7 @@ class TimeEdit:
             if resp.objects is None:
                 continue
             for obj in resp["objects"]["object"]:
-                unpacked = _unpack_object(obj)
+                unpacked = _unpack_object(obj, id_fields=id_fields, title_fields=title_fields)
                 extid = unpacked["extid"]
                 if extid in merged:
                     # Combine field data from this chunk into the existing object.
@@ -228,6 +246,74 @@ class TimeEdit:
         logger.info("==================================================================")
         return defs[0] if len(defs) > 0 else {}
 
+    def get_id_title_fields(self, type_name: str) -> tuple[list[str], list[str]]:
+        """Return (id_fields, title_fields) for a TimeEdit object type.
+
+        Detection strategy (cached per type):
+          0. If TE_ID_FIELDS / TE_TITLE_FIELDS env vars are set, they win outright.
+          1. title  = first field with primary=True and kind=TEXT (TE convention:
+                      first such field is the canonical display name).
+          2. id     = remaining primary fields whose extid name matches an
+                      identifier-like hint (e.g. "kod", "code", "id", "ref").
+          3. Always append legacy "general.title*" / "general.id*" as fallbacks
+             so cross-instance object payloads still resolve.
+        """
+        if type_name in self._id_title_cache:
+            return self._id_title_cache[type_name]
+
+        if self._override_id_fields and self._override_title_fields:
+            self._id_title_cache[type_name] = (self._override_id_fields, self._override_title_fields)
+            return self._id_title_cache[type_name]
+
+        try:
+            field_extids = self.find_object_fields(type_name) or []
+            # NB: SOAP arg must be wrapped as {"field": [...]}; passing a bare list
+            # silently returns only the first definition.
+            raw_defs = self.client.service.getFieldDefs(login=self.login, fields={"field": field_extids}) or []
+            # zeep's fielddef complex type doesn't support dict-style .get();
+            # serialize to plain dicts first.
+            serialized = [serialize_object(d) for d in raw_defs]
+            by_extid = {d["extid"]: d for d in serialized}
+
+            # Preserve TE's field order: it's meaningful — first primary TEXT field
+            # is the canonical display name.
+            ordered = [by_extid[e] for e in field_extids if e in by_extid]
+
+            primaries = [d for d in ordered if d.get("primary") and (d.get("kind") or "").upper() == "TEXT"]
+
+            title_fields: list[str] = []
+            id_fields: list[str] = []
+            if primaries:
+                title_fields.append(primaries[0]["extid"])
+                for d in primaries[1:]:
+                    name = d["extid"].lower()
+                    if any(h in name for h in self._ID_HINTS):
+                        id_fields.append(d["extid"])
+        except Exception as e:
+            logger.warning(f"get_id_title_fields({type_name}) auto-detect failed: {e}")
+            title_fields, id_fields = [], []
+
+        # Apply overrides (single-sided) if present
+        if self._override_id_fields:
+            id_fields = self._override_id_fields
+        if self._override_title_fields:
+            title_fields = self._override_title_fields
+
+        # Legacy fallbacks (always appended so older objects still resolve)
+        for f in ("general.title", "general.title_ref"):
+            if f not in title_fields:
+                title_fields.append(f)
+        for f in ("general.id", "general.id_ref"):
+            if f not in id_fields:
+                id_fields.append(f)
+
+        logger.info(
+            f"[TimeEdit.get_id_title_fields] type={type_name} "
+            f"title_fields={title_fields} id_fields={id_fields}"
+        )
+        self._id_title_cache[type_name] = (id_fields, title_fields)
+        return self._id_title_cache[type_name]
+
     def get_object(self, extid: str) -> Optional[dict]:
         """Get a specific object based on external id."""
         resp = self.client.service.getObjects(
@@ -239,7 +325,17 @@ class TimeEdit:
         logger.info("******************* [TimeEdit.get_object] *******************")
         logger.info(f"{resp}")
         logger.info("==================================================================")
-        return list(map(_unpack_object, resp))[0]
+        obj = resp[0]
+        # SOAP responses expose the object's type so we can resolve id/title fields.
+        type_name = getattr(obj, "type", None) or (obj["type"] if hasattr(obj, "__getitem__") else None)
+        if type_name:
+            id_fields, title_fields = self.get_id_title_fields(type_name)
+        else:
+            id_fields, title_fields = (
+                ["general.id", "general.id_ref"],
+                ["general.title", "general.title_ref"],
+            )
+        return _unpack_object(obj, id_fields=id_fields, title_fields=title_fields)
 
     def find_reservation_fields(self):
         field_defs = self.client.service.findReservationFields(login=self.login)
@@ -324,10 +420,28 @@ class TimeEdit:
 # ---- Helper functions --------------------------------------------------------
 
 
-def _unpack_object(o):
+def _unpack_object(o, id_fields=None, title_fields=None):
+    """Unpack a SOAP object into a dict.
+
+    When `id_fields` / `title_fields` are provided, the dict gains normalized
+    top-level "id" and "title" strings derived from those candidate lists in
+    priority order. The raw per-field keys remain on the dict.
+    """
     res = {"extid": o["extid"]}
     for f in o["fields"]["field"]:
         res[f["extid"]] = f["value"][0]
+
+    def _pick(candidates):
+        if not candidates:
+            return ""
+        for k in candidates:
+            v = res.get(k)
+            if v not in (None, ""):
+                return v
+        return ""
+
+    res["id"] = _pick(id_fields)
+    res["title"] = _pick(title_fields)
     return res
 
 
