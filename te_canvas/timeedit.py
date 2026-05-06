@@ -203,6 +203,7 @@ class TimeEdit:
 
         logger.info("******************* [TimeEdit.find_objects] *******************")
         logger.info(f"id_title_fields: {id_fields} / {title_fields}")
+        logger.info(f"_override_fields: {self._override_id_fields} / {self._override_title_fields}")
         logger.info(f"merged {len(merged)} unique objects from {len(field_chunks)} chunk(s)")
         logger.info(f"{merged}")
         logger.info("==================================================================")
