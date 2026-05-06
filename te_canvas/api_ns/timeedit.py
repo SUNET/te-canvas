@@ -48,12 +48,15 @@ class Object(Resource):
 
     parser = reqparse.RequestParser()
     parser.add_argument("extid", type=str, required=True)
+    parser.add_argument("type", type=str, required=False)
 
     @ns.param("extid", "External id.")
+    @ns.param("type", "Object type extid (used to resolve id/title fields).")
     def get(self):
         args = self.parser.parse_args(strict=True)
         extid = args["extid"]
-        res = self.timeedit.get_object(extid)
+        type_name = args.get("type")
+        res = self.timeedit.get_object(extid, type_name=type_name)
         if res is None:
             return {"message": f"Object {extid} not found"}, 404
         return res

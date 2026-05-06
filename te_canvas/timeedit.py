@@ -314,8 +314,13 @@ class TimeEdit:
         self._id_title_cache[type_name] = (id_fields, title_fields)
         return self._id_title_cache[type_name]
 
-    def get_object(self, extid: str) -> Optional[dict]:
-        """Get a specific object based on external id."""
+    def get_object(self, extid: str, type_name: Optional[str] = None) -> Optional[dict]:
+        """Get a specific object based on external id.
+
+        `type_name` is the TimeEdit type extid; when provided we use its
+        id/title field configuration. The SOAP `getObjects` response does not
+        include the type, so callers should pass it whenever available.
+        """
         resp = self.client.service.getObjects(
             login=self.login,
             objects={"object": [extid]},
@@ -326,8 +331,6 @@ class TimeEdit:
         logger.info(f"{resp}")
         logger.info("==================================================================")
         obj = resp[0]
-        # SOAP responses expose the object's type so we can resolve id/title fields.
-        type_name = getattr(obj, "type", None) or (obj["type"] if hasattr(obj, "__getitem__") else None)
         if type_name:
             id_fields, title_fields = self.get_id_title_fields(type_name)
         else:
