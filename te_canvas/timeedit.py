@@ -198,10 +198,12 @@ class TimeEdit:
 
         if not merged:
             # Can't really warn about this generally since this endpoint is used for searching.
+            logger.info(f"find_objects(type={type}, n={number_of_objects}, i={begin_index}, s='{search_string}') returned 0 objects ([]).")
             return []
 
         logger.info("******************* [TimeEdit.find_objects] *******************")
         logger.info(f"merged {len(merged)} unique objects from {len(field_chunks)} chunk(s)")
+        logger.info(f"{merged}")
         logger.info("==================================================================")
         return list(merged.values())
 
@@ -239,7 +241,7 @@ class TimeEdit:
         defs = [
             {"extid": r["extid"], "name": r["name"]}
             for r in res
-            if r["extid"] not in self.SEARCH_FIELDS + self.RETURN_FIELDS
+            # if r["extid"] not in self.SEARCH_FIELDS + self.RETURN_FIELDS
         ]
         logger.info("******************* [TimeEdit.get_field_defs] *******************")
         logger.info(f"{defs}")
