@@ -439,17 +439,21 @@ def _unpack_object(o, id_fields=None, title_fields=None):
     for f in o["fields"]["field"]:
         res[f["extid"]] = f["value"][0]
 
-    def _pick(candidates):
+    def _pick(candidates, type):
         if not candidates:
             return ""
+        titles = []
         for k in candidates:
             v = res.get(k)
-            if v not in (None, ""):
-                return v
-        return ""
+            if type == "title":
+                titles.append(v)
+            else:
+                if v not in (None, ""):
+                    return v
+        return " - ".join(titles)
 
-    res["id"] = _pick(id_fields)
-    res["title"] = _pick(title_fields)
+    res["id"] = _pick(id_fields, "id")
+    res["title"] = _pick(title_fields, "title")
     return res
 
 
