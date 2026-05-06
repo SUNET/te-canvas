@@ -434,6 +434,7 @@ def _unpack_object(o, id_fields=None, title_fields=None):
     top-level "id" and "title" strings derived from those candidate lists in
     priority order. The raw per-field keys remain on the dict.
     """
+    logger.info(f"_unpack_object(objects={o}, id_fields={id_fields}, title_fields={title_fields})")
     res = {"extid": o["extid"]}
     for f in o["fields"]["field"]:
         res[f["extid"]] = f["value"][0]
