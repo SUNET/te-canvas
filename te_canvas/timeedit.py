@@ -450,8 +450,8 @@ def _unpack_object(o, id_fields=None, title_fields=None):
             else:
                 if v not in (None, ""):
                     return v
-        return " - ".join(titles) if titles else ""
-
+        return " - ".join(filter(lambda t: t not in (None, ""), titles)) if titles else ""
+    
     res["id"] = _pick(id_fields, "id")
     res["title"] = _pick(title_fields, "title")
     return res

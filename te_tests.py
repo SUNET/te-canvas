@@ -22,7 +22,7 @@ def _unpack_object(o, id_fields=None, title_fields=None):
             else:
                 if v not in (None, ""):
                     return v
-        return " - ".join(titles)
+        return " - ".join(filter(lambda t: t not in (None, ""), titles)) if titles else ""
     
     
 
@@ -45,9 +45,51 @@ if __name__ == "__main__":
                 ]
             },
             {
-                'extid': 'Kurskod',
+                'extid': 'kurs-programtillfälle.termin-aktiv',
                 'value': [
-                    'AH003A'
+                    'HT2026'
+                ]
+            },
+            {
+                'extid': 'kurs-programtillfälle.ort',
+                'value': [
+                    'Annan ort'
+                ]
+            },
+            {
+                'extid': 'Undervisningsform',
+                'value': [
+                    'DST'
+                ]
+            },
+            {
+                'extid': 'Poäng',
+                'value': [
+                    '7.5'
+                ]
+            },
+            {
+                'extid': 'Institution',
+                'value': [
+                    'HOV'
+                ]
+            },
+            {
+                'extid': 'Startvecka',
+                'value': [
+                    '202646'
+                ]
+            },
+            {
+                'extid': 'Slutvecka',
+                'value': [
+                    '202702'
+                ]
+            },
+            {
+                'extid': 'Kurstid',
+                'value': [
+                    'DAG'
                 ]
             },
             {
@@ -61,10 +103,51 @@ if __name__ == "__main__":
                 'value': [
                     'Occupational Health Science MA, Sustainable Organizations'
                 ]
+            },
+            {
+                'extid': 'Ämne',
+                'value': [
+                    'AHV'
+                ]
+            },
+            {
+                'extid': 'Kurskod',
+                'value': [
+                    'AH003A'
+                ]
+            },
+            {
+                'extid': 'Anmälningskod',
+                'value': [
+                    'O7541'
+                ]
+            },
+            {
+                'extid': 'Kurstakt',
+                'value': [
+                    '50'
+                ]
+            },
+            {
+                'extid': 'kurs-programtillfälle.campus-ort',
+                'value': [
+                    'Annan ort'
+                ]
             }
         ]
     },
-    'virtual': False}
-    id_fields=['Kurskod']
-    title_fields=['Namn', 'BenamnS', 'BenamnE']
+    'created': '20250208T045949',
+    'modified': '20260506T044814',
+    'createdBy': {
+        'loginname': 'Miunweb',
+        'authserver': '68c16a8c68257d321ffe9040'
+    },
+    'modifiedBy': {
+        'loginname': 'Miunweb',
+        'authserver': '68c16a8c68257d321ffe9040'
+    },
+    'virtual': False
+    }
+    id_fields=['Kurskod', 'general.id', 'general.id_ref']
+    title_fields=['Namn', 'general.title', 'general.title_ref']
     _unpack_object(object, id_fields=id_fields, title_fields=title_fields)
